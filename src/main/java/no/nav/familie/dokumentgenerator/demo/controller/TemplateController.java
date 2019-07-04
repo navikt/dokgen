@@ -40,6 +40,8 @@ public class TemplateController {
             Template template = templateManagementService.getTemplate(name);
             URL path = templateManagementService.getJsonPath(name + ".json");
             JsonNode jsonNode = templateManagementService.readJsonFile(path);
+//            return template;
+            System.out.println("template.apply(templateManagementService.getContext(jsonNode)) = " + template.apply(templateManagementService.getContext(jsonNode)));
             return template.apply(templateManagementService.getContext(jsonNode));
         } catch (IOException | com.github.jknack.handlebars.HandlebarsException e) {
             e.printStackTrace();
