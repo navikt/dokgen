@@ -33,7 +33,7 @@ public class TemplateController {
         return null;
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
+//    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping(value = "maler/{name}", produces="text/html")
     public String getTemplate(@PathVariable String name) {
         try {

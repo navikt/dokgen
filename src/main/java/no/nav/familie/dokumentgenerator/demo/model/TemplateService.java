@@ -1,11 +1,9 @@
 package no.nav.familie.dokumentgenerator.demo.model;
 
+import com.github.jknack.handlebars.*;
+import org.apache.commons.io.FilenameUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.jknack.handlebars.Context;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.JsonNodeValueResolver;
-import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.context.FieldValueResolver;
 import com.github.jknack.handlebars.context.JavaBeanValueResolver;
 import com.github.jknack.handlebars.context.MapValueResolver;
@@ -14,6 +12,8 @@ import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+
+
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -28,12 +28,12 @@ public class TemplateService {
     private Handlebars handlebars;
 
 
-    public Handlebars getHandlebars() {
+    private Handlebars getHandlebars() {
         return handlebars;
     }
 
-    public void setHandlebars(Handlebars handlebars) {
-        this.handlebars = handlebars;
+    private void setHandlebars(Handlebars handlebars) {
+        this.handlebars = handlebars.registerHelper("md", new MarkdownHelper());
     }
 
     @PostConstruct
@@ -52,7 +52,7 @@ public class TemplateService {
         }
 
         for (File file : listOfFiles) {
-            templateNames.add(file.getName());
+            templateNames.add(FilenameUtils.getBaseName(file.getName()));
         }
         return templateNames;
     }
@@ -82,9 +82,11 @@ public class TemplateService {
     public Context getContext(JsonNode model) {
         return Context
                 .newBuilder(model)
-                .resolver(JsonNodeValueResolver.INSTANCE, JavaBeanValueResolver.INSTANCE, FieldValueResolver.INSTANCE,
+                .resolver(JsonNodeValueResolver.INSTANCE,
+                        JavaBeanValueResolver.INSTANCE,
+                        FieldValueResolver.INSTANCE,
                         MapValueResolver.INSTANCE,
-                        MethodValueResolver.INSTANCE)
-                .build();
+                        MethodValueResolver.INSTANCE
+                ).build();
     }
 }
