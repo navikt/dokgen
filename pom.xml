@@ -53,12 +53,6 @@
             <version>1.3.2</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.github.jknack</groupId>
-            <artifactId>handlebars-markdown</artifactId>
-            <version>4.0.5</version>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/com.atlassian.commonmark/commonmark -->
         <dependency>
             <groupId>com.atlassian.commonmark</groupId>
@@ -66,7 +60,27 @@
             <version>0.12.1</version>
         </dependency>
 
+
+<!--        JSON test -->
+        <dependency>
+            <groupId>com.github.everit-org.json-schema</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>1.11.1</version>
+        </dependency>
+
+
     </dependencies>
+
+    <!--        JSON test -->
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+<!--    // JSON test-->
+
 
     <build>
         <plugins>

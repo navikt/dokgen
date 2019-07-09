@@ -17,8 +17,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -34,7 +33,8 @@ public class TemplateService {
     }
 
     private void setHandlebars(Handlebars handlebars) {
-        this.handlebars = handlebars.registerHelper("md", new MarkdownHelper());
+//        this.handlebars = handlebars.registerHelper("md", new MarkdownHelper());
+        this.handlebars = handlebars;
     }
 
     @PostConstruct
@@ -112,5 +112,12 @@ public class TemplateService {
         Node document = parser.parse(content);
         HtmlRenderer renderer = getHtmlRenderer();
         return renderer.render(document);
+    }
+
+    public void writeToFile(String name, String content) throws IOException {
+        String tempName = name + ".hbs";
+        BufferedWriter writer = new BufferedWriter(new FileWriter(ClassLoader.getSystemResource("templates/" + tempName).getPath(), false));
+        writer.append(content);
+        writer.close();
     }
 }

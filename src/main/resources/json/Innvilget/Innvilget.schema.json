@@ -1,0 +1,95 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/root.json",
+  "type": "object",
+  "title": "The Root Schema",
+  "required": [
+    "belop",
+    "dato",
+    "begrunnelse",
+    "antall_timer",
+    "kontantstotte_lov",
+    "saksbehandler"
+  ],
+  "properties": {
+    "belop": {
+      "$id": "#/properties/belop",
+      "type": "integer",
+      "title": "The Belop Schema",
+      "default": "",
+      "examples": [
+        "5000"
+      ]
+    },
+    "dato": {
+      "$id": "#/properties/dato",
+      "type": "string",
+      "title": "The Dato Schema",
+      "default": "",
+      "examples": [
+        "01.07"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "begrunnelse": {
+      "$id": "#/properties/begrunnelse",
+      "type": "string",
+      "title": "The Begrunnelse Schema",
+      "default": "",
+      "examples": [
+        "BEGRUNNELSE"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "mnd_etterbetaling": {
+      "$id": "#/properties/mnd_etterbetaling",
+      "type": "string",
+      "title": "The Mnd_etterbetaling Schema",
+      "default": "",
+      "examples": [
+        "01.06"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "belop_etterbetaling": {
+      "$id": "#/properties/belop_etterbetaling",
+      "type": "string",
+      "title": "The Belop_etterbetaling Schema",
+      "default": "",
+      "examples": [
+        "1500"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "antall_timer": {
+      "$id": "#/properties/antall_timer",
+      "type": "integer",
+      "title": "The Antall_timer Schema",
+      "default": "",
+      "examples": [
+        "40"
+      ]
+    },
+    "kontantstotte_lov": {
+      "$id": "#/properties/kontantstotte_lov",
+      "type": "string",
+      "title": "The Kontantstotte_lov Schema",
+      "default": "",
+      "examples": [
+        "2, 3, 7, 8 og 9"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "saksbehandler": {
+      "$id": "#/properties/saksbehandler",
+      "type": "string",
+      "title": "The Saksbehandler Schema",
+      "default": "",
+      "examples": [
+        "SAKSBEHANDLER"
+      ],
+      "pattern": "^(.*)$"
+    }
+  }
+}
