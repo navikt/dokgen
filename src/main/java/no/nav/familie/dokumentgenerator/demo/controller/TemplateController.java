@@ -1,6 +1,11 @@
 package no.nav.familie.dokumentgenerator.demo.controller;
 
 import no.nav.familie.dokumentgenerator.demo.model.TemplateService;
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.ValidationException;
+import org.everit.json.schema.loader.SchemaLoader;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -10,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @CrossOrigin(origins = {"http://localhost:3000"})
@@ -52,8 +58,7 @@ public class TemplateController {
             Document document = Jsoup.parse(markdownToHtml);
             Element head = document.head();
             head.append("<meta charset=\"UTF-8\">");
-//            head.append(("<link rel=\"stylesheet\" href=\"http://example.com/your.css\">"));
-
+            head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
             return templateManagementService.convertMarkdownTemplateToHtml(document.html());
         } catch (IOException e) {
             e.printStackTrace();
