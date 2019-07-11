@@ -18,14 +18,21 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class TemplateService {
     private Handlebars handlebars;
+    private String pdfGenURl = "http://localhost:8090/api/v1/genpdf/html/";
 
 
     private Handlebars getHandlebars() {
@@ -45,6 +52,10 @@ public class TemplateService {
 
     private Template getTemplate(String templateName) throws IOException {
         return this.getHandlebars().compile(templateName);
+    }
+
+    private String getPdfGenURl() {
+        return pdfGenURl;
     }
 
     private URL getJsonPath(String templateName) {
@@ -120,4 +131,25 @@ public class TemplateService {
         writer.append(content);
         writer.close();
     }
+
+    public byte[] generatePDF(String applicationName, String content) {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(this.getPdfGenURl() + applicationName))
+                .header("Content-Type", "text/html;charset=UTF-8")
+                .POST(HttpRequest.BodyPublishers.ofString(content))
+                .build();
+
+        try {
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (response.statusCode() == 200) {
+                return response.body();
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return  null;
+    }
+
 }

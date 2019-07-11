@@ -1,21 +1,17 @@
 package no.nav.familie.dokumentgenerator.demo.controller;
 
 import no.nav.familie.dokumentgenerator.demo.model.TemplateService;
-import org.everit.json.schema.Schema;
-import org.everit.json.schema.ValidationException;
-import org.everit.json.schema.loader.SchemaLoader;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 @CrossOrigin(origins = {"http://localhost:3000"})
@@ -80,4 +76,21 @@ public class TemplateController {
         }
         return null;
     }
+
+    @GetMapping(value = "maler/pdf/{templateName}", consumes = "text/plain", produces = "application/pdf")
+    public ResponseEntity<byte[]> getPDF(@PathVariable String templateName, @RequestBody String content) {
+        byte[] pdfContent = templateManagementService.generatePDF(templateName, content);
+
+        if (pdfContent == null) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        String filename = templateName + ".pdf";
+        headers.setContentDispositionFormData("inline", filename);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+    }
+
 }
