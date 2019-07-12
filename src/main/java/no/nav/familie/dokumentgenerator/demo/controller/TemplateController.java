@@ -26,40 +26,29 @@ public class TemplateController {
 
     @GetMapping("/maler")
     public List<String> getAllTemplateNames() {
-        try {
-            return templateManagementService.getTemplateSuggestions();
-        } catch (IOException e) {
-            System.out.println("Kunne ikke finne noen maler!");
-            e.printStackTrace();
-        }
-        return null;
+        return templateManagementService.getTemplateSuggestions();
     }
 
     @GetMapping(value = "maler/markdown/{name}", produces = "text/plain")
     public String getTemplateContentInMarkdown(@PathVariable String name) {
-        try {
-            return templateManagementService.getCompiledTemplate(name);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return templateManagementService.getCompiledTemplate(name);
     }
 
     @GetMapping(value = "maler/html/{name}", produces = "text/html")
     public String getTemplateContentInHtml(@PathVariable String name) {
-        try {
             String compiledMarkdownTemplate = templateManagementService.getCompiledTemplate(name);
-            String markdownToHtml = templateManagementService.convertMarkdownTemplateToHtml(compiledMarkdownTemplate);
 
-            Document document = Jsoup.parse(markdownToHtml);
+            if (compiledMarkdownTemplate == null) {
+                return null;
+            }
+
+            String html = templateManagementService.convertMarkdownTemplateToHtml(compiledMarkdownTemplate);
+
+            Document document = Jsoup.parse(html);
             Element head = document.head();
             head.append("<meta charset=\"UTF-8\">");
             head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
             return templateManagementService.convertMarkdownTemplateToHtml(document.html());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     @PostMapping(value = "maler/{name}", consumes = "text/plain")
@@ -77,9 +66,9 @@ public class TemplateController {
         return null;
     }
 
-    @GetMapping(value = "maler/pdf/{templateName}", consumes = "text/plain", produces = "application/pdf")
-    public ResponseEntity<byte[]> getPDF(@PathVariable String templateName, @RequestBody String content) {
-        byte[] pdfContent = templateManagementService.generatePDF(templateName, content);
+    @GetMapping(value = "maler/pdf/{templateName}", produces = "application/pdf")
+    public ResponseEntity<byte[]> getPDF(@PathVariable String templateName) {
+        byte[] pdfContent = templateManagementService.generatePDF(templateName);
 
         if (pdfContent == null) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
