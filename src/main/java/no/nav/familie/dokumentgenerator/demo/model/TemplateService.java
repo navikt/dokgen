@@ -2,7 +2,10 @@ package no.nav.familie.dokumentgenerator.demo.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.jknack.handlebars.*;
+import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.JsonNodeValueResolver;
+import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.context.FieldValueResolver;
 import com.github.jknack.handlebars.context.JavaBeanValueResolver;
 import com.github.jknack.handlebars.context.MapValueResolver;
@@ -20,15 +23,16 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -275,7 +279,10 @@ public class TemplateService {
 
     public void writeToFile(String name, String content) throws IOException {
         String tempName = name + ".hbs";
-        BufferedWriter writer = new BufferedWriter(new FileWriter(ClassLoader.getSystemResource("templates/" + tempName).getPath(), false));
+        BufferedWriter writer = new BufferedWriter(
+                new FileWriter(
+                        ClassLoader.getSystemResource
+                                ("templates/" + tempName).getPath(), false));
         writer.append(content);
         writer.close();
     }
@@ -291,9 +298,10 @@ public class TemplateService {
         Document document = appendHtmlMetadata(html);
 
 
+
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(this.getPdfGenURl() + applicationName))
+                .uri(URI.create(getPdfGenURl() + applicationName))
                 .header("Content-Type", "text/html;charset=UTF-8")
                 .POST(HttpRequest.BodyPublishers.ofString(document.html()))
                 .build();
