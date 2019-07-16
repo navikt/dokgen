@@ -47,7 +47,6 @@ public class TemplateService {
     }
 
     private void setHandlebars(Handlebars handlebars) {
-//        this.handlebars = handlebars.registerHelper("md", new MarkdownHelper());
         this.handlebars = handlebars;
     }
 
