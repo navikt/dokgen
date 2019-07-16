@@ -13,6 +13,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +23,18 @@ import javax.annotation.PostConstruct;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class TemplateService {
@@ -51,6 +64,10 @@ public class TemplateService {
         return ClassLoader.getSystemResource("json/" + templateName);
     }
 
+    private URL getCssPath(String cssName) {
+        return ClassLoader.getSystemResource("static/css/" + cssName);
+    }
+
     private JsonNode readJsonFile(URL path) {
         if (path != null) {
             ObjectMapper mapper = new ObjectMapper();
@@ -62,6 +79,31 @@ public class TemplateService {
             }
         }
         return null;
+    }
+    private String getCssFile(String fileName) throws IOException {
+        URI filePath = null;
+        try{
+            filePath = getCssPath(fileName).toURI();
+        }
+        catch (URISyntaxException e){
+            e.printStackTrace();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        List<String> stringList = new ArrayList<>();
+        if(filePath != null){
+            try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
+                stringList = stream.collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        for(String line : stringList){
+            sb.append(line);
+        }
+
+        return sb.toString();
     }
 
     private Context insertTemplateContent(JsonNode model) {
@@ -83,6 +125,20 @@ public class TemplateService {
         return HtmlRenderer.builder().build();
     }
 
+    private Document appendHtmlMetadata(String html) {
+        Document document = Jsoup.parse(html);
+        Element head = document.head();
+        head.append("<meta charset=\"UTF-8\">");
+//        head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
+
+        try{
+            head.append(getCssFile("main.css"));
+        }
+        catch (Exception e){
+            System.out.println("No css provided");
+        }
+        return document;
+    }
 
     public List<String> getTemplateSuggestions() throws IOException {
         List<String> templateNames = new ArrayList<>();
