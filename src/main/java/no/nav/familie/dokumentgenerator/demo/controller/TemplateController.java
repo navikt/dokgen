@@ -1,21 +1,17 @@
 package no.nav.familie.dokumentgenerator.demo.controller;
 
 import no.nav.familie.dokumentgenerator.demo.model.TemplateService;
-import org.everit.json.schema.Schema;
-import org.everit.json.schema.ValidationException;
-import org.everit.json.schema.loader.SchemaLoader;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 @CrossOrigin(origins = {"http://localhost:3000"})
@@ -30,54 +26,59 @@ public class TemplateController {
 
     @GetMapping("/maler")
     public List<String> getAllTemplateNames() {
-        try {
-            return templateManagementService.getTemplateSuggestions();
-        } catch (IOException e) {
-            System.out.println("Kunne ikke finne noen maler!");
-            e.printStackTrace();
-        }
-        return null;
+        return templateManagementService.getTemplateSuggestions();
     }
 
-    @GetMapping(value = "maler/markdown/{name}", produces = "text/plain")
-    public String getTemplateContentInMarkdown(@PathVariable String name) {
-        try {
-            return templateManagementService.getCompiledTemplate(name);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+    @GetMapping(value = "maler/markdown/{templateName}", produces = "text/plain")
+    public String getTemplateContentInMarkdown(@PathVariable String templateName) {
+        return templateManagementService.getCompiledTemplate(templateName);
     }
 
-    @GetMapping(value = "maler/html/{name}", produces = "text/html")
-    public String getTemplateContentInHtml(@PathVariable String name) {
-        try {
-            String compiledMarkdownTemplate = templateManagementService.getCompiledTemplate(name);
-            String markdownToHtml = templateManagementService.convertMarkdownTemplateToHtml(compiledMarkdownTemplate);
+    @GetMapping(value = "maler/html/{templateName}", produces = "text/html")
+    public String getTemplateContentInHtml(@PathVariable String templateName) {
+            String compiledMarkdownTemplate = templateManagementService.getCompiledTemplate(templateName);
 
-            Document document = Jsoup.parse(markdownToHtml);
+            if (compiledMarkdownTemplate == null) {
+                return null;
+            }
+
+            String html = templateManagementService.convertMarkdownTemplateToHtml(compiledMarkdownTemplate);
+
+            Document document = Jsoup.parse(html);
             Element head = document.head();
             head.append("<meta charset=\"UTF-8\">");
             head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
             return templateManagementService.convertMarkdownTemplateToHtml(document.html());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
-    @PostMapping(value = "maler/{name}", consumes = "text/plain")
-    public ResponseEntity<String> setTemplateContent(@PathVariable String name, @RequestBody String content) {
+    @PostMapping(value = "maler/{templateName}", consumes = "text/plain")
+    public ResponseEntity<String> setTemplateContent(@PathVariable String templateName, @RequestBody String content) {
         try {
             Document.OutputSettings settings = new Document.OutputSettings();
             settings.prettyPrint(false);
             String strippedHtmlSyntax = Jsoup.clean(content, "", Whitelist.none(), settings);
-            templateManagementService.writeToFile(name, strippedHtmlSyntax);
-            return new ResponseEntity<>(templateManagementService.getCompiledTemplate(name), HttpStatus.OK);
+            templateManagementService.writeToFile(templateName, strippedHtmlSyntax);
+            return new ResponseEntity<>(templateManagementService.getCompiledTemplate(templateName), HttpStatus.OK);
         } catch (IOException e) {
             System.out.println("Klarte ikke å skrive til fil");
             e.printStackTrace();
         }
         return null;
+    }
+
+    @GetMapping(value = "maler/pdf/{templateName}", produces = "application/pdf")
+    public ResponseEntity<byte[]> getPDF(@PathVariable String templateName) {
+        byte[] pdfContent = templateManagementService.generatePDF(templateName);
+
+        if (pdfContent == null) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        String filename = templateName + ".pdf";
+        headers.setContentDispositionFormData("inline", filename);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
     }
 }

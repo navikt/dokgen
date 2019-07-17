@@ -2,7 +2,10 @@ package no.nav.familie.dokumentgenerator.demo.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.jknack.handlebars.*;
+import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.JsonNodeValueResolver;
+import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.context.FieldValueResolver;
 import com.github.jknack.handlebars.context.JavaBeanValueResolver;
 import com.github.jknack.handlebars.context.MapValueResolver;
@@ -20,9 +23,10 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.*;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -39,6 +43,7 @@ import java.util.stream.Stream;
 @Service
 public class TemplateService {
     private Handlebars handlebars;
+    private String pdfGenURl = "http://localhost:8090/api/v1/genpdf/html/";
 
 
     private Handlebars getHandlebars() {
@@ -46,18 +51,15 @@ public class TemplateService {
     }
 
     private void setHandlebars(Handlebars handlebars) {
-//        this.handlebars = handlebars.registerHelper("md", new MarkdownHelper());
         this.handlebars = handlebars;
-    }
-
-    @PostConstruct
-    public void loadHandlebarTemplates() {
-        TemplateLoader loader = new ClassPathTemplateLoader("/templates", ".hbs");
-        setHandlebars(new Handlebars(loader));
     }
 
     private Template getTemplate(String templateName) throws IOException {
         return this.getHandlebars().compile(templateName);
+    }
+
+    private String getPdfGenURl() {
+        return pdfGenURl;
     }
 
     private URL getJsonPath(String templateName) {
@@ -140,27 +142,47 @@ public class TemplateService {
         return document;
     }
 
-    public List<String> getTemplateSuggestions() throws IOException {
+    @PostConstruct
+    public void loadHandlebarTemplates() {
+        TemplateLoader loader = new ClassPathTemplateLoader("/templates", ".hbs");
+        setHandlebars(new Handlebars(loader));
+    }
+
+    public List<String> getTemplateSuggestions() {
         List<String> templateNames = new ArrayList<>();
-        File folder = new ClassPathResource("templates").getFile();
-        File[] listOfFiles = folder.listFiles();
+        File folder;
+        File[] listOfFiles;
+        try {
+            folder = new ClassPathResource("templates").getFile();
+            listOfFiles = folder.listFiles();
 
-        if (listOfFiles == null) {
-            return null;
+            if (listOfFiles == null) {
+                return null;
+            }
+
+            for (File file : listOfFiles) {
+                templateNames.add(FilenameUtils.getBaseName(file.getName()));
+            }
+
+            return templateNames;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        for (File file : listOfFiles) {
-            templateNames.add(FilenameUtils.getBaseName(file.getName()));
-        }
-        return templateNames;
+        return null;
     }
 
 
-    public String getCompiledTemplate(String name) throws IOException {
-        Template template = getTemplate(name);
-        URL path = getJsonPath(name + ".json");
-        JsonNode jsonNode = readJsonFile(path);
-        return template.apply(insertTemplateContent(jsonNode));
+    public String getCompiledTemplate(String name)  {
+        try {
+            Template template = getTemplate(name);
+            URL path = getJsonPath(name + ".json");
+            JsonNode jsonNode = readJsonFile(path);
+            return template.apply(insertTemplateContent(jsonNode));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public String convertMarkdownTemplateToHtml(String content) {
@@ -172,8 +194,39 @@ public class TemplateService {
 
     public void writeToFile(String name, String content) throws IOException {
         String tempName = name + ".hbs";
-        BufferedWriter writer = new BufferedWriter(new FileWriter(ClassLoader.getSystemResource("templates/" + tempName).getPath(), false));
+        BufferedWriter writer = new BufferedWriter(
+                new FileWriter(
+                        ClassLoader.getSystemResource
+                                ("templates/" + tempName).getPath(), false));
         writer.append(content);
         writer.close();
+    }
+
+    public byte[] generatePDF(String applicationName) {
+        String template = getCompiledTemplate(applicationName);
+
+        if (template == null) {
+            return null;
+        }
+
+        String html = convertMarkdownTemplateToHtml(template);
+        Document document = appendHtmlMetadata(html);
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(getPdfGenURl() + applicationName))
+                .header("Content-Type", "text/html;charset=UTF-8")
+                .POST(HttpRequest.BodyPublishers.ofString(document.html()))
+                .build();
+
+        try {
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (response.statusCode() == 200) {
+                return response.body();
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return  null;
     }
 }
