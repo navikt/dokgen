@@ -82,7 +82,7 @@ public class TemplateService {
         }
         return null;
     }
-    private String getCssFile(String fileName) throws IOException {
+    private String getCssFile(String fileName) {
         URI filePath = null;
         try{
             filePath = getCssPath(fileName).toURI();
@@ -130,15 +130,11 @@ public class TemplateService {
     private Document appendHtmlMetadata(String html) {
         Document document = Jsoup.parse(html);
         Element head = document.head();
-        head.append("<meta charset=\"UTF-8\">");
+        String css = getCssFile("main.css");
 
-        try{
-            String css = getCssFile("main.css");
-            head.append("\n<style>\n" + css + "\n</style>");
-        }
-        catch (Exception e){
-            System.out.println("No css provided");
-        }
+        head.append("<meta charset=\"UTF-8\">");
+        head.append("\n<style>\n" + css + "\n</style>");
+
         return document;
     }
 
