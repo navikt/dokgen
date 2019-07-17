@@ -16,6 +16,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -47,7 +48,6 @@ public class TemplateService {
     }
 
     private void setHandlebars(Handlebars handlebars) {
-//        this.handlebars = handlebars.registerHelper("md", new MarkdownHelper());
         this.handlebars = handlebars;
     }
 
@@ -133,20 +133,22 @@ public class TemplateService {
         return null;
     }
 
+    public JsonNode getTestSetField(String templateName, String testSet){
+        URL path = getJsonPath(templateName + "/" + testSet + ".json");
+        return readJsonFile(path);
+    }
 
-    public String getCompiledTemplate(String name)  {
+    public String getCompiledTemplate(String templateName, JSONObject interleavingFields)  {
         try {
-            Template template = getTemplate(name);
-            URL path = getJsonPath(name + ".json");
-            JsonNode jsonNode = readJsonFile(path);
-            return template.apply(insertTemplateContent(jsonNode));
+            Template template = getTemplate(templateName);
+            return template.apply(insertTemplateContent(getTestSetField(templateName, "test1")));
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public String convertMarkdownTemplateToHtml(String content) {
+    public String convertMarkdownTemplateToHtml(String content, String format) {
         Parser parser = getMarkdownParser();
         Node document = parser.parse(content);
         HtmlRenderer renderer = getHtmlRenderer();
@@ -163,14 +165,14 @@ public class TemplateService {
         writer.close();
     }
 
-    public byte[] generatePDF(String applicationName) {
-        String template = getCompiledTemplate(applicationName);
+    public byte[] generatePDF(String applicationName, JSONObject interleavingFields, String format) {
+        String template = getCompiledTemplate(applicationName, interleavingFields);
 
         if (template == null) {
             return null;
         }
 
-        String html = convertMarkdownTemplateToHtml(template);
+        String html = convertMarkdownTemplateToHtml(template, format);
         Document document = appendHtmlMetadata(html);
 
         HttpClient client = HttpClient.newHttpClient();
