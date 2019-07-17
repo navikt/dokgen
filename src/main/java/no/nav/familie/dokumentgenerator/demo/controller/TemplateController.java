@@ -29,14 +29,14 @@ public class TemplateController {
         return templateManagementService.getTemplateSuggestions();
     }
 
-    @GetMapping(value = "maler/markdown/{name}", produces = "text/plain")
-    public String getTemplateContentInMarkdown(@PathVariable String name) {
-        return templateManagementService.getCompiledTemplate(name);
+    @GetMapping(value = "maler/markdown/{templateName}", produces = "text/plain")
+    public String getTemplateContentInMarkdown(@PathVariable String templateName) {
+        return templateManagementService.getCompiledTemplate(templateName);
     }
 
-    @GetMapping(value = "maler/html/{name}", produces = "text/html")
-    public String getTemplateContentInHtml(@PathVariable String name) {
-            String compiledMarkdownTemplate = templateManagementService.getCompiledTemplate(name);
+    @GetMapping(value = "maler/html/{templateName}", produces = "text/html")
+    public String getTemplateContentInHtml(@PathVariable String templateName) {
+            String compiledMarkdownTemplate = templateManagementService.getCompiledTemplate(templateName);
 
             if (compiledMarkdownTemplate == null) {
                 return null;
@@ -51,14 +51,14 @@ public class TemplateController {
             return templateManagementService.convertMarkdownTemplateToHtml(document.html());
     }
 
-    @PostMapping(value = "maler/{name}", consumes = "text/plain")
-    public ResponseEntity<String> setTemplateContent(@PathVariable String name, @RequestBody String content) {
+    @PostMapping(value = "maler/{templateName}", consumes = "text/plain")
+    public ResponseEntity<String> setTemplateContent(@PathVariable String templateName, @RequestBody String content) {
         try {
             Document.OutputSettings settings = new Document.OutputSettings();
             settings.prettyPrint(false);
             String strippedHtmlSyntax = Jsoup.clean(content, "", Whitelist.none(), settings);
-            templateManagementService.writeToFile(name, strippedHtmlSyntax);
-            return new ResponseEntity<>(templateManagementService.getCompiledTemplate(name), HttpStatus.OK);
+            templateManagementService.writeToFile(templateName, strippedHtmlSyntax);
+            return new ResponseEntity<>(templateManagementService.getCompiledTemplate(templateName), HttpStatus.OK);
         } catch (IOException e) {
             System.out.println("Klarte ikke å skrive til fil");
             e.printStackTrace();
