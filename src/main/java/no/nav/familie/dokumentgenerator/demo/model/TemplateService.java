@@ -131,10 +131,10 @@ public class TemplateService {
         Document document = Jsoup.parse(html);
         Element head = document.head();
         head.append("<meta charset=\"UTF-8\">");
-//        head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
 
         try{
-            head.append(getCssFile("main.css"));
+            String css = getCssFile("main.css");
+            head.append("\n<style>\n" + css + "\n</style>");
         }
         catch (Exception e){
             System.out.println("No css provided");
