@@ -31,18 +31,16 @@ public class TemplateController {
 
     @GetMapping(value = "maler/markdown/{templateName}", produces = "text/plain")
     public String getTemplateContentInMarkdown(@PathVariable String templateName) {
-        return templateManagementService.getCompiledTemplate(templateName);
+        return templateManagementService.getMarkdownTemplate(templateName);
     }
 
     @GetMapping(value = "maler/html/{templateName}", produces = "text/html")
     public String getTemplateContentInHtml(@PathVariable String templateName) {
-            String compiledMarkdownTemplate = templateManagementService.getCompiledTemplate(templateName);
 
-            if (compiledMarkdownTemplate == null) {
-                return null;
-            }
+        String compiledTemplate = templateManagementService.getCompiledTemplate(templateName);
 
-            String html = templateManagementService.convertMarkdownTemplateToHtml(compiledMarkdownTemplate);
+
+            String html = templateManagementService.convertMarkdownTemplateToHtml(compiledTemplate);
 
             Document document = Jsoup.parse(html);
             Element head = document.head();
@@ -58,7 +56,8 @@ public class TemplateController {
             settings.prettyPrint(false);
             String strippedHtmlSyntax = Jsoup.clean(content, "", Whitelist.none(), settings);
             templateManagementService.writeToFile(templateName, strippedHtmlSyntax);
-            return new ResponseEntity<>(templateManagementService.getCompiledTemplate(templateName), HttpStatus.OK);
+//            return new ResponseEntity<>(templateManagementService.getCompiledTemplate(templateName), HttpStatus.OK);
+            return null;
         } catch (IOException e) {
             System.out.println("Klarte ikke å skrive til fil");
             e.printStackTrace();
@@ -80,5 +79,10 @@ public class TemplateController {
         headers.setContentDispositionFormData("inline", filename);
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
         return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "maler/{templateName}/testdata")
+    public ResponseEntity<List<String>> getTestData(@PathVariable String templateName) {
+        return null;
     }
 }
