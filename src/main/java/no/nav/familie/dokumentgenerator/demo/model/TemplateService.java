@@ -37,8 +37,12 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class TemplateService {
@@ -66,6 +70,10 @@ public class TemplateService {
         return ClassLoader.getSystemResource("json/" + templateName);
     }
 
+    private URL getCssPath(String cssName) {
+        return ClassLoader.getSystemResource("static/css/" + cssName);
+    }
+
     private JsonNode readJsonFile(URL path) {
         if (path != null) {
             ObjectMapper mapper = new ObjectMapper();
@@ -77,6 +85,31 @@ public class TemplateService {
             }
         }
         return null;
+    }
+    private String getCssFile(String fileName) {
+        URI filePath = null;
+        try{
+            filePath = getCssPath(fileName).toURI();
+        }
+        catch (URISyntaxException e){
+            e.printStackTrace();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        List<String> stringList = new ArrayList<>();
+        if(filePath != null){
+            try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
+                stringList = stream.collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        for(String line : stringList){
+            sb.append(line);
+        }
+
+        return sb.toString();
     }
 
     private String getCompiledTemplate(String templateName, JsonNode interleavingFields) {
@@ -108,13 +141,14 @@ public class TemplateService {
         return HtmlRenderer.builder().build();
     }
 
-    private Document appendHtmlMetadata(String html)  {
+    private Document appendHtmlMetadata(String html) {
         Document document = Jsoup.parse(html);
         Element head = document.head();
+        String css = getCssFile("main.css");
+
         head.append("<meta charset=\"UTF-8\">");
-        head.append(("<style>* {\n" +
-                "    font-family: \"Source Sans Pro\" !important;\n" +
-                "}</style>"));
+        head.append("\n<style>\n" + css + "\n</style>");
+
         return document;
     }
 
