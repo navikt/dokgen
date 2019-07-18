@@ -3,7 +3,6 @@ package no.nav.familie.dokumentgenerator.demo.controller;
 import no.nav.familie.dokumentgenerator.demo.model.TemplateService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,24 +30,13 @@ public class TemplateController {
 
     @GetMapping(value = "maler/markdown/{templateName}", produces = "text/plain")
     public String getTemplateContentInMarkdown(@PathVariable String templateName) {
-        return templateManagementService.getCompiledTemplate(templateName);
+        return templateManagementService.getMarkdownTemplate(templateName);
     }
 
     @GetMapping(value = "maler/html/{templateName}", produces = "text/html")
     public String getTemplateContentInHtml(@PathVariable String templateName) {
-            String compiledMarkdownTemplate = templateManagementService.getCompiledTemplate(templateName);
-
-            if (compiledMarkdownTemplate == null) {
-                return null;
-            }
-
-            String html = templateManagementService.convertMarkdownTemplateToHtml(compiledMarkdownTemplate);
-
-            Document document = Jsoup.parse(html);
-            Element head = document.head();
-            head.append("<meta charset=\"UTF-8\">");
-            head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
-            return templateManagementService.convertMarkdownTemplateToHtml(document.html());
+        String compiledTemplate = templateManagementService.getCompiledTemplate(templateName);
+        return templateManagementService.convertMarkdownTemplateToHtml(compiledTemplate);
     }
 
     @PostMapping(value = "maler/{templateName}", consumes = "text/plain")
@@ -68,7 +56,7 @@ public class TemplateController {
 
     @GetMapping(value = "maler/pdf/{templateName}", produces = "application/pdf")
     public ResponseEntity<byte[]> getPDF(@PathVariable String templateName) {
-        byte[] pdfContent = templateManagementService.generatePDF(templateName);
+        byte[] pdfContent = templateManagementService.getPDF(templateName);
 
         if (pdfContent == null) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -79,6 +67,18 @@ public class TemplateController {
         String filename = templateName + ".pdf";
         headers.setContentDispositionFormData("inline", filename);
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
         return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "maler/{templateName}/testdata")
+    public ResponseEntity<List<String>> getTestData(@PathVariable String templateName) {
+        List<String> response = templateManagementService.getTestdataNames(templateName);
+
+        if (response == null) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<>(templateManagementService.getTestdataNames(templateName), HttpStatus.OK);
     }
 }

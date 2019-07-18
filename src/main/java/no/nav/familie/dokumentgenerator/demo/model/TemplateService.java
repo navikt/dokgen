@@ -45,7 +45,6 @@ public class TemplateService {
     private Handlebars handlebars;
     private String pdfGenURl = "http://localhost:8090/api/v1/genpdf/html/";
 
-
     private Handlebars getHandlebars() {
         return handlebars;
     }
@@ -54,8 +53,17 @@ public class TemplateService {
         this.handlebars = handlebars;
     }
 
-    private Template getTemplate(String templateName) throws IOException {
-        return this.getHandlebars().compile(templateName);
+    private Template compileTemplate(String templateName) {
+        try {
+            return this.getHandlebars().compile(getTemplatePath(templateName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    private String getTemplatePath(String templateName) {
+        return String.format("templates/%1$s/%1$s.hbs", templateName);
     }
 
     private String getPdfGenURl() {
@@ -64,6 +72,38 @@ public class TemplateService {
 
     private URL getJsonPath(String templateName) {
         return ClassLoader.getSystemResource("json/" + templateName);
+    }
+
+    private Node parseDocument(String content) {
+        return getMarkdownToHtmlParser().parse(content);
+    }
+
+    private String renderToHTML(Node document) {
+        return getHtmlRenderer().render(document);
+    }
+
+    private List<String> getResourceNames(String path) {
+        List<String> resourceNames = new ArrayList<>();
+        File folder;
+        File[] listOfFiles;
+        try {
+            folder = new ClassPathResource(path).getFile();
+            listOfFiles = folder.listFiles();
+
+            if (listOfFiles == null) {
+                return null;
+            }
+
+            for (File file : listOfFiles) {
+                resourceNames.add(FilenameUtils.getBaseName(file.getName()));
+            }
+
+            return resourceNames;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private URL getCssPath(String cssName) {
@@ -108,7 +148,7 @@ public class TemplateService {
         return sb.toString();
     }
 
-    private Context insertTemplateContent(JsonNode model) {
+    private Context insertTestData(JsonNode model) {
         return Context
                 .newBuilder(model)
                 .resolver(JsonNodeValueResolver.INSTANCE,
@@ -119,7 +159,7 @@ public class TemplateService {
                 ).build();
     }
 
-    private Parser getMarkdownParser() {
+    private Parser getMarkdownToHtmlParser() {
         return Parser.builder().build();
     }
 
@@ -127,7 +167,9 @@ public class TemplateService {
         return HtmlRenderer.builder().build();
     }
 
+
     private Document appendHtmlMetadata(String html) {
+
         Document document = Jsoup.parse(html);
         Element head = document.head();
         String css = getCssFile("main.css");
@@ -138,81 +180,12 @@ public class TemplateService {
         return document;
     }
 
-    @PostConstruct
-    public void loadHandlebarTemplates() {
-        TemplateLoader loader = new ClassPathTemplateLoader("/templates", ".hbs");
-        setHandlebars(new Handlebars(loader));
-    }
-
-    public List<String> getTemplateSuggestions() {
-        List<String> templateNames = new ArrayList<>();
-        File folder;
-        File[] listOfFiles;
-        try {
-            folder = new ClassPathResource("templates").getFile();
-            listOfFiles = folder.listFiles();
-
-            if (listOfFiles == null) {
-                return null;
-            }
-
-            for (File file : listOfFiles) {
-                templateNames.add(FilenameUtils.getBaseName(file.getName()));
-            }
-
-            return templateNames;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-
-    public String getCompiledTemplate(String name)  {
-        try {
-            Template template = getTemplate(name);
-            URL path = getJsonPath(name + ".json");
-            JsonNode jsonNode = readJsonFile(path);
-            return template.apply(insertTemplateContent(jsonNode));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public String convertMarkdownTemplateToHtml(String content) {
-        Parser parser = getMarkdownParser();
-        Node document = parser.parse(content);
-        HtmlRenderer renderer = getHtmlRenderer();
-        return renderer.render(document);
-    }
-
-    public void writeToFile(String name, String content) throws IOException {
-        String tempName = name + ".hbs";
-        BufferedWriter writer = new BufferedWriter(
-                new FileWriter(
-                        ClassLoader.getSystemResource
-                                ("templates/" + tempName).getPath(), false));
-        writer.append(content);
-        writer.close();
-    }
-
-    public byte[] generatePDF(String applicationName) {
-        String template = getCompiledTemplate(applicationName);
-
-        if (template == null) {
-            return null;
-        }
-
-        String html = convertMarkdownTemplateToHtml(template);
-        Document document = appendHtmlMetadata(html);
-
+    private byte[] generatePDF(String html, String applicationName) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(getPdfGenURl() + applicationName))
                 .header("Content-Type", "text/html;charset=UTF-8")
-                .POST(HttpRequest.BodyPublishers.ofString(document.html()))
+                .POST(HttpRequest.BodyPublishers.ofString(html))
                 .build();
 
         try {
@@ -225,4 +198,84 @@ public class TemplateService {
         }
         return  null;
     }
+
+
+    @PostConstruct
+    public void loadHandlebarTemplates() {
+        TemplateLoader loader = new ClassPathTemplateLoader("/", null);
+        setHandlebars(new Handlebars(loader));
+    }
+
+    public List<String> getTemplateSuggestions() {
+        return getResourceNames("templates");
+    }
+
+
+    public String getMarkdownTemplate(String templateName) {
+        String content = null;
+        String path = getTemplatePath(templateName);
+        try {
+            content = new String(Files.readAllBytes(Paths.get(ClassLoader.getSystemResource(path).toURI())));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Kunne ikke åpne template malen");
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            System.out.println("Kunne ikke finne handlebars malen");
+        }
+        return content;
+    }
+    
+
+    public String getCompiledTemplate(String templateName) {
+        Template template = compileTemplate(templateName);
+
+        if (template != null) {
+            try {
+                URL path = getJsonPath(templateName + ".json");
+                JsonNode jsonNode = readJsonFile(path);
+                return template.apply(insertTestData(jsonNode));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public String convertMarkdownTemplateToHtml(String markdown) {
+        Node document = parseDocument(markdown);
+        String html = renderToHTML(document);
+        Document htmlDocument = appendHtmlMetadata(html);
+        return htmlDocument.html();
+    }
+
+
+    public void writeToFile(String templateName, String content) throws IOException {
+        BufferedWriter writer = new BufferedWriter(
+                new FileWriter(
+                        ClassLoader.getSystemResource(getTemplatePath(templateName)).getPath(), false
+                )
+        );
+        writer.append(content);
+        writer.close();
+    }
+
+    public byte[] getPDF(String templateName) {
+        String template = getCompiledTemplate(templateName);
+
+        if (template == null) {
+            return null;
+        }
+
+        String html = convertMarkdownTemplateToHtml(template);
+        Document document = appendHtmlMetadata(html);
+        return generatePDF(document.html(), templateName);
+    }
+
+
+    public List<String> getTestdataNames(String templateName) {
+        String path = String.format("templates/%s/testdata/", templateName);
+        return getResourceNames(path);
+    }
+
 }
