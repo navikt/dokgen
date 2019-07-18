@@ -16,11 +16,14 @@ import org.apache.commons.io.FilenameUtils;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -76,6 +79,16 @@ public class TemplateService {
         return null;
     }
 
+    private String getCompiledTemplate(String templateName, JsonNode interleavingFields) {
+        try {
+            Template template = getTemplate(templateName);
+            return template.apply(insertTemplateContent(interleavingFields));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private Context insertTemplateContent(JsonNode model) {
         return Context
                 .newBuilder(model)
@@ -99,8 +112,38 @@ public class TemplateService {
         Document document = Jsoup.parse(html);
         Element head = document.head();
         head.append("<meta charset=\"UTF-8\">");
-//        head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
+        head.append(("<style>* {\n" +
+                "    font-family: \"Source Sans Pro\" !important;\n" +
+                "}</style>"));
         return document;
+    }
+
+    private String convertMarkdownTemplateToHtml(String content) {
+        Parser parser = getMarkdownParser();
+        Node document = parser.parse(content);
+        HtmlRenderer renderer = getHtmlRenderer();
+        return renderer.render(document);
+    }
+
+    private byte[] generatePDF(String templateName, String convertedTemplate) {
+        Document document = appendHtmlMetadata(convertedTemplate);
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(getPdfGenURl() + templateName))
+                .header("Content-Type", "text/html;charset=UTF-8")
+                .POST(HttpRequest.BodyPublishers.ofString(document.html()))
+                .build();
+
+        try {
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (response.statusCode() == 200) {
+                return response.body();
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return  null;
     }
 
     @PostConstruct
@@ -138,21 +181,53 @@ public class TemplateService {
         return readJsonFile(path);
     }
 
-    public String getCompiledTemplate(String templateName, JSONObject interleavingFields)  {
-        try {
+    public JsonNode getJsonFromString(String json) throws IOException{
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readTree(json);
+    }
+
+    public String getUncompiledTemplate(String templateName) {
+        try{
             Template template = getTemplate(templateName);
-            return template.apply(insertTemplateContent(getTestSetField(templateName, "test1")));
-        } catch (IOException e) {
+            return template.text();
+        }
+        catch (IOException e){
             e.printStackTrace();
         }
         return null;
     }
 
-    public String convertMarkdownTemplateToHtml(String content, String format) {
-        Parser parser = getMarkdownParser();
-        Node document = parser.parse(content);
-        HtmlRenderer renderer = getHtmlRenderer();
-        return renderer.render(document);
+    public ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format){
+        String compiledTemplate = getCompiledTemplate(templateName, interleavingFields);
+
+        if(format.equals("html")){
+            String html = convertMarkdownTemplateToHtml(compiledTemplate);
+
+            Document document = Jsoup.parse(html);
+            Element head = document.head();
+            head.append("<meta charset=\"UTF-8\">");
+            head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_HTML);
+            return new ResponseEntity<>(convertMarkdownTemplateToHtml(html), headers, HttpStatus.OK);
+        }
+        else if(format.equals("pdf") || format.equals("pdfa")){
+            String htmlConvertedTemplate = convertMarkdownTemplateToHtml(compiledTemplate);
+            byte[] pdfContent = generatePDF(templateName, htmlConvertedTemplate);
+
+            if (pdfContent == null) {
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            String filename = templateName + ".pdf";
+            headers.setContentDispositionFormData("inline", filename);
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+            return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+        }
+        return null;
     }
 
     public void writeToFile(String name, String content) throws IOException {
@@ -163,33 +238,5 @@ public class TemplateService {
                                 ("templates/" + tempName).getPath(), false));
         writer.append(content);
         writer.close();
-    }
-
-    public byte[] generatePDF(String applicationName, JSONObject interleavingFields, String format) {
-        String template = getCompiledTemplate(applicationName, interleavingFields);
-
-        if (template == null) {
-            return null;
-        }
-
-        String html = convertMarkdownTemplateToHtml(template, format);
-        Document document = appendHtmlMetadata(html);
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(getPdfGenURl() + applicationName))
-                .header("Content-Type", "text/html;charset=UTF-8")
-                .POST(HttpRequest.BodyPublishers.ofString(document.html()))
-                .build();
-
-        try {
-            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            if (response.statusCode() == 200) {
-                return response.body();
-            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        return  null;
     }
 }
