@@ -2,14 +2,9 @@ package no.nav.familie.dokumentgenerator.demo.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import no.nav.familie.dokumentgenerator.demo.model.TemplateService;
-import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,21 +33,13 @@ public class TemplateController {
 
     @PostMapping(value = "/mal", consumes = "application/json")
     public ResponseEntity setTemplateContent(@RequestBody String payload) {
-        //TODO: Make this return compiled template with format specified
 
         try {
             JsonNode jsonContent = templateManagementService.getJsonFromString(payload);
-
-            //TODO: Abstract into own writefile method
-            Document.OutputSettings settings = new Document.OutputSettings();
-            settings.prettyPrint(false);
-            String strippedHtmlSyntax = Jsoup.clean(
-                    jsonContent.get("markdownContent").textValue(),
-                    "",
-                    Whitelist.none(),
-                    settings
+            templateManagementService.saveTemplateFile(
+                    jsonContent.get("templateName").textValue(),
+                    jsonContent.get("markdownContent").textValue()
             );
-            templateManagementService.writeToFile(jsonContent.get("templateName").textValue(), strippedHtmlSyntax);
 
             return templateManagementService.returnConvertedLetter(
                     jsonContent.get("templateName").asText(),
@@ -67,21 +54,13 @@ public class TemplateController {
 
     @PutMapping(value = "/mal", consumes = "application/json")
     public ResponseEntity updateTemplateContent(@RequestBody String payload) {
-        //TODO: Make this return compiled template with format specified
 
         try {
             JsonNode jsonContent = templateManagementService.getJsonFromString(payload);
-
-            //TODO: Abstract into own writefile method
-            Document.OutputSettings settings = new Document.OutputSettings();
-            settings.prettyPrint(false);
-            String strippedHtmlSyntax = Jsoup.clean(
-                    jsonContent.get("markdownContent").textValue(),
-                    "",
-                    Whitelist.none(),
-                    settings
+            templateManagementService.saveTemplateFile(
+                    jsonContent.get("templateName").textValue(),
+                    jsonContent.get("markdownContent").textValue()
             );
-            templateManagementService.writeToFile(jsonContent.get("templateName").textValue(), strippedHtmlSyntax);
 
             return templateManagementService.returnConvertedLetter(
                     jsonContent.get("templateName").asText(),
@@ -98,7 +77,6 @@ public class TemplateController {
     public ResponseEntity getTemplateContentInHtml(@RequestBody String payload) {
         try{
             JsonNode jsonContent = templateManagementService.getJsonFromString(payload);
-            //JsonNode interleavingFields = templateManagementService.getJsonFromString(jsonContent.get("interleavingFields").asText())
             return templateManagementService.returnConvertedLetter(
                     jsonContent.get("templateName").asText(),
                     jsonContent.get("interleavingFields"),

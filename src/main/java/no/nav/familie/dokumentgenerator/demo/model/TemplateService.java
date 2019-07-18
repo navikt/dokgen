@@ -19,6 +19,7 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -180,6 +181,16 @@ public class TemplateService {
         return  null;
     }
 
+    private void writeToFile(String name, String content) throws IOException {
+        String tempName = name + ".hbs";
+        BufferedWriter writer = new BufferedWriter(
+                new FileWriter(
+                        ClassLoader.getSystemResource
+                                ("templates/" + tempName).getPath(), false));
+        writer.append(content);
+        writer.close();
+    }
+
     @PostConstruct
     public void loadHandlebarTemplates() {
         TemplateLoader loader = new ClassPathTemplateLoader("/templates", ".hbs");
@@ -264,13 +275,21 @@ public class TemplateService {
         return null;
     }
 
-    public void writeToFile(String name, String content) throws IOException {
-        String tempName = name + ".hbs";
-        BufferedWriter writer = new BufferedWriter(
-                new FileWriter(
-                        ClassLoader.getSystemResource
-                                ("templates/" + tempName).getPath(), false));
-        writer.append(content);
-        writer.close();
+    public void saveTemplateFile(String templateName, String markdownContent){
+        Document.OutputSettings settings = new Document.OutputSettings();
+        settings.prettyPrint(false);
+        String strippedHtmlSyntax = Jsoup.clean(
+                markdownContent,
+                "",
+                Whitelist.none(),
+                settings
+        );
+
+        try{
+            writeToFile(templateName, strippedHtmlSyntax);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
     }
 }
