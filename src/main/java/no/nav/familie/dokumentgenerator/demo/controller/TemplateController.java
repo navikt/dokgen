@@ -67,6 +67,7 @@ public class TemplateController {
         String filename = templateName + ".pdf";
         headers.setContentDispositionFormData("inline", filename);
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
         return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
     }
 

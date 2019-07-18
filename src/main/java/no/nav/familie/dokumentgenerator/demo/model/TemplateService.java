@@ -23,17 +23,22 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class TemplateService {
@@ -101,6 +106,10 @@ public class TemplateService {
         return null;
     }
 
+    private URL getCssPath(String cssName) {
+        return ClassLoader.getSystemResource("static/css/" + cssName);
+    }
+
     private JsonNode readJsonFile(URL path) {
         if (path != null) {
             ObjectMapper mapper = new ObjectMapper();
@@ -112,6 +121,31 @@ public class TemplateService {
             }
         }
         return null;
+    }
+    private String getCssFile(String fileName) {
+        URI filePath = null;
+        try{
+            filePath = getCssPath(fileName).toURI();
+        }
+        catch (URISyntaxException e){
+            e.printStackTrace();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        List<String> stringList = new ArrayList<>();
+        if(filePath != null){
+            try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
+                stringList = stream.collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        for(String line : stringList){
+            sb.append(line);
+        }
+
+        return sb.toString();
     }
 
     private Context insertTestData(JsonNode model) {
@@ -133,139 +167,16 @@ public class TemplateService {
         return HtmlRenderer.builder().build();
     }
 
-    private Document appendHtmlMetadata(String html, boolean isPDF)  {
+
+    private Document appendHtmlMetadata(String html) {
+
         Document document = Jsoup.parse(html);
         Element head = document.head();
-        head.append("<meta charset=\"UTF-8\">");
+        String css = getCssFile("main.css");
 
-        if (isPDF) {
-            head.append("<style>\n" +
-                    "    * {\n" +
-                    "        font-family: \"Source Sans Pro\" !important;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .line_top {\n" +
-                    "        border-top: 1px black solid;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .line_bottom {\n" +
-                    "        border-bottom: 1px black solid;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .line_left {\n" +
-                    "        border-left: 1px black solid;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .line_right {\n" +
-                    "        border-right: 1px black solid;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .block {\n" +
-                    "        width: 100%;\n" +
-                    "        margin-top: 0;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .inline {\n" +
-                    "        display: inline-block;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .main_title {\n" +
-                    "        margin-bottom: 0;\n" +
-                    "        margin-top: 2mm;\n" +
-                    "        margin-left: 2mm;\n" +
-                    "        vertical-align: bottom;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    h1 {\n" +
-                    "        font-size: 22px;\n" +
-                    "        margin-bottom: 0;\n" +
-                    "        margin-top: 0;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    h6 {\n" +
-                    "        margin-bottom: 0;\n" +
-                    "        margin-top: 0;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    p {\n" +
-                    "        font-size: 12px;\n" +
-                    "        margin-left: 1mm;\n" +
-                    "        margin-top: 0;\n" +
-                    "        margin-right: 1mm;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    h5 {\n" +
-                    "        padding-top: 1mm;\n" +
-                    "        margin-left: 1mm;\n" +
-                    "        font-size: 12px;\n" +
-                    "        margin-top: 0;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    h4 {\n" +
-                    "        padding-top: 2mm;\n" +
-                    "        margin-left: 1mm;\n" +
-                    "        font-size: 13px;\n" +
-                    "        margin-top: 0;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    h3 {\n" +
-                    "        padding-top: 3mm;\n" +
-                    "        margin-left: 1mm;\n" +
-                    "        margin-top: 0;\n" +
-                    "        margin-bottom: 0;\n" +
-                    "        font-size: 14px;\n" +
-                    "        font-style: italic;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    tr {\n" +
-                    "        font-size: 10px;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .bold {\n" +
-                    "        font-weight: bold;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .checkbox {\n" +
-                    "        width: 3mm;\n" +
-                    "        height: 3mm;\n" +
-                    "        border: black 1px solid;\n" +
-                    "        text-align: center;\n" +
-                    "        vertical-align: middle;\n" +
-                    "        font-size: 10px;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .new_page {\n" +
-                    "        page-break-before: always;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .checkbox_title_right {\n" +
-                    "        margin-left: 5mm;\n" +
-                    "        font-size: 12px;\n" +
-                    "        vertical-align: middle;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .titled_checkbox_block {\n" +
-                    "        margin-left: 3mm;\n" +
-                    "        margin-bottom: 5mm;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .titled_checkbox_inline {\n" +
-                    "        display: inline;\n" +
-                    "        margin-left: 3mm;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .signature_date_title {\n" +
-                    "        font-size: 10px;\n" +
-                    "    }\n" +
-                    "    \n" +
-                    "    .centered_text_title {\n" +
-                    "        text-align: center;\n" +
-                    "        font-size: 12px;\n" +
-                    "    }\n" +
-                    "</style>\n");
-        } else {
-            head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
-        }
+        head.append("<meta charset=\"UTF-8\">");
+        head.append("\n<style>\n" + css + "\n</style>");
+
         return document;
     }
 
@@ -334,8 +245,8 @@ public class TemplateService {
     public String convertMarkdownTemplateToHtml(String markdown) {
         Node document = parseDocument(markdown);
         String html = renderToHTML(document);
-        Document htmlDocument = appendHtmlMetadata(html, false);
-       return htmlDocument.html();
+        Document htmlDocument = appendHtmlMetadata(html);
+        return htmlDocument.html();
     }
 
 
@@ -357,7 +268,7 @@ public class TemplateService {
         }
 
         String html = convertMarkdownTemplateToHtml(template);
-        Document document = appendHtmlMetadata(html, true);
+        Document document = appendHtmlMetadata(html);
         return generatePDF(document.html(), templateName);
     }
 
