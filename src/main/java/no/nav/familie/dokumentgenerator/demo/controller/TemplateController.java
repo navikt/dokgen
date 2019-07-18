@@ -72,6 +72,12 @@ public class TemplateController {
 
     @GetMapping(value = "maler/{templateName}/testdata")
     public ResponseEntity<List<String>> getTestData(@PathVariable String templateName) {
-        return new ResponseEntity<>(templateManagementService.getTestdata(templateName), HttpStatus.OK);
+        List<String> response = templateManagementService.getTestdataNames(templateName);
+
+        if (response == null) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<>(templateManagementService.getTestdataNames(templateName), HttpStatus.OK);
     }
 }

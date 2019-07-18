@@ -23,10 +23,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -42,8 +39,6 @@ import java.util.List;
 public class TemplateService {
     private Handlebars handlebars;
     private String pdfGenURl = "http://localhost:8090/api/v1/genpdf/html/";
-    private HashMap<Integer, String> testdataOptions;
-
 
     private Handlebars getHandlebars() {
         return handlebars;
@@ -63,9 +58,8 @@ public class TemplateService {
     }
     
     private String getTemplatePath(String templateName) {
-        return String.format("templates/%s/%s.hbs", templateName, templateName);
+        return String.format("templates/%1$s/%1$s.hbs", templateName);
     }
-
 
     private String getPdfGenURl() {
         return pdfGenURl;
@@ -81,6 +75,30 @@ public class TemplateService {
 
     private String renderToHTML(Node document) {
         return getHtmlRenderer().render(document);
+    }
+
+    private List<String> getResourceNames(String path) {
+        List<String> resourceNames = new ArrayList<>();
+        File folder;
+        File[] listOfFiles;
+        try {
+            folder = new ClassPathResource(path).getFile();
+            listOfFiles = folder.listFiles();
+
+            if (listOfFiles == null) {
+                return null;
+            }
+
+            for (File file : listOfFiles) {
+                resourceNames.add(FilenameUtils.getBaseName(file.getName()));
+            }
+
+            return resourceNames;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private JsonNode readJsonFile(URL path) {
@@ -277,36 +295,8 @@ public class TemplateService {
         setHandlebars(new Handlebars(loader));
     }
 
-    public HashMap<Integer, String> getTestdataOptions() {
-        return testdataOptions;
-    }
-
-    public void setTestdataOptions(HashMap<Integer, String> testdataOptions) {
-        this.testdataOptions = testdataOptions;
-    }
-
     public List<String> getTemplateSuggestions() {
-        List<String> templateNames = new ArrayList<>();
-        File folder;
-        File[] listOfFiles;
-        try {
-            folder = new ClassPathResource("templates").getFile();
-            listOfFiles = folder.listFiles();
-
-            if (listOfFiles == null) {
-                return null;
-            }
-
-            for (File file : listOfFiles) {
-                templateNames.add(FilenameUtils.getBaseName(file.getName()));
-            }
-
-            return templateNames;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
+        return getResourceNames("templates");
     }
 
 
@@ -372,28 +362,9 @@ public class TemplateService {
     }
 
 
-    public List<String> getTestdata(String templatename) {
-        List<String> testdata = new ArrayList<>();
-        File folder;
-        File[] listOfFiles;
-        try {
-            folder = new ClassPathResource("templates/" + templatename + "/testdata/").getFile();
-            listOfFiles = folder.listFiles();
-
-            if (listOfFiles != null) {
-                for (File file : listOfFiles) {
-                    testdata.add(file.getName());
-                    System.out.println("file.getName() = " + file.getName());
-                }
-                return testdata;
-            } else {
-                System.out.println("Finner ikke testdata");
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public List<String> getTestdataNames(String templateName) {
+        String path = String.format("templates/%s/testdata/", templateName);
+        return getResourceNames(path);
     }
 
 }
