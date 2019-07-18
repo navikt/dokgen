@@ -3,7 +3,6 @@ package no.nav.familie.dokumentgenerator.demo.controller;
 import no.nav.familie.dokumentgenerator.demo.model.TemplateService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,17 +35,8 @@ public class TemplateController {
 
     @GetMapping(value = "maler/html/{templateName}", produces = "text/html")
     public String getTemplateContentInHtml(@PathVariable String templateName) {
-
         String compiledTemplate = templateManagementService.getCompiledTemplate(templateName);
-
-
-            String html = templateManagementService.convertMarkdownTemplateToHtml(compiledTemplate);
-
-            Document document = Jsoup.parse(html);
-            Element head = document.head();
-            head.append("<meta charset=\"UTF-8\">");
-            head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
-            return templateManagementService.convertMarkdownTemplateToHtml(document.html());
+        return templateManagementService.convertMarkdownTemplateToHtml(compiledTemplate);
     }
 
     @PostMapping(value = "maler/{templateName}", consumes = "text/plain")
@@ -56,8 +46,7 @@ public class TemplateController {
             settings.prettyPrint(false);
             String strippedHtmlSyntax = Jsoup.clean(content, "", Whitelist.none(), settings);
             templateManagementService.writeToFile(templateName, strippedHtmlSyntax);
-//            return new ResponseEntity<>(templateManagementService.getCompiledTemplate(templateName), HttpStatus.OK);
-            return null;
+            return new ResponseEntity<>(templateManagementService.getCompiledTemplate(templateName), HttpStatus.OK);
         } catch (IOException e) {
             System.out.println("Klarte ikke å skrive til fil");
             e.printStackTrace();
@@ -67,7 +56,7 @@ public class TemplateController {
 
     @GetMapping(value = "maler/pdf/{templateName}", produces = "application/pdf")
     public ResponseEntity<byte[]> getPDF(@PathVariable String templateName) {
-        byte[] pdfContent = templateManagementService.generatePDF(templateName);
+        byte[] pdfContent = templateManagementService.getPDF(templateName);
 
         if (pdfContent == null) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -83,6 +72,7 @@ public class TemplateController {
 
     @GetMapping(value = "maler/{templateName}/testdata")
     public ResponseEntity<List<String>> getTestData(@PathVariable String templateName) {
+        templateManagementService.setTestdata(templateName);
         return null;
     }
 }

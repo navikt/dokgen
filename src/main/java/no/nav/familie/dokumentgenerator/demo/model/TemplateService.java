@@ -35,12 +35,14 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
 public class TemplateService {
     private Handlebars handlebars;
     private String pdfGenURl = "http://localhost:8090/api/v1/genpdf/html/";
+    private HashMap<Integer, String> testdataOptions;
 
 
     private Handlebars getHandlebars() {
@@ -64,6 +66,7 @@ public class TemplateService {
         return String.format("templates/%s/%s.hbs", templateName, templateName);
     }
 
+
     private String getPdfGenURl() {
         return pdfGenURl;
     }
@@ -73,7 +76,7 @@ public class TemplateService {
     }
 
     private Node parseDocument(String content) {
-        return getMarkdownParser().parse(content);
+        return getMarkdownToHtmlParser().parse(content);
     }
 
     private String renderToHTML(Node document) {
@@ -104,7 +107,7 @@ public class TemplateService {
                 ).build();
     }
 
-    private Parser getMarkdownParser() {
+    private Parser getMarkdownToHtmlParser() {
         return Parser.builder().build();
     }
 
@@ -248,10 +251,38 @@ public class TemplateService {
         return document;
     }
 
+    private byte[] generatePDF(String html, String applicationName) {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(getPdfGenURl() + applicationName))
+                .header("Content-Type", "text/html;charset=UTF-8")
+                .POST(HttpRequest.BodyPublishers.ofString(html))
+                .build();
+
+        try {
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (response.statusCode() == 200) {
+                return response.body();
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return  null;
+    }
+
+
     @PostConstruct
     public void loadHandlebarTemplates() {
         TemplateLoader loader = new ClassPathTemplateLoader("/", null);
         setHandlebars(new Handlebars(loader));
+    }
+
+    public HashMap<Integer, String> getTestdataOptions() {
+        return testdataOptions;
+    }
+
+    public void setTestdataOptions(HashMap<Integer, String> testdataOptions) {
+        this.testdataOptions = testdataOptions;
     }
 
     public List<String> getTemplateSuggestions() {
@@ -307,7 +338,6 @@ public class TemplateService {
                 e.printStackTrace();
             }
         }
-
         return null;
     }
 
@@ -329,7 +359,7 @@ public class TemplateService {
         writer.close();
     }
 
-    public byte[] generatePDF(String templateName) {
+    public byte[] getPDF(String templateName) {
         String template = getCompiledTemplate(templateName);
 
         if (template == null) {
@@ -338,26 +368,31 @@ public class TemplateService {
 
         String html = convertMarkdownTemplateToHtml(template);
         Document document = appendHtmlMetadata(html, true);
-        return createPDF(document.html());
+        return generatePDF(document.html(), templateName);
     }
 
 
-    private byte[] createPDF(String html) {
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(getPdfGenURl() + applicationName))
-                .header("Content-Type", "text/html;charset=UTF-8")
-                .POST(HttpRequest.BodyPublishers.ofString(document.html()))
-                .build();
-
+    public void setTestdata(String templatename) {
+        HashMap<Integer, String> options;
+        List<String> testdata = new ArrayList<>();
+        File folder;
+        File[] listOfFiles;
         try {
-            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            if (response.statusCode() == 200) {
-                return response.body();
+            folder = new ClassPathResource("templates/" + templatename + "/testdata/").getFile();
+            listOfFiles = folder.listFiles();
+
+            if (listOfFiles != null) {
+                for (File file : listOfFiles) {
+                    System.out.println("file.getName() = " + file.getName());
+                }
+            } else {
+                System.out.println("Finner ikke testdata");
             }
-        } catch (IOException | InterruptedException e) {
+
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        return  null;
+
     }
+
 }
