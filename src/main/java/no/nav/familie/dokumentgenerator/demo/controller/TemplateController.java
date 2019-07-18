@@ -72,7 +72,6 @@ public class TemplateController {
 
     @GetMapping(value = "maler/{templateName}/testdata")
     public ResponseEntity<List<String>> getTestData(@PathVariable String templateName) {
-        templateManagementService.setTestdata(templateName);
-        return null;
+        return new ResponseEntity<>(templateManagementService.getTestdata(templateName), HttpStatus.OK);
     }
 }

@@ -372,8 +372,7 @@ public class TemplateService {
     }
 
 
-    public void setTestdata(String templatename) {
-        HashMap<Integer, String> options;
+    public List<String> getTestdata(String templatename) {
         List<String> testdata = new ArrayList<>();
         File folder;
         File[] listOfFiles;
@@ -383,8 +382,10 @@ public class TemplateService {
 
             if (listOfFiles != null) {
                 for (File file : listOfFiles) {
+                    testdata.add(file.getName());
                     System.out.println("file.getName() = " + file.getName());
                 }
+                return testdata;
             } else {
                 System.out.println("Finner ikke testdata");
             }
@@ -392,7 +393,7 @@ public class TemplateService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        return null;
     }
 
 }
