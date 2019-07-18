@@ -1,3 +1,122 @@
-body {
-    background-color: pink;
+* {
+    font-family: "Source Sans Pro" !important;
+}
+
+.line_top {
+    border-top: 1px black solid;
+}
+
+.line_bottom {
+    border-bottom: 1px black solid;
+}
+
+.line_left {
+    border-left: 1px black solid;
+}
+
+.line_right {
+    border-right: 1px black solid;
+}
+
+.block {
+    width: 100%;
+    margin-top: 0;
+}
+
+.inline {
+    display: inline-block;
+}
+
+.main_title {
+    margin-bottom: 0;
+    margin-top: 2mm;
+    margin-left: 2mm;
+    vertical-align: bottom;
+}
+
+h1 {
+    font-size: 22px;
+    margin-bottom: 0;
+    margin-top: 0;
+}
+
+h6 {
+    margin-bottom: 0;
+    margin-top: 0;
+}
+
+p {
+    font-size: 12px;
+    margin-left: 1mm;
+    margin-top: 0;
+    margin-right: 1mm;
+}
+
+h5 {
+    padding-top: 1mm;
+    margin-left: 1mm;
+    font-size: 12px;
+    margin-top: 0;
+}
+
+h4 {
+    padding-top: 2mm;
+    margin-left: 1mm;
+    font-size: 13px;
+    margin-top: 0;
+}
+
+h3 {
+    padding-top: 3mm;
+    margin-left: 1mm;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-style: italic;
+}
+
+tr {
+    font-size: 10px;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.checkbox {
+    width: 3mm;
+    height: 3mm;
+    border: black 1px solid;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 10px;
+}
+
+.new_page {
+    page-break-before: always;
+}
+
+.checkbox_title_right {
+    margin-left: 5mm;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.titled_checkbox_block {
+    margin-left: 3mm;
+    margin-bottom: 5mm;
+}
+
+.titled_checkbox_inline {
+    display: inline;
+    margin-left: 3mm;
+}
+
+.signature_date_title {
+    font-size: 10px;
+}
+
+.centered_text_title {
+    text-align: center;
+    font-size: 12px;
 }
