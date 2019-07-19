@@ -1,10 +1,7 @@
 package no.nav.familie.dokumentgenerator.demo.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import no.nav.familie.dokumentgenerator.demo.model.TemplateService;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.safety.Whitelist;
+import no.nav.familie.dokumentgenerator.demo.services.TemplateService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -74,9 +71,7 @@ public class TemplateController {
                     templateName,
                     jsonContent.get("testSetName").textValue()
             );
-
-            System.out.println(testSet);
-
+            
             return templateManagementService.returnConvertedLetter(
                     templateName,
                     testSet,
