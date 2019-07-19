@@ -1,12 +1,10 @@
 package no.nav.familie.dokumentgenerator.demo.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import no.nav.familie.dokumentgenerator.demo.services.TemplateService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 
 @CrossOrigin(origins = {"http://localhost:3000"})
@@ -21,6 +19,7 @@ public class TemplateController {
 
     @GetMapping("/mal/alle")
     public List<String> getAllTemplateNames() {
+        System.out.println("templateManagementService.getTemplateSuggestions() = " + templateManagementService.getTemplateSuggestions());
         return templateManagementService.getTemplateSuggestions();
     }
 
@@ -33,72 +32,33 @@ public class TemplateController {
     public ResponseEntity setTemplateContent(@PathVariable String format,
                                              @PathVariable String templateName,
                                              @RequestBody String payload) {
-        try {
-            JsonNode jsonContent = templateManagementService.getJsonFromString(payload);
-            /*templateManagementService.saveTemplateFile(
-                    templateName,
-                    jsonContent.get("markdownContent").textValue()
-            );*/
-
-            JsonNode testSet = templateManagementService.getTestSetField(
-                    templateName,
-                    jsonContent.get("testSetName").textValue()
-            );
-
-            return templateManagementService.returnConvertedLetter(
-                    templateName,
-                    testSet,
-                    format
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return templateManagementService.returnLetterResponse(
+                format,
+                templateName,
+                payload
+        );
     }
 
     @PutMapping(value = "/mal/{format}/{templateName}", consumes = "application/json")
     public ResponseEntity updateTemplateContent(@PathVariable String format,
                                                 @PathVariable String templateName,
                                                 @RequestBody String payload) {
-        try {
-            JsonNode jsonContent = templateManagementService.getJsonFromString(payload);
-            templateManagementService.saveTemplateFile(
-                    templateName,
-                    jsonContent.get("markdownContent").textValue()
-            );
-
-            JsonNode testSet = templateManagementService.getTestSetField(
-                    templateName,
-                    jsonContent.get("testSetName").textValue()
-            );
-            
-            return templateManagementService.returnConvertedLetter(
-                    templateName,
-                    testSet,
-                    format
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return templateManagementService.saveAndReturnTemplateResponse(
+                format,
+                templateName,
+                payload
+        );
     }
 
     @PostMapping(value = "/brev/{format}/{templateName}", consumes = "application/json")
     public ResponseEntity getTemplateContentInHtml(@PathVariable String format,
                                                    @PathVariable String templateName,
                                                    @RequestBody String payload) {
-        try{
-            JsonNode jsonContent = templateManagementService.getJsonFromString(payload);
-            return templateManagementService.returnConvertedLetter(
-                    templateName,
-                    jsonContent.get("interleavingFields"),
-                    format
-            );
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
-        return null;
+        return templateManagementService.returnLetterResponse(
+                format,
+                templateName,
+                payload
+        );
     }
 
     @GetMapping(value = "maler/{templateName}/testdata")

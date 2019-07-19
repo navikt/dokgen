@@ -38,6 +38,7 @@ public class TemplateService {
     private JsonUtils jsonUtils;
     private FileUtils fileUtils;
 
+
     private Handlebars getHandlebars() {
         return handlebars;
     }
@@ -83,6 +84,9 @@ public class TemplateService {
     public void loadHandlebarTemplates() {
         TemplateLoader loader = new ClassPathTemplateLoader("/", null);
         setHandlebars(new Handlebars(loader));
+        setFileUtils(new FileUtils());
+        setGenerateUtils(new GenerateUtils());
+        setJsonUtils(new JsonUtils());
     }
 
     public List<String> getTemplateSuggestions() {
@@ -104,6 +108,46 @@ public class TemplateService {
         return content;
     }
 
+    public ResponseEntity returnLetterResponse(String format, String templateName, String payload){
+        try{
+            JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
+
+            JsonNode testSet = jsonUtils.getTestSetField(
+                    templateName,
+                    jsonContent.get("testSetName").textValue()
+            );
+
+            return returnConvertedLetter(templateName, testSet, format);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity saveAndReturnTemplateResponse(String format, String templateName, String payload) {
+        try{
+            JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
+            fileUtils.saveTemplateFile(
+                    templateName,
+                    jsonContent.get("markdownContent").textValue()
+            );
+
+            JsonNode testSet = jsonUtils.getTestSetField(
+                    templateName,
+                    jsonContent.get("testSetName").textValue()
+            );
+
+            return returnConvertedLetter(templateName, testSet, format);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     public ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format) {
         String compiledTemplate = getCompiledTemplate(templateName, interleavingFields);
 
@@ -121,7 +165,8 @@ public class TemplateService {
             return new ResponseEntity<>(generateUtils.convertMarkdownTemplateToHtml((compiledTemplate)), headers, HttpStatus.OK);
         } else if (format.equals("pdf") || format.equals("pdfa")) {
             String htmlConvertedTemplate = generateUtils.convertMarkdownTemplateToHtml(compiledTemplate);
-            byte[] pdfContent = generateUtils.generatePDF(htmlConvertedTemplate, templateName);
+            String styledHtml = generateUtils.appendHtmlMetadata(htmlConvertedTemplate).html();
+            byte[] pdfContent = generateUtils.generatePDF(styledHtml, templateName);
 
             if (pdfContent == null) {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -140,5 +185,17 @@ public class TemplateService {
     public List<String> getTestdataNames(String templateName) {
         String path = String.format("templates/%s/testdata/", templateName);
         return fileUtils.getResourceNames(path);
+    }
+
+    public void setGenerateUtils(GenerateUtils generateUtils) {
+        this.generateUtils = generateUtils;
+    }
+
+    public void setJsonUtils(JsonUtils jsonUtils) {
+        this.jsonUtils = jsonUtils;
+    }
+
+    public void setFileUtils(FileUtils fileUtils) {
+        this.fileUtils = fileUtils;
     }
 }

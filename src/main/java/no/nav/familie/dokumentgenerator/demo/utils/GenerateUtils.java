@@ -6,6 +6,7 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,6 +14,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+@Service
 public class GenerateUtils {
     private String pdfGenURl = "http://localhost:8090/api/v1/genpdf/html/";
 
@@ -20,7 +22,7 @@ public class GenerateUtils {
         return pdfGenURl;
     }
 
-    private Document appendHtmlMetadata(String html) {
+    public Document appendHtmlMetadata(String html) {
 
         Document document = Jsoup.parse(html);
         Element head = document.head();
@@ -34,9 +36,7 @@ public class GenerateUtils {
 
     public String convertMarkdownTemplateToHtml(String content) {
         Node document = parseDocument(content);
-        String html = renderToHTML(document);
-        Document htmlDocument = appendHtmlMetadata(html);
-        return htmlDocument.html();
+        return renderToHTML(document);
     }
 
     public byte[] generatePDF(String html, String applicationName) {

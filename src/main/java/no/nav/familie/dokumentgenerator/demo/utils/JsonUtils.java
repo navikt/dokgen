@@ -2,12 +2,14 @@ package no.nav.familie.dokumentgenerator.demo.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+@Service
 public class JsonUtils {
 
     public JsonNode getJsonFromString(String json) throws IOException {
