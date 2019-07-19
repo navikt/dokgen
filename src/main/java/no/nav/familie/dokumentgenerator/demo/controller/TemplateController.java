@@ -19,7 +19,6 @@ public class TemplateController {
 
     @GetMapping("/mal/alle")
     public List<String> getAllTemplateNames() {
-        System.out.println("templateManagementService.getTemplateSuggestions() = " + templateManagementService.getTemplateSuggestions());
         return templateManagementService.getTemplateSuggestions();
     }
 
