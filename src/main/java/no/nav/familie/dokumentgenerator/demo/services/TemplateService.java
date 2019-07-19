@@ -47,6 +47,18 @@ public class TemplateService {
         this.handlebars = handlebars;
     }
 
+    private void setGenerateUtils(GenerateUtils generateUtils) {
+        this.generateUtils = generateUtils;
+    }
+
+    private void setJsonUtils(JsonUtils jsonUtils) {
+        this.jsonUtils = jsonUtils;
+    }
+
+    private void setFileUtils(FileUtils fileUtils) {
+        this.fileUtils = fileUtils;
+    }
+
     private Template compileTemplate(String templateName) {
         try {
             return this.getHandlebars().compile(fileUtils.getTemplatePath(templateName));
@@ -151,7 +163,7 @@ public class TemplateService {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format) {
+    private ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format) {
         String compiledTemplate = getCompiledTemplate(templateName, interleavingFields);
 
         if (format.equals("html")) {
@@ -188,17 +200,5 @@ public class TemplateService {
     public List<String> getTestdataNames(String templateName) {
         String path = String.format("templates/%s/testdata/", templateName);
         return fileUtils.getResourceNames(path);
-    }
-
-    public void setGenerateUtils(GenerateUtils generateUtils) {
-        this.generateUtils = generateUtils;
-    }
-
-    public void setJsonUtils(JsonUtils jsonUtils) {
-        this.jsonUtils = jsonUtils;
-    }
-
-    public void setFileUtils(FileUtils fileUtils) {
-        this.fileUtils = fileUtils;
     }
 }

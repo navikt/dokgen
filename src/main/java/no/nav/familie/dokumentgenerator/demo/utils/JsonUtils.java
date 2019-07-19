@@ -12,11 +12,6 @@ import java.net.URL;
 @Service
 public class JsonUtils {
 
-    public JsonNode getJsonFromString(String json) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readTree(json);
-    }
-
     private JsonNode readJsonFile(URL path) {
         if (path != null) {
             ObjectMapper mapper = new ObjectMapper();
@@ -30,9 +25,14 @@ public class JsonUtils {
         return null;
     }
 
-    public JsonNode getTestSetField(String templateName, String testSet){
+    private JsonNode getTestSetField(String templateName, String testSet){
         URL path = ClassLoader.getSystemResource("templates/" + templateName + "/testdata/" + testSet + ".json");
         return readJsonFile(path);
+    }
+
+    public JsonNode getJsonFromString(String json) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readTree(json);
     }
 
     public JsonNode extractInterleavingFields(String templateName, JsonNode jsonContent, boolean useTestSet){
