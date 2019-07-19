@@ -34,7 +34,8 @@ public class TemplateController {
         return templateManagementService.returnLetterResponse(
                 format,
                 templateName,
-                payload
+                payload,
+                true
         );
     }
 
@@ -45,7 +46,8 @@ public class TemplateController {
         return templateManagementService.saveAndReturnTemplateResponse(
                 format,
                 templateName,
-                payload
+                payload,
+                true
         );
     }
 
@@ -56,7 +58,8 @@ public class TemplateController {
         return templateManagementService.returnLetterResponse(
                 format,
                 templateName,
-                payload
+                payload,
+                false
         );
     }
 

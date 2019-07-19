@@ -108,16 +108,17 @@ public class TemplateService {
         return content;
     }
 
-    public ResponseEntity returnLetterResponse(String format, String templateName, String payload){
+    public ResponseEntity returnLetterResponse(String format, String templateName, String payload, boolean useTestSet){
         try{
             JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
 
-            JsonNode testSet = jsonUtils.getTestSetField(
+            JsonNode valueFields = jsonUtils.extractInterleavingFields(
                     templateName,
-                    jsonContent.get("testSetName").textValue()
+                    jsonContent,
+                    useTestSet
             );
 
-            return returnConvertedLetter(templateName, testSet, format);
+            return returnConvertedLetter(templateName, valueFields, format);
         }
         catch (IOException e){
             e.printStackTrace();
@@ -126,20 +127,22 @@ public class TemplateService {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity saveAndReturnTemplateResponse(String format, String templateName, String payload) {
+    public ResponseEntity saveAndReturnTemplateResponse(String format, String templateName, String payload, boolean useTestSet) {
         try{
             JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
+
             fileUtils.saveTemplateFile(
                     templateName,
                     jsonContent.get("markdownContent").textValue()
             );
 
-            JsonNode testSet = jsonUtils.getTestSetField(
+            JsonNode valueFields = jsonUtils.extractInterleavingFields(
                     templateName,
-                    jsonContent.get("testSetName").textValue()
+                    jsonContent,
+                    useTestSet
             );
 
-            return returnConvertedLetter(templateName, testSet, format);
+            return returnConvertedLetter(templateName, valueFields, format);
         }
         catch (IOException e){
             e.printStackTrace();

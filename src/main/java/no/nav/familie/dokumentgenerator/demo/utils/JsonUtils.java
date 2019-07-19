@@ -34,4 +34,18 @@ public class JsonUtils {
         URL path = ClassLoader.getSystemResource("templates/" + templateName + "/testdata/" + testSet + ".json");
         return readJsonFile(path);
     }
+
+    public JsonNode extractInterleavingFields(String templateName, JsonNode jsonContent, boolean useTestSet){
+        JsonNode valueFields;
+        if(useTestSet){
+            valueFields = getTestSetField(
+                    templateName,
+                    jsonContent.get("testSetName").textValue()
+            );
+        }
+        else{
+            return jsonContent.get("interleavingFields");
+        }
+        return valueFields;
+    }
 }
