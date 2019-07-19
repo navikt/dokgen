@@ -1,6 +1,6 @@
 package no.nav.familie.dokumentgenerator.demo;
 
-import no.nav.familie.dokumentgenerator.demo.model.TemplateService;
+import no.nav.familie.dokumentgenerator.demo.services.TemplateService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

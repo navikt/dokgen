@@ -1,16 +1,10 @@
 package no.nav.familie.dokumentgenerator.demo.controller;
 
-import no.nav.familie.dokumentgenerator.demo.model.TemplateService;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.safety.Whitelist;
-import org.springframework.http.HttpHeaders;
+import no.nav.familie.dokumentgenerator.demo.services.TemplateService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 
 @CrossOrigin(origins = {"http://localhost:3000"})
@@ -23,52 +17,48 @@ public class TemplateController {
         this.templateManagementService = templateManagementService;
     }
 
-    @GetMapping("/maler")
+    @GetMapping("/mal/alle")
     public List<String> getAllTemplateNames() {
+        System.out.println("templateManagementService.getTemplateSuggestions() = " + templateManagementService.getTemplateSuggestions());
         return templateManagementService.getTemplateSuggestions();
     }
 
-    @GetMapping(value = "maler/markdown/{templateName}", produces = "text/plain")
+    @GetMapping(value = "/mal/{templateName}", produces = "text/plain")
     public String getTemplateContentInMarkdown(@PathVariable String templateName) {
         return templateManagementService.getMarkdownTemplate(templateName);
     }
 
-    @GetMapping(value = "maler/html/{templateName}", produces = "text/html")
-    public String getTemplateContentInHtml(@PathVariable String templateName) {
-        String compiledTemplate = templateManagementService.getCompiledTemplate(templateName);
-        return templateManagementService.convertMarkdownTemplateToHtml(compiledTemplate);
+    @PostMapping(value = "/mal/{format}/{templateName}", consumes = "application/json")
+    public ResponseEntity setTemplateContent(@PathVariable String format,
+                                             @PathVariable String templateName,
+                                             @RequestBody String payload) {
+        return templateManagementService.returnLetterResponse(
+                format,
+                templateName,
+                payload
+        );
     }
 
-    @PostMapping(value = "maler/{templateName}", consumes = "text/plain")
-    public ResponseEntity<String> setTemplateContent(@PathVariable String templateName, @RequestBody String content) {
-        try {
-            Document.OutputSettings settings = new Document.OutputSettings();
-            settings.prettyPrint(false);
-            String strippedHtmlSyntax = Jsoup.clean(content, "", Whitelist.none(), settings);
-            templateManagementService.writeToFile(templateName, strippedHtmlSyntax);
-            return new ResponseEntity<>(templateManagementService.getCompiledTemplate(templateName), HttpStatus.OK);
-        } catch (IOException e) {
-            System.out.println("Klarte ikke å skrive til fil");
-            e.printStackTrace();
-        }
-        return null;
+    @PutMapping(value = "/mal/{format}/{templateName}", consumes = "application/json")
+    public ResponseEntity updateTemplateContent(@PathVariable String format,
+                                                @PathVariable String templateName,
+                                                @RequestBody String payload) {
+        return templateManagementService.saveAndReturnTemplateResponse(
+                format,
+                templateName,
+                payload
+        );
     }
 
-    @GetMapping(value = "maler/pdf/{templateName}", produces = "application/pdf")
-    public ResponseEntity<byte[]> getPDF(@PathVariable String templateName) {
-        byte[] pdfContent = templateManagementService.getPDF(templateName);
-
-        if (pdfContent == null) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        String filename = templateName + ".pdf";
-        headers.setContentDispositionFormData("inline", filename);
-        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-
-        return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+    @PostMapping(value = "/brev/{format}/{templateName}", consumes = "application/json")
+    public ResponseEntity getTemplateContentInHtml(@PathVariable String format,
+                                                   @PathVariable String templateName,
+                                                   @RequestBody String payload) {
+        return templateManagementService.returnLetterResponse(
+                format,
+                templateName,
+                payload
+        );
     }
 
     @GetMapping(value = "maler/{templateName}/testdata")
