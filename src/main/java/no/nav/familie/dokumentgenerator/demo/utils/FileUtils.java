@@ -61,7 +61,7 @@ public class FileUtils {
         BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
                         ClassLoader.getSystemResource
-                                ("templates/" + tempName).getPath(), false));
+                                ("templates/" + name + "/" + tempName).getPath(), false));
         writer.append(content);
         writer.close();
     }
