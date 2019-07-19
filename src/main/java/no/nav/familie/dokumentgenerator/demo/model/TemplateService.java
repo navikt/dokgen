@@ -50,7 +50,6 @@ public class TemplateService {
     private Handlebars handlebars;
     private String pdfGenURl = "http://localhost:8090/api/v1/genpdf/html/";
 
-
     private Handlebars getHandlebars() {
         return handlebars;
     }
@@ -59,16 +58,61 @@ public class TemplateService {
         this.handlebars = handlebars;
     }
 
-    private Template getTemplate(String templateName) throws IOException {
-        return this.getHandlebars().compile(templateName);
+    private Template compileTemplate(String templateName) {
+        try {
+            return this.getHandlebars().compile(getTemplatePath(templateName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    private String getTemplatePath(String templateName) {
+        return String.format("templates/%1$s/%1$s.hbs", templateName);
     }
 
     private String getPdfGenURl() {
         return pdfGenURl;
     }
 
-    private URL getJsonPath(String templateName) {
-        return ClassLoader.getSystemResource("json/" + templateName);
+    private Node parseDocument(String content) {
+        return getMarkdownToHtmlParser().parse(content);
+    }
+
+    private String renderToHTML(Node document) {
+        return getHtmlRenderer().render(document);
+    }
+
+    private List<String> getResourceNames(String path) {
+        List<String> resourceNames = new ArrayList<>();
+        File folder;
+        File[] listOfFiles;
+        try {
+            folder = new ClassPathResource(path).getFile();
+            listOfFiles = folder.listFiles();
+
+            if (listOfFiles == null) {
+                return null;
+            }
+
+            for (File file : listOfFiles) {
+                resourceNames.add(FilenameUtils.getBaseName(file.getName()));
+            }
+
+            return resourceNames;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Parser getMarkdownToHtmlParser() {
+        return Parser.builder().build();
+    }
+
+    private HtmlRenderer getHtmlRenderer() {
+        return HtmlRenderer.builder().build();
     }
 
     private URL getCssPath(String cssName) {
@@ -113,36 +157,8 @@ public class TemplateService {
         return sb.toString();
     }
 
-    private String getCompiledTemplate(String templateName, JsonNode interleavingFields) {
-        try {
-            Template template = getTemplate(templateName);
-            return template.apply(insertTemplateContent(interleavingFields));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private Context insertTemplateContent(JsonNode model) {
-        return Context
-                .newBuilder(model)
-                .resolver(JsonNodeValueResolver.INSTANCE,
-                        JavaBeanValueResolver.INSTANCE,
-                        FieldValueResolver.INSTANCE,
-                        MapValueResolver.INSTANCE,
-                        MethodValueResolver.INSTANCE
-                ).build();
-    }
-
-    private Parser getMarkdownParser() {
-        return Parser.builder().build();
-    }
-
-    private HtmlRenderer getHtmlRenderer() {
-        return HtmlRenderer.builder().build();
-    }
-
     private Document appendHtmlMetadata(String html) {
+
         Document document = Jsoup.parse(html);
         Element head = document.head();
         String css = getCssFile("main.css");
@@ -153,21 +169,53 @@ public class TemplateService {
         return document;
     }
 
-    private String convertMarkdownTemplateToHtml(String content) {
-        Parser parser = getMarkdownParser();
-        Node document = parser.parse(content);
-        HtmlRenderer renderer = getHtmlRenderer();
-        return renderer.render(document);
+    private String getCompiledTemplate(String templateName, JsonNode interleavingFields) {
+        try {
+            Template template = compileTemplate(templateName);
+            if(template != null){
+                return template.apply(insertTestData(interleavingFields));
+            }
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    private byte[] generatePDF(String templateName, String convertedTemplate) {
-        Document document = appendHtmlMetadata(convertedTemplate);
+    private Context insertTestData(JsonNode model) {
+        return Context
+                .newBuilder(model)
+                .resolver(JsonNodeValueResolver.INSTANCE,
+                        JavaBeanValueResolver.INSTANCE,
+                        FieldValueResolver.INSTANCE,
+                        MapValueResolver.INSTANCE,
+                        MethodValueResolver.INSTANCE
+                ).build();
+    }
 
+    private void writeToFile(String name, String content) throws IOException {
+        String tempName = name + ".hbs";
+        BufferedWriter writer = new BufferedWriter(
+                new FileWriter(
+                        ClassLoader.getSystemResource
+                                ("templates/" + tempName).getPath(), false));
+        writer.append(content);
+        writer.close();
+    }
+
+    private String convertMarkdownTemplateToHtml(String content) {
+        Node document = parseDocument(content);
+        String html = renderToHTML(document);
+        Document htmlDocument = appendHtmlMetadata(html);
+        return htmlDocument.html();
+    }
+
+    private byte[] generatePDF(String html, String applicationName) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(getPdfGenURl() + templateName))
+                .uri(URI.create(getPdfGenURl() + applicationName))
                 .header("Content-Type", "text/html;charset=UTF-8")
-                .POST(HttpRequest.BodyPublishers.ofString(document.html()))
+                .POST(HttpRequest.BodyPublishers.ofString(html))
                 .build();
 
         try {
@@ -181,48 +229,34 @@ public class TemplateService {
         return  null;
     }
 
-    private void writeToFile(String name, String content) throws IOException {
-        String tempName = name + ".hbs";
-        BufferedWriter writer = new BufferedWriter(
-                new FileWriter(
-                        ClassLoader.getSystemResource
-                                ("templates/" + tempName).getPath(), false));
-        writer.append(content);
-        writer.close();
-    }
 
     @PostConstruct
     public void loadHandlebarTemplates() {
-        TemplateLoader loader = new ClassPathTemplateLoader("/templates", ".hbs");
+        TemplateLoader loader = new ClassPathTemplateLoader("/", null);
         setHandlebars(new Handlebars(loader));
     }
 
     public List<String> getTemplateSuggestions() {
-        List<String> templateNames = new ArrayList<>();
-        File folder;
-        File[] listOfFiles;
+        return getResourceNames("templates");
+    }
+
+    public String getMarkdownTemplate(String templateName) {
+        String content = null;
+        String path = getTemplatePath(templateName);
         try {
-            folder = new ClassPathResource("templates").getFile();
-            listOfFiles = folder.listFiles();
-
-            if (listOfFiles == null) {
-                return null;
-            }
-
-            for (File file : listOfFiles) {
-                templateNames.add(FilenameUtils.getBaseName(file.getName()));
-            }
-
-            return templateNames;
+            content = new String(Files.readAllBytes(Paths.get(ClassLoader.getSystemResource(path).toURI())));
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("Kunne ikke åpne template malen");
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            System.out.println("Kunne ikke finne handlebars malen");
         }
-
-        return null;
+        return content;
     }
 
     public JsonNode getTestSetField(String templateName, String testSet){
-        URL path = getJsonPath(templateName + "/" + testSet + ".json");
+        URL path = ClassLoader.getSystemResource("templates/" + templateName + "/testdata/" + testSet + ".json");
         return readJsonFile(path);
     }
 
@@ -231,21 +265,10 @@ public class TemplateService {
         return mapper.readTree(json);
     }
 
-    public String getUncompiledTemplate(String templateName) {
-        try{
-            Template template = getTemplate(templateName);
-            return template.text();
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format){
+    public ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format) {
         String compiledTemplate = getCompiledTemplate(templateName, interleavingFields);
 
-        if(format.equals("html")){
+        if (format.equals("html")) {
             String html = convertMarkdownTemplateToHtml(compiledTemplate);
 
             Document document = Jsoup.parse(html);
@@ -256,10 +279,9 @@ public class TemplateService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_HTML);
             return new ResponseEntity<>(convertMarkdownTemplateToHtml(html), headers, HttpStatus.OK);
-        }
-        else if(format.equals("pdf") || format.equals("pdfa")){
+        } else if (format.equals("pdf") || format.equals("pdfa")) {
             String htmlConvertedTemplate = convertMarkdownTemplateToHtml(compiledTemplate);
-            byte[] pdfContent = generatePDF(templateName, htmlConvertedTemplate);
+            byte[] pdfContent = generatePDF(htmlConvertedTemplate, templateName);
 
             if (pdfContent == null) {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -275,7 +297,7 @@ public class TemplateService {
         return null;
     }
 
-    public void saveTemplateFile(String templateName, String markdownContent){
+    public void saveTemplateFile(String templateName, String markdownContent) {
         Document.OutputSettings settings = new Document.OutputSettings();
         settings.prettyPrint(false);
         String strippedHtmlSyntax = Jsoup.clean(
@@ -285,11 +307,15 @@ public class TemplateService {
                 settings
         );
 
-        try{
+        try {
             writeToFile(templateName, strippedHtmlSyntax);
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<String> getTestdataNames(String templateName) {
+        String path = String.format("templates/%s/testdata/", templateName);
+        return getResourceNames(path);
     }
 }

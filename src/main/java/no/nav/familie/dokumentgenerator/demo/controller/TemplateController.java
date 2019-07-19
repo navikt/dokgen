@@ -5,6 +5,7 @@ import no.nav.familie.dokumentgenerator.demo.model.TemplateService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,25 +27,31 @@ public class TemplateController {
         return templateManagementService.getTemplateSuggestions();
     }
 
-    @GetMapping(value = "/mal", produces = "text/plain")
-    public String getTemplateContentInMarkdown(@RequestParam String templateName) {
-        return templateManagementService.getUncompiledTemplate(templateName);
+    @GetMapping(value = "/mal/{templateName}", produces = "text/plain")
+    public String getTemplateContentInMarkdown(@PathVariable String templateName) {
+        return templateManagementService.getMarkdownTemplate(templateName);
     }
 
-    @PostMapping(value = "/mal", consumes = "application/json")
-    public ResponseEntity setTemplateContent(@RequestBody String payload) {
-
+    @PostMapping(value = "/mal/{format}/{templateName}", consumes = "application/json")
+    public ResponseEntity setTemplateContent(@PathVariable String format,
+                                             @PathVariable String templateName,
+                                             @RequestBody String payload) {
         try {
             JsonNode jsonContent = templateManagementService.getJsonFromString(payload);
-            templateManagementService.saveTemplateFile(
-                    jsonContent.get("templateName").textValue(),
+            /*templateManagementService.saveTemplateFile(
+                    templateName,
                     jsonContent.get("markdownContent").textValue()
+            );*/
+
+            JsonNode testSet = templateManagementService.getTestSetField(
+                    templateName,
+                    jsonContent.get("testSetName").textValue()
             );
 
             return templateManagementService.returnConvertedLetter(
-                    jsonContent.get("templateName").asText(),
-                    jsonContent.get("interleavingFields"),
-                    jsonContent.get("format").asText()
+                    templateName,
+                    testSet,
+                    format
             );
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,20 +59,28 @@ public class TemplateController {
         return null;
     }
 
-    @PutMapping(value = "/mal", consumes = "application/json")
-    public ResponseEntity updateTemplateContent(@RequestBody String payload) {
-
+    @PutMapping(value = "/mal/{format}/{templateName}", consumes = "application/json")
+    public ResponseEntity updateTemplateContent(@PathVariable String format,
+                                                @PathVariable String templateName,
+                                                @RequestBody String payload) {
         try {
             JsonNode jsonContent = templateManagementService.getJsonFromString(payload);
             templateManagementService.saveTemplateFile(
-                    jsonContent.get("templateName").textValue(),
+                    templateName,
                     jsonContent.get("markdownContent").textValue()
             );
 
+            JsonNode testSet = templateManagementService.getTestSetField(
+                    templateName,
+                    jsonContent.get("testSetName").textValue()
+            );
+
+            System.out.println(testSet);
+
             return templateManagementService.returnConvertedLetter(
-                    jsonContent.get("templateName").asText(),
-                    jsonContent.get("interleavingFields"),
-                    jsonContent.get("format").asText()
+                    templateName,
+                    testSet,
+                    format
             );
         } catch (IOException e) {
             e.printStackTrace();
@@ -73,19 +88,32 @@ public class TemplateController {
         return null;
     }
 
-    @PostMapping(value = "/brev")
-    public ResponseEntity getTemplateContentInHtml(@RequestBody String payload) {
+    @PostMapping(value = "/brev/{format}/{templateName}", consumes = "application/json")
+    public ResponseEntity getTemplateContentInHtml(@PathVariable String format,
+                                                   @PathVariable String templateName,
+                                                   @RequestBody String payload) {
         try{
             JsonNode jsonContent = templateManagementService.getJsonFromString(payload);
             return templateManagementService.returnConvertedLetter(
-                    jsonContent.get("templateName").asText(),
+                    templateName,
                     jsonContent.get("interleavingFields"),
-                    jsonContent.get("format").asText()
+                    format
             );
         }
         catch (IOException e){
             e.printStackTrace();
         }
         return null;
+    }
+
+    @GetMapping(value = "maler/{templateName}/testdata")
+    public ResponseEntity<List<String>> getTestData(@PathVariable String templateName) {
+        List<String> response = templateManagementService.getTestdataNames(templateName);
+
+        if (response == null) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<>(templateManagementService.getTestdataNames(templateName), HttpStatus.OK);
     }
 }
