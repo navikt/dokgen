@@ -22,19 +22,25 @@ public class GenerateUtils {
         return pdfGenURl;
     }
 
-    public Document appendHtmlMetadata(String html) {
+    public void addDocumentParts(Document document){
+        Element body = document.body();
+        body.prepend("<div id=\"header\">Header</div>");
+        body.append("<div id=\"footer\">Footer</div>");
+    }
 
-        Document document = Jsoup.parse(html);
+    public Document appendHtmlMetadata(String html, String cssName) {
+        String convertedTemplate = convertMarkdownTemplateToHtml(html);
+
+        Document document = Jsoup.parse(("<div id=\"content\">" + convertedTemplate + "</div>"));
         Element head = document.head();
-        String css = FileUtils.getCssFile("main.css");
 
         head.append("<meta charset=\"UTF-8\">");
-        head.append("\n<style>\n" + css + "\n</style>");
+        head.append("<link rel=\"stylesheet\" href=\"http://localhost:8080/css/" + cssName + ".css\">");
 
         return document;
     }
 
-    public String convertMarkdownTemplateToHtml(String content) {
+    private String convertMarkdownTemplateToHtml(String content) {
         Node document = parseDocument(content);
         return renderToHTML(document);
     }
@@ -55,7 +61,7 @@ public class GenerateUtils {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        return  null;
+        return null;
     }
 
     private Node parseDocument(String content) {

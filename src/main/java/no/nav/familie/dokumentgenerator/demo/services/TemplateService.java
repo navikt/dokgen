@@ -92,6 +92,23 @@ public class TemplateService {
                 ).build();
     }
 
+    private HttpHeaders genHtmlHeaders(){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_HTML);
+
+        return headers;
+    }
+
+    private HttpHeaders genPdfHeaders(String templateName){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        String filename = templateName + ".pdf";
+        headers.setContentDispositionFormData("inline", filename);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return headers;
+    }
+
     @PostConstruct
     public void loadHandlebarTemplates() {
         TemplateLoader loader = new ClassPathTemplateLoader("/", null);
@@ -165,34 +182,23 @@ public class TemplateService {
 
     private ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format) {
         String compiledTemplate = getCompiledTemplate(templateName, interleavingFields);
+        if(compiledTemplate == null){
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
 
         if (format.equals("html")) {
-            if(compiledTemplate == null){
-                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-            }
-            Document document = Jsoup.parse((compiledTemplate));
-            Element head = document.head();
-            head.append("<meta charset=\"UTF-8\">");
-            head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.TEXT_HTML);
-            return new ResponseEntity<>(generateUtils.convertMarkdownTemplateToHtml((compiledTemplate)), headers, HttpStatus.OK);
+            Document styledHtml = generateUtils.appendHtmlMetadata(compiledTemplate, "html");
+            return new ResponseEntity<>(styledHtml.html(), genHtmlHeaders(), HttpStatus.OK);
         } else if (format.equals("pdf") || format.equals("pdfa")) {
-            String htmlConvertedTemplate = generateUtils.convertMarkdownTemplateToHtml(compiledTemplate);
-            String styledHtml = generateUtils.appendHtmlMetadata(htmlConvertedTemplate).html();
-            byte[] pdfContent = generateUtils.generatePDF(styledHtml, templateName);
+            Document styledHtml = generateUtils.appendHtmlMetadata(compiledTemplate, "pdf");
+            generateUtils.addDocumentParts(styledHtml);
+            byte[] pdfContent = generateUtils.generatePDF(styledHtml.html(), templateName);
 
             if (pdfContent == null) {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            String filename = templateName + ".pdf";
-            headers.setContentDispositionFormData("inline", filename);
-            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-            return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+            return new ResponseEntity<>(pdfContent, genPdfHeaders(templateName), HttpStatus.OK);
         }
         return null;
     }
