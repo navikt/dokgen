@@ -1,5 +1,6 @@
 package no.nav.familie.dokumentgenerator.demo.utils;
 
+import org.apache.commons.io.IOUtils;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -8,8 +9,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -23,9 +26,20 @@ public class GenerateUtils {
     }
 
     public void addDocumentParts(Document document){
-        Element body = document.body();
-        body.prepend("<div id=\"header\">Header</div>");
-        body.append("<div id=\"footer\">Footer</div>");
+        String resourceLocation = "src/main/resources/assets/htmlParts/";
+        try{
+            FileInputStream headerStream = new FileInputStream(resourceLocation + "headerTemplate.html");
+            String header = IOUtils.toString(headerStream, "UTF-8");
+            FileInputStream footerStream = new FileInputStream(resourceLocation + "footerTemplate.html");
+            String footer = IOUtils.toString(footerStream, "UTF-8");
+
+            Element body = document.body();
+            body.prepend("<div id=\"header\">" + header + "</div>");
+            body.append("<div id=\"footer\">" + footer + "</div>");
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     public Document appendHtmlMetadata(String html, String cssName) {
