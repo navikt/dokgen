@@ -111,7 +111,7 @@ public class FileUtils {
     }
 
     public void createNewTestSet(String templateName, String testSetName, String payload) {
-        String path = "templates/" + templateName + "/testdata/" + testSetName + ".json";
+        String path = "src/main/resources/templates/" + templateName + "/testdata/" + testSetName + ".json";
         Path newFilePath = Paths.get(path);
         try {
             Files.createFile(newFilePath);
