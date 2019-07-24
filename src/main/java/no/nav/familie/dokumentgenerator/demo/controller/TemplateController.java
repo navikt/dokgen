@@ -73,4 +73,14 @@ public class TemplateController {
 
         return new ResponseEntity<>(templateManagementService.getTestdataNames(templateName), HttpStatus.OK);
     }
+
+    @GetMapping(value = "maler/{templateName}/tomtTestSett", produces = "application/json")
+    public ResponseEntity<String> getEmptyTestSet(@PathVariable String templateName) {
+        return new ResponseEntity<>(templateManagementService.getEmptyTestSet(templateName), HttpStatus.OK);
+    }
+
+    @PostMapping(value="maler/{templateName}/nyttTestSett", consumes = "application/json")
+    public void setNewTestSet(@PathVariable String templateName, @RequestBody String payload) {
+        System.out.println(payload);
+    }
 }

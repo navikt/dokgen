@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Service
 public class JsonUtils {
@@ -47,5 +49,17 @@ public class JsonUtils {
             return jsonContent.get("interleavingFields");
         }
         return valueFields;
+    }
+
+    public String getEmptyTestData(String templateName){
+        String path = "templates/" + templateName + "/TomtTestsett.json";
+        try {
+            return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(path).toURI())));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

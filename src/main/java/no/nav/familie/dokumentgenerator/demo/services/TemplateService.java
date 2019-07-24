@@ -201,4 +201,8 @@ public class TemplateService {
         String path = String.format("templates/%s/testdata/", templateName);
         return fileUtils.getResourceNames(path);
     }
+
+    public String getEmptyTestSet(String templateName) {
+        return jsonUtils.getEmptyTestData(templateName);
+    }
 }
