@@ -82,5 +82,6 @@ public class TemplateController {
     @PostMapping(value="maler/{templateName}/nyttTestSett", consumes = "application/json")
     public void setNewTestSet(@PathVariable String templateName, @RequestBody String payload) {
         System.out.println(payload);
+        templateManagementService.createNewTestSet(templateName, "temp", payload);
     }
 }

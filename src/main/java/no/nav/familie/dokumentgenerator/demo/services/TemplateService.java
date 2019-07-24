@@ -205,4 +205,8 @@ public class TemplateService {
     public String getEmptyTestSet(String templateName) {
         return jsonUtils.getEmptyTestData(templateName);
     }
+
+    public void createNewTestSet(String templateName, String testSetName, String payload) {
+        fileUtils.createNewTestSet(templateName, testSetName ,payload);
+    }
 }

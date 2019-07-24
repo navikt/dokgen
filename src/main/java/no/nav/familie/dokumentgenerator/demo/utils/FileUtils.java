@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,5 +108,15 @@ public class FileUtils {
         }
 
         return sb.toString();
+    }
+
+    public void createNewTestSet(String templateName, String testSetName, String payload) {
+        String path = "templates/" + templateName + "/testdata/" + testSetName + ".json";
+        Path newFilePath = Paths.get(path);
+        try {
+            Files.createFile(newFilePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
