@@ -33,8 +33,8 @@ public class GenerateUtils {
             String footer = IOUtils.toString(footerStream, "UTF-8");
 
             Element body = document.body();
-            body.prepend("<div id=\"header\">" + header + "</div>");
-            body.append("<div id=\"footer\">" + footer + "</div>");
+            body.prepend(header);
+            body.append(footer);
         }
         catch (IOException e){
             e.printStackTrace();
