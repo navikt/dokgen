@@ -206,7 +206,7 @@ public class TemplateService {
         return jsonUtils.getEmptyTestData(templateName);
     }
 
-    public void createNewTestSet(String templateName, String testSetName, String payload) {
-        fileUtils.createNewTestSet(templateName, testSetName ,payload);
+    public void createNewTestSet(String templateName, String testSetName, String testSetContent) {
+        fileUtils.createNewTestSet(templateName, testSetName , testSetContent);
     }
 }

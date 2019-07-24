@@ -1,6 +1,7 @@
 package no.nav.familie.dokumentgenerator.demo.controller;
 
 import no.nav.familie.dokumentgenerator.demo.services.TemplateService;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -81,7 +82,9 @@ public class TemplateController {
 
     @PostMapping(value="maler/{templateName}/nyttTestSett", consumes = "application/json")
     public void setNewTestSet(@PathVariable String templateName, @RequestBody String payload) {
-        System.out.println(payload);
-        templateManagementService.createNewTestSet(templateName, "temp", payload);
+        JSONObject obj = new JSONObject(payload);
+        String testSetName = obj.getString("name");
+        String testSetContent = obj.getString("content");
+        templateManagementService.createNewTestSet(templateName, testSetName, testSetContent);
     }
 }

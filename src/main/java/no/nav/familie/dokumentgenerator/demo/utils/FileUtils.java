@@ -110,7 +110,7 @@ public class FileUtils {
         return sb.toString();
     }
 
-    public void createNewTestSet(String templateName, String testSetName, String payload) {
+    public void createNewTestSet(String templateName, String testSetName, String testSetContent) {
         String path = "templates/" + templateName + "/testdata/" + testSetName + ".json";
         Path newFilePath = Paths.get(path);
         try {
