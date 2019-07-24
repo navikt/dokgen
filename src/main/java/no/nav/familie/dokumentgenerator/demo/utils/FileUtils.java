@@ -14,9 +14,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,12 +59,9 @@ public class FileUtils {
         return null;
     }
 
-    private void writeToFile(String name, String content) throws IOException {
-        String tempName = name + ".hbs";
+    private void writeToFile(String templateName, String content, String path) throws IOException {
         BufferedWriter writer = new BufferedWriter(
-                new FileWriter(
-                        ClassLoader.getSystemResource
-                                ("templates/" + name + "/" + tempName).getPath(), false));
+                new FileWriter(Paths.get(path).toString(), false));
         writer.append(content);
         writer.close();
     }
@@ -78,7 +77,7 @@ public class FileUtils {
         );
 
         try {
-            writeToFile(templateName, strippedHtmlSyntax);
+            writeToFile(templateName, strippedHtmlSyntax, "templates/" + templateName + "/" + templateName + ".hbs");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -110,11 +109,14 @@ public class FileUtils {
         return sb.toString();
     }
 
+
     public void createNewTestSet(String templateName, String testSetName, String testSetContent) {
-        String path = "templates/" + templateName + "/testdata/" + testSetName + ".json";
+        String path = "src/main/resources/templates/" + templateName + "/testdata/" + testSetName + ".json";
+        String pathForWriting = "templates/" + templateName + "/testdata/" + testSetName + ".json";
         Path newFilePath = Paths.get(path);
         try {
-            Files.createFile(newFilePath);
+            //Files.createFile(newFilePath);
+            Files.write(newFilePath, testSetContent.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
         } catch (IOException e) {
             e.printStackTrace();
         }
