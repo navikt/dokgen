@@ -59,24 +59,24 @@ public class JsonUtils {
         String statusMessage = null;
         String jsonSchemaLocation = "templates/" + templateName + "/testdata/" + templateName + ".schema.json";
         try (InputStream inputStream = ClassLoader.getSystemResourceAsStream(jsonSchemaLocation)) {
-            if (inputStream != null) {
-                JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
-                Schema schema = SchemaLoader.load(rawSchema);
-                try {
-                    schema.validate(new JSONObject(json)); // throws a ValidationException if this object is invalid
-                    statusMessage = "{ \"status\": \"Suksess!\" }";
-                } catch (ValidationException e)
-                {
-                    JSONObject jsonObject = e.toJSON();
-                    return jsonObject.toString();
-                }
-            } else {
-                System.out.println("Kan ikke åpne JSON schema.");
+
+            if (inputStream == null) {
+                return null;
+            }
+
+            JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
+            Schema schema = SchemaLoader.load(rawSchema);
+
+            try {
+                schema.validate(new JSONObject(json)); // throws a ValidationException if this object is invalid
+                statusMessage = "{ \"status\": \"Suksess!\" }";
+            } catch (ValidationException e) {
+                JSONObject jsonObject = e.toJSON();
+                return jsonObject.toString();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return statusMessage;
     }
 
