@@ -1,28 +1,24 @@
 package no.nav.familie.dokumentgenerator.demo.utils;
 
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
+
 import org.apache.commons.io.IOUtils;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.jsoup.Jsoup;
+import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 
 @Service
 public class GenerateUtils {
-    private String pdfGenURl = "http://localhost:8090/api/v1/genpdf/html/";
-
-    private String getPdfGenURl() {
-        return pdfGenURl;
-    }
 
     public void addDocumentParts(Document document){
         String resourceLocation = "src/main/resources/assets/htmlParts/";
@@ -53,28 +49,30 @@ public class GenerateUtils {
         return document;
     }
 
+    public void generatePDF(Document html, ByteArrayOutputStream outputStream) {
+        org.w3c.dom.Document doc = new W3CDom().fromJsoup(html);
+
+        PdfRendererBuilder builder = new PdfRendererBuilder();
+        try{
+            byte[] colorProfile = IOUtils.toByteArray(GenerateUtils.class.getResourceAsStream("/sRGB2014.icc"));
+
+            builder
+                    .useColorProfile(colorProfile)
+                    .useSVGDrawer(new BatikSVGDrawer())
+                    .usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_2_U)
+                    .withW3cDocument(doc, "")
+                    .toStream(outputStream)
+                    .buildPdfRenderer()
+                    .createPDF();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
     private String convertMarkdownTemplateToHtml(String content) {
         Node document = parseDocument(content);
         return renderToHTML(document);
-    }
-
-    public byte[] generatePDF(String html, String applicationName) {
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(getPdfGenURl() + applicationName))
-                .header("Content-Type", "text/html;charset=UTF-8")
-                .POST(HttpRequest.BodyPublishers.ofString(html))
-                .build();
-
-        try {
-            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            if (response.statusCode() == 200) {
-                return response.body();
-            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     private Node parseDocument(String content) {
