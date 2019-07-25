@@ -1,5 +1,6 @@
 package no.nav.familie.dokumentgenerator.demo.utils;
 
+import org.apache.commons.io.IOUtils;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -8,6 +9,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -22,19 +24,36 @@ public class GenerateUtils {
         return pdfGenURl;
     }
 
-    public Document appendHtmlMetadata(String html) {
+    public void addDocumentParts(Document document){
+        String resourceLocation = "src/main/resources/assets/htmlParts/";
+        try{
+            FileInputStream headerStream = new FileInputStream(resourceLocation + "headerTemplate.html");
+            String header = IOUtils.toString(headerStream, "UTF-8");
+            FileInputStream footerStream = new FileInputStream(resourceLocation + "footerTemplate.html");
+            String footer = IOUtils.toString(footerStream, "UTF-8");
 
-        Document document = Jsoup.parse(html);
+            Element body = document.body();
+            body.prepend(header);
+            body.append(footer);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public Document appendHtmlMetadata(String html, String cssName) {
+        String convertedTemplate = convertMarkdownTemplateToHtml(html);
+
+        Document document = Jsoup.parse(("<div id=\"content\">" + convertedTemplate + "</div>"));
         Element head = document.head();
-        String css = FileUtils.getCssFile("main.css");
 
         head.append("<meta charset=\"UTF-8\">");
-        head.append("\n<style>\n" + css + "\n</style>");
+        head.append("<link rel=\"stylesheet\" href=\"http://localhost:8080/css/" + cssName + ".css\">");
 
         return document;
     }
 
-    public String convertMarkdownTemplateToHtml(String content) {
+    private String convertMarkdownTemplateToHtml(String content) {
         Node document = parseDocument(content);
         return renderToHTML(document);
     }
@@ -55,7 +74,7 @@ public class GenerateUtils {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        return  null;
+        return null;
     }
 
     private Node parseDocument(String content) {
