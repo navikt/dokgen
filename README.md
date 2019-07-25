@@ -2,10 +2,11 @@
 
 ## Krav
 - OpenJDK 11
-- PDFGen kjørende lokalt på maskinen som lytter på port 8090
+- [Maven](https://maven.apache.org/)
+- PDFGen kjørende lokalt på maskinen som lytter på port 8090 (Vil bli erstattet med intern PDF-generering)
 
 ## Kom i gang
-- Importer prosjektet som et Maven prosjekt og start DemoApplication
+Klon repositoriet, navigér til prosjektets mappe som inneholder `pom.xml` og kjør `mvn spring-boot:run` for å starte applikasjonen. 
 
 ## Endepunkter
 `GET /mal/alle`: Henter alle malforslagene som ligger i `resources/templates`

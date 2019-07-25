@@ -11,25 +11,15 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 
 @Service
 public class FileUtils {
 
     public String getTemplatePath(String templateName) {
         return String.format("templates/%1$s/%1$s.hbs", templateName);
-    }
-
-    private static URL getCssPath(String cssName) {
-        return ClassLoader.getSystemResource("static/css/" + cssName);
     }
 
     public List<String> getResourceNames(String path) {
@@ -81,31 +71,5 @@ public class FileUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    static String getCssFile(String fileName) {
-        URI filePath = null;
-        try{
-            filePath = getCssPath(fileName).toURI();
-        }
-        catch (URISyntaxException e){
-            e.printStackTrace();
-        }
-
-        StringBuilder sb = new StringBuilder();
-        List<String> stringList = new ArrayList<>();
-        if(filePath != null){
-            try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
-                stringList = stream.collect(Collectors.toList());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        for(String line : stringList){
-            sb.append(line);
-        }
-
-        return sb.toString();
     }
 }
