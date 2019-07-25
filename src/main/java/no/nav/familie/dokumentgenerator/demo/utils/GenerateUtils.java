@@ -1,5 +1,6 @@
 package no.nav.familie.dokumentgenerator.demo.utils;
 
+import com.openhtmltopdf.extend.FSSupplier;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 
@@ -13,9 +14,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 
 @Service
 public class GenerateUtils {
@@ -58,6 +57,14 @@ public class GenerateUtils {
 
             builder
                     .useColorProfile(colorProfile)
+                    .useFont(
+                            new File("src/main/resources/assets/fonts/fontpack/SourceSansPro-Regular.ttf"),
+                            "Source Sans Pro"
+                    )
+                    .useFont(
+                            new File("src/main/resources/assets/fonts/fontpack/SourceSansPro-Bold.ttf"),
+                            "Source Sans Pro"
+                    )
                     .useSVGDrawer(new BatikSVGDrawer())
                     .usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_2_U)
                     .withW3cDocument(doc, "")
