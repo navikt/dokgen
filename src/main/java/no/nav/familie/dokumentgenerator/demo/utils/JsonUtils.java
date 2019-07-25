@@ -2,10 +2,16 @@ package no.nav.familie.dokumentgenerator.demo.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.ValidationException;
+import org.everit.json.schema.loader.SchemaLoader;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -48,4 +54,30 @@ public class JsonUtils {
         }
         return valueFields;
     }
+
+    public String validateTestData(String templateName, String json) {
+        String statusMessage = null;
+        String jsonSchemaLocation = "templates/" + templateName + "/testdata/" + templateName + ".schema.json";
+        try (InputStream inputStream = ClassLoader.getSystemResourceAsStream(jsonSchemaLocation)) {
+
+            if (inputStream == null) {
+                return null;
+            }
+
+            JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
+            Schema schema = SchemaLoader.load(rawSchema);
+
+            try {
+                schema.validate(new JSONObject(json)); // throws a ValidationException if this object is invalid
+                statusMessage = "{ \"status\": \"Suksess!\" }";
+            } catch (ValidationException e) {
+                JSONObject jsonObject = e.toJSON();
+                return jsonObject.toString();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return statusMessage;
+    }
+
 }

@@ -205,4 +205,8 @@ public class TemplateService {
         String path = String.format("templates/%s/testdata/", templateName);
         return fileUtils.getResourceNames(path);
     }
+
+    public String validateTestData(String name, String json) {
+        return jsonUtils.validateTestData(name, json);
+    }
 }
