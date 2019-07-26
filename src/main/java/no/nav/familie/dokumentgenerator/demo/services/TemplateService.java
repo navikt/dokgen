@@ -117,7 +117,7 @@ public class TemplateService {
     }
 
     public List<String> getTemplateSuggestions() {
-        return fileUtils.getResourceNames("templates");
+        return fileUtils.getResourceNames("./content/templates");
     }
 
     public String getMarkdownTemplate(String templateName) {
@@ -202,7 +202,7 @@ public class TemplateService {
     }
 
     public List<String> getTestdataNames(String templateName) {
-        String path = String.format("templates/%s/testdata/", templateName);
+        String path = String.format("./content/templates/%s/testdata/", templateName);
         return fileUtils.getResourceNames(path);
     }
 }

@@ -46,3 +46,17 @@ Klon repositoriet, navigér til prosjektets mappe som inneholder `pom.xml` og kj
 * Request body:
     * interleavingFields: Innflettingsfelt i JSON-format
     * markdownContent: Innholdet til markdown-malen (Vil fjernes)
+
+
+## Bygge og kjøre docker lokalt
+
+```
+mvn -B -Dfile.encoding=UTF-8 -DinstallAtEnd=true -DdeployAtEnd=true  -DskipTests clean install
+
+docker build -t famile-dokgen .
+
+docker run -p 8080:8080 -d --name famile-dokgen famile-dokgen 
+
+docker stop famile-dokgen; docker rm famile-dokgen
+```
+
