@@ -32,7 +32,7 @@ public class JsonUtils {
     }
 
     private JsonNode getTestSetField(String templateName, String testSet){
-        URL path = ClassLoader.getSystemResource("templates/" + templateName + "/testdata/" + testSet + ".json");
+        URL path = ClassLoader.getSystemResource("./content/templates/" + templateName + "/testdata/" + testSet + ".json");
         return readJsonFile(path);
     }
 
