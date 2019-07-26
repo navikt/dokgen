@@ -80,4 +80,18 @@ public class GenerateUtilsTests {
 
         assertTrue(runTest("minimal1", expectedBytes));
     }
+
+    @Test
+    public void testPdfGenerationWithSvg() throws IOException {
+        Document doc = getDocumentFromHtmlFixture("svg1");
+        doc.head().append("<meta charset=\"UTF-8\">");
+        doc.head().append("<link rel=\"stylesheet\" href=\"http://localhost:8080/css/pdf.css\">");
+        generateUtils.addDocumentParts(doc);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        generateUtils.generatePDF(doc, outputStream);
+        byte[] expectedBytes = outputStream.toByteArray();
+
+        assertTrue(runTest("svg1", expectedBytes));
+    }
 }
