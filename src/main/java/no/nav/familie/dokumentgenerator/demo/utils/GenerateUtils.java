@@ -1,6 +1,7 @@
 package no.nav.familie.dokumentgenerator.demo.utils;
 
 import com.openhtmltopdf.extend.FSSupplier;
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 
@@ -56,15 +57,28 @@ public class GenerateUtils {
             byte[] colorProfile = IOUtils.toByteArray(GenerateUtils.class.getResourceAsStream("/sRGB2014.icc"));
 
             builder
-                    .useColorProfile(colorProfile)
                     .useFont(
                             new File("src/main/resources/assets/fonts/fontpack/SourceSansPro-Regular.ttf"),
-                            "Source Sans Pro"
+                            "Source Sans Pro",
+                            400,
+                            BaseRendererBuilder.FontStyle.NORMAL,
+                            false
                     )
                     .useFont(
                             new File("src/main/resources/assets/fonts/fontpack/SourceSansPro-Bold.ttf"),
-                            "Source Sans Pro"
+                            "Source Sans Pro",
+                            700,
+                            BaseRendererBuilder.FontStyle.OBLIQUE,
+                            false
                     )
+                    .useFont(
+                            new File("src/main/resources/assets/fonts/fontpack/SourceSansPro-Italic.ttf"),
+                            "Source Sans Pro",
+                            400,
+                            BaseRendererBuilder.FontStyle.ITALIC,
+                            false
+                    )
+                    .useColorProfile(colorProfile)
                     .useSVGDrawer(new BatikSVGDrawer())
                     .usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_2_U)
                     .withW3cDocument(doc, "")
