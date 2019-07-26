@@ -4,9 +4,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
-import org.springframework.core.io.ClassPathResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -18,32 +18,22 @@ import java.util.List;
 @Service
 public class FileUtils {
 
+    private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class);
+
     public String getTemplatePath(String templateName) {
-        return String.format("templates/%1$s/%1$s.hbs", templateName);
+        return String.format("./content/templates/%1$s/%1$s.hbs", templateName);
     }
 
     public List<String> getResourceNames(String path) {
         List<String> resourceNames = new ArrayList<>();
-        File folder;
-        File[] listOfFiles;
-        try {
-            folder = new ClassPathResource(path).getFile();
-            listOfFiles = folder.listFiles();
-
-            if (listOfFiles == null) {
-                return null;
+        File rootDir = new File(path);
+        for (File dir : rootDir.listFiles()) {
+            if (!dir.isDirectory()) {
+                continue;
             }
-
-            for (File file : listOfFiles) {
-                resourceNames.add(FilenameUtils.getBaseName(file.getName()));
-            }
-
-            return resourceNames;
-
-        } catch (IOException e) {
-            e.printStackTrace();
+            resourceNames.add(FilenameUtils.getBaseName(dir.getName()));
         }
-        return null;
+        return resourceNames;
     }
 
     private void writeToFile(String name, String content) throws IOException {
@@ -51,7 +41,7 @@ public class FileUtils {
         BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
                         ClassLoader.getSystemResource
-                                ("templates/" + name + "/" + tempName).getPath(), false));
+                                ("./content/templates/" + name + "/" + tempName).getPath(), false));
         writer.append(content);
         writer.close();
     }
