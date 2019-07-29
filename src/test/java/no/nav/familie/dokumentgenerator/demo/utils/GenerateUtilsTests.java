@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.IOUtils;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Test;
 
@@ -61,18 +60,17 @@ public class GenerateUtilsTests {
         return problems.isEmpty();
     }
 
-    private Document getDocumentFromHtmlFixture(String fixtureName) throws IOException {
-        String genHtml = IOUtils.toString(
+    private String getDocumentFromHtmlFixture(String fixtureName) throws IOException {
+        return IOUtils.toString(
                 this.getClass().getResourceAsStream("/test-fixtures/expected-html/" + fixtureName + ".html"),
                 StandardCharsets.UTF_8
         );
-        return Jsoup.parse(genHtml);
     }
 
     @Test
     public void testPdfGeneration() throws IOException {
-        Document doc = getDocumentFromHtmlFixture("minimal1");
-        doc = generateUtils.appendHtmlMetadata(doc.html(), "pdf");
+        String html = getDocumentFromHtmlFixture("minimal1");
+        Document doc = generateUtils.appendHtmlMetadata(html, "pdf");
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         generateUtils.generatePDF(doc, outputStream);
@@ -83,8 +81,8 @@ public class GenerateUtilsTests {
 
     @Test
     public void testPdfGenerationWithSvg() throws IOException {
-        Document doc = getDocumentFromHtmlFixture("svg1");
-        doc = generateUtils.appendHtmlMetadata(doc.html(), "pdf");
+        String html = getDocumentFromHtmlFixture("svg1");
+        Document doc = generateUtils.appendHtmlMetadata(html, "pdf");
         generateUtils.addDocumentParts(doc);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
