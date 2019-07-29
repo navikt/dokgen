@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,6 +40,7 @@ public class FileUtils {
         List<String> resourceNames = new ArrayList<>();
         File folder;
         File[] listOfFiles;
+
         try {
             folder = new ClassPathResource(path).getFile();
             listOfFiles = folder.listFiles();
@@ -59,9 +61,11 @@ public class FileUtils {
         return null;
     }
 
-    private void writeToFile(String templateName, String content, String path) throws IOException {
+    private void writeToFile(String templateName, String content) throws IOException {
+        String file = "templates/" + templateName + "/" + templateName + ".hbs";
+
         BufferedWriter writer = new BufferedWriter(
-                new FileWriter(Paths.get(path).toString(), false));
+                new FileWriter(ClassLoader.getSystemResource(file).getPath(), false));
         writer.append(content);
         writer.close();
     }
@@ -77,7 +81,7 @@ public class FileUtils {
         );
 
         try {
-            writeToFile(templateName, strippedHtmlSyntax, "templates/" + templateName + "/" + templateName + ".hbs");
+            writeToFile(templateName, strippedHtmlSyntax);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -112,10 +116,8 @@ public class FileUtils {
 
     public void createNewTestSet(String templateName, String testSetName, String testSetContent) {
         String path = "src/main/resources/templates/" + templateName + "/testdata/" + testSetName + ".json";
-        String pathForWriting = "templates/" + templateName + "/testdata/" + testSetName + ".json";
         Path newFilePath = Paths.get(path);
         try {
-            //Files.createFile(newFilePath);
             Files.write(newFilePath, testSetContent.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
         } catch (IOException e) {
             e.printStackTrace();
