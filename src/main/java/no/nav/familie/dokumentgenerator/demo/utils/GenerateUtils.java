@@ -22,6 +22,8 @@ import java.nio.file.Paths;
 @Service
 public class GenerateUtils {
 
+    private FileUtils fileUtils = new FileUtils();
+
     public void addDocumentParts(Document document){
         String resourceLocation = "./content/assets/htmlParts/";
         try{
@@ -45,7 +47,7 @@ public class GenerateUtils {
         Element head = document.head();
 
         head.append("<meta charset=\"UTF-8\">");
-        head.append("<link rel=\"stylesheet\" href=\"http://localhost:8080/css/" + cssName + ".css\">");
+        head.append("<style>" + fileUtils.getCss(cssName) + "</style>");
 
         return document;
     }

@@ -21,6 +21,7 @@ public class GenerateUtilsTests {
     private static final String TEST_OUTPUT_PATH = "target/regression-tests/";
     private static final String EXPECTED_RES_PATH = "/test-fixtures/expected-pdf/";
     private GenerateUtils generateUtils = new GenerateUtils();
+    private FileUtils fileUtils = new FileUtils();
 
     private boolean runTest(String resource, byte[] actualPdfBytes) throws IOException {
         Files.createDirectories(Paths.get(TEST_OUTPUT_PATH));
@@ -71,8 +72,7 @@ public class GenerateUtilsTests {
     @Test
     public void testPdfGeneration() throws IOException {
         Document doc = getDocumentFromHtmlFixture("minimal1");
-        doc.head().append("<meta charset=\"UTF-8\">");
-        doc.head().append("<link rel=\"stylesheet\" href=\"http://localhost:8080/css/pdf.css\">");
+        doc = generateUtils.appendHtmlMetadata(doc.html(), "pdf");
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         generateUtils.generatePDF(doc, outputStream);
@@ -84,8 +84,7 @@ public class GenerateUtilsTests {
     @Test
     public void testPdfGenerationWithSvg() throws IOException {
         Document doc = getDocumentFromHtmlFixture("svg1");
-        doc.head().append("<meta charset=\"UTF-8\">");
-        doc.head().append("<link rel=\"stylesheet\" href=\"http://localhost:8080/css/pdf.css\">");
+        doc = generateUtils.appendHtmlMetadata(doc.html(), "pdf");
         generateUtils.addDocumentParts(doc);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
