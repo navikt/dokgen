@@ -1,6 +1,5 @@
 package no.nav.familie.dokumentgenerator.demo.utils;
 
-import com.openhtmltopdf.extend.FSSupplier;
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
@@ -16,17 +15,19 @@ import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Service
 public class GenerateUtils {
 
     public void addDocumentParts(Document document){
-        String resourceLocation = "src/main/resources/assets/htmlParts/";
+        String resourceLocation = "./content/assets/htmlParts/";
         try{
-            FileInputStream headerStream = new FileInputStream(resourceLocation + "headerTemplate.html");
-            String header = IOUtils.toString(headerStream, "UTF-8");
-            FileInputStream footerStream = new FileInputStream(resourceLocation + "footerTemplate.html");
-            String footer = IOUtils.toString(footerStream, "UTF-8");
+
+            String header = new String(Files.readAllBytes(Paths.get(resourceLocation + "headerTemplate.html")));
+            String footer = new String(Files.readAllBytes(Paths.get(resourceLocation + "footerTemplate.html")));
 
             Element body = document.body();
             body.prepend(header);
