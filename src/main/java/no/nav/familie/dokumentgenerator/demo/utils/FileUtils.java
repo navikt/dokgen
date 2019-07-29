@@ -26,13 +26,19 @@ public class FileUtils {
 
     public List<String> getResourceNames(String path) {
         List<String> resourceNames = new ArrayList<>();
-        File rootDir = new File(path);
-        for (File dir : rootDir.listFiles()) {
-            if (!dir.isDirectory()) {
-                continue;
-            }
-            resourceNames.add(FilenameUtils.getBaseName(dir.getName()));
+        File folder;
+        File[] listOfFiles;
+        folder = new File(path);
+        listOfFiles = folder.listFiles();
+
+        if (listOfFiles == null) {
+            return null;
         }
+
+        for (File file : listOfFiles) {
+            resourceNames.add(FilenameUtils.getBaseName(file.getName()));
+        }
+
         return resourceNames;
     }
 
@@ -40,8 +46,9 @@ public class FileUtils {
         String tempName = name + ".hbs";
         BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
-                        ClassLoader.getSystemResource
-                                ("./content/templates/" + name + "/" + tempName).getPath(), false));
+                        new File("./content/templates/" + name + "/" + tempName).getPath()
+                )
+        );
         writer.append(content);
         writer.close();
     }

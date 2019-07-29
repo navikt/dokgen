@@ -10,20 +10,21 @@ import org.json.JSONTokener;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
+import java.nio.file.Paths;
 
 @Service
 public class JsonUtils {
 
-    private JsonNode readJsonFile(URL path) {
+    private JsonNode readJsonFile(URI path) {
         if (path != null) {
             ObjectMapper mapper = new ObjectMapper();
             try {
-                return mapper.readTree(new File(path.toURI()));
-            } catch (IOException | URISyntaxException e) {
+                return mapper.readTree(new File(path));
+            } catch (IOException e) {
                 System.out.println("Kan ikke finne JSON fil!");
                 e.printStackTrace();
             }
@@ -32,7 +33,7 @@ public class JsonUtils {
     }
 
     private JsonNode getTestSetField(String templateName, String testSet){
-        URL path = ClassLoader.getSystemResource("./content/templates/" + templateName + "/testdata/" + testSet + ".json");
+        URI path = Paths.get("./content/templates/" + templateName + "/testdata/" + testSet + ".json").toUri();
         return readJsonFile(path);
     }
 
@@ -57,12 +58,8 @@ public class JsonUtils {
 
     public String validateTestData(String templateName, String json) {
         String statusMessage = null;
-        String jsonSchemaLocation = "templates/" + templateName + "/testdata/" + templateName + ".schema.json";
-        try (InputStream inputStream = ClassLoader.getSystemResourceAsStream(jsonSchemaLocation)) {
-
-            if (inputStream == null) {
-                return null;
-            }
+        String jsonSchemaLocation = "./content/templates/" + templateName + "/testdata/" + templateName + ".schema.json";
+        try (InputStream inputStream = new FileInputStream(jsonSchemaLocation)) {
 
             JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
             Schema schema = SchemaLoader.load(rawSchema);
