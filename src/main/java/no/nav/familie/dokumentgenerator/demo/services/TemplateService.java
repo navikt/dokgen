@@ -9,7 +9,7 @@ import com.github.jknack.handlebars.context.FieldValueResolver;
 import com.github.jknack.handlebars.context.JavaBeanValueResolver;
 import com.github.jknack.handlebars.context.MapValueResolver;
 import com.github.jknack.handlebars.context.MethodValueResolver;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
+import com.github.jknack.handlebars.io.FileTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import no.nav.familie.dokumentgenerator.demo.utils.FileUtils;
 import no.nav.familie.dokumentgenerator.demo.utils.GenerateUtils;
@@ -22,8 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -59,7 +59,7 @@ public class TemplateService {
 
     private Template compileTemplate(String templateName) {
         try {
-            return this.getHandlebars().compile(fileUtils.getTemplatePath(templateName));
+            return this.getHandlebars().compile(String.format("%1$s/%1$s", templateName));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -109,7 +109,7 @@ public class TemplateService {
 
     @PostConstruct
     public void loadHandlebarTemplates() {
-        TemplateLoader loader = new ClassPathTemplateLoader("/", null);
+        TemplateLoader loader = new FileTemplateLoader(new File("./content/templates/").getPath());
         setHandlebars(new Handlebars(loader));
         setFileUtils(new FileUtils());
         setGenerateUtils(new GenerateUtils());
@@ -124,13 +124,10 @@ public class TemplateService {
         String content = null;
         String path = fileUtils.getTemplatePath(templateName);
         try {
-            content = new String(Files.readAllBytes(Paths.get(ClassLoader.getSystemResource(path).toURI())));
+            content = new String(Files.readAllBytes(Paths.get(path)));
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Kunne ikke åpne template malen");
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            System.out.println("Kunne ikke finne handlebars malen");
         }
         return content;
     }
@@ -204,5 +201,9 @@ public class TemplateService {
     public List<String> getTestdataNames(String templateName) {
         String path = String.format("./content/templates/%s/testdata/", templateName);
         return fileUtils.getResourceNames(path);
+    }
+
+    public String validateTestData(String name, String json) {
+        return jsonUtils.validateTestData(name, json);
     }
 }

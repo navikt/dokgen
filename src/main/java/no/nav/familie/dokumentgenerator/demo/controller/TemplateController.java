@@ -51,7 +51,7 @@ public class TemplateController {
         );
     }
 
-    @PostMapping(value = "/brev/{format}/{templateName}", consumes = "application/json")
+    @PostMapping(value = "/brev/{format}/{templateName}", consumes = "application/json", produces = "text/html")
     public ResponseEntity getTemplateContentInHtml(@PathVariable String format,
                                                    @PathVariable String templateName,
                                                    @RequestBody String payload) {
