@@ -55,25 +55,25 @@ public class GenerateUtils {
 
         PdfRendererBuilder builder = new PdfRendererBuilder();
         try{
-            byte[] colorProfile = IOUtils.toByteArray(GenerateUtils.class.getResourceAsStream("/sRGB2014.icc"));
+            byte[] colorProfile = IOUtils.toByteArray(new FileInputStream("./content/sRGB2014.icc"));
 
             builder
                     .useFont(
-                            new File("src/main/resources/assets/fonts/fontpack/SourceSansPro-Regular.ttf"),
+                            new File("./content/assets/fonts/fontpack/SourceSansPro-Regular.ttf"),
                             "Source Sans Pro",
                             400,
                             BaseRendererBuilder.FontStyle.NORMAL,
                             false
                     )
                     .useFont(
-                            new File("src/main/resources/assets/fonts/fontpack/SourceSansPro-Bold.ttf"),
+                            new File("./content/assets/fonts/fontpack/SourceSansPro-Bold.ttf"),
                             "Source Sans Pro",
                             700,
                             BaseRendererBuilder.FontStyle.OBLIQUE,
                             false
                     )
                     .useFont(
-                            new File("src/main/resources/assets/fonts/fontpack/SourceSansPro-Italic.ttf"),
+                            new File("./content/assets/fonts/fontpack/SourceSansPro-Italic.ttf"),
                             "Source Sans Pro",
                             400,
                             BaseRendererBuilder.FontStyle.ITALIC,
