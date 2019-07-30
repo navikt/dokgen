@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
 @Service
@@ -77,4 +78,14 @@ public class JsonUtils {
         return statusMessage;
     }
 
+    public String getEmptyTestData(String templateName) {
+        String path = "./content/templates/" + templateName + "/TomtTestsett.json";
+        System.out.println("Henter fra: " + path);
+        try {
+            return new String(Files.readAllBytes(Paths.get(path)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
