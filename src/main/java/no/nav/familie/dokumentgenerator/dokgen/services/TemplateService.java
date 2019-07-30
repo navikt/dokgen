@@ -212,7 +212,20 @@ public class TemplateService {
         return jsonUtils.getEmptyTestData(templateName);
     }
 
-    public void createNewTestSet(String templateName, String testSetName, String testSetContent) {
-        fileUtils.createNewTestSet(templateName, testSetName, testSetContent);
+    public ResponseEntity createNewTestSet(String templateName, String testSetName, String testSetContent) {
+        String returnContent = fileUtils.createNewTestSet(
+                templateName,
+                testSetName,
+                testSetContent
+        );
+        HttpStatus status;
+
+        if(returnContent.equals("")){
+            status = HttpStatus.NOT_FOUND;
+        }
+        else{
+            status = HttpStatus.CREATED;
+        }
+        return new ResponseEntity<>(returnContent, status);
     }
 }

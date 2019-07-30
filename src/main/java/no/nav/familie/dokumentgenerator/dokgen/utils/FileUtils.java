@@ -86,13 +86,15 @@ public class FileUtils {
         return null;
     }
 
-    public void createNewTestSet(String templateName, String testSetName, String testSetContent) {
+    public String createNewTestSet(String templateName, String testSetName, String testSetContent) {
         String path = "content/templates/" + templateName + "/testdata/" + testSetName + ".json";
         Path newFilePath = Paths.get(path);
         try {
             Files.write(newFilePath, testSetContent.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+            return testSetName;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 }

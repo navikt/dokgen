@@ -80,7 +80,6 @@ public class JsonUtils {
 
     public String getEmptyTestData(String templateName) {
         String path = "./content/templates/" + templateName + "/TomtTestsett.json";
-        System.out.println("Henter fra: " + path);
         try {
             return new String(Files.readAllBytes(Paths.get(path)));
         } catch (IOException e) {
