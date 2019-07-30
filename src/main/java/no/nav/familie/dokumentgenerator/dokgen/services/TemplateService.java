@@ -212,7 +212,13 @@ public class TemplateService {
         return jsonUtils.getEmptyTestData(templateName);
     }
 
-    public void createNewTestSet(String templateName, String testSetName, String testSetContent) {
+    public ResponseEntity createTestSet(String templateName, String testSetName, String testSetContent) {
+        String errorMessage = jsonUtils.validateTestData(templateName, testSetContent);
+        if (errorMessage != null) {
+            return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+        }
+
         fileUtils.createNewTestSet(templateName, testSetName, testSetContent);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }

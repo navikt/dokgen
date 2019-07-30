@@ -25,6 +25,8 @@ public class DokgenTests {
                 add("Avslag");
                 add("Innvilget");
                 add("Mangelbrev");
+                add("Reduksjon");
+                add("Stans");
                 add("Varsel");
             }
         };

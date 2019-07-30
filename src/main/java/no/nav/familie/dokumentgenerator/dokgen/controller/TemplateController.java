@@ -82,11 +82,12 @@ public class TemplateController {
         return new ResponseEntity<>(templateManagementService.getEmptyTestSet(templateName), HttpStatus.OK);
     }
 
-    @PostMapping(value="maler/{templateName}/nyttTestSett", consumes = "application/json")
-    public void setNewTestSet(@PathVariable String templateName, @RequestBody String payload) {
+    @PostMapping(value="maler/{templateName}/nyttTestSett", consumes = "application/json", produces = "application/json")
+    public ResponseEntity createNewTestSet(@PathVariable String templateName, @RequestBody String payload) {
         JSONObject obj = new JSONObject(payload);
         String testSetName = obj.getString("name");
         String testSetContent = obj.getString("content");
-        templateManagementService.createNewTestSet(templateName, testSetName, testSetContent);
+        return templateManagementService.createTestSet(templateName, testSetName, testSetContent);
     }
+
 }
