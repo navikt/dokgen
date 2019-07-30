@@ -1,4 +1,5 @@
 * text eol=auto
 
 *.html text eol=lf
+*.pdf text eol=lf
 *.ttf binary
