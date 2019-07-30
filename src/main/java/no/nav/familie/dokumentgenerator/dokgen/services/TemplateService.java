@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.demo.services;
+package no.nav.familie.dokumentgenerator.dokgen.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.jknack.handlebars.Context;
@@ -11,9 +11,9 @@ import com.github.jknack.handlebars.context.MapValueResolver;
 import com.github.jknack.handlebars.context.MethodValueResolver;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
-import no.nav.familie.dokumentgenerator.demo.utils.FileUtils;
-import no.nav.familie.dokumentgenerator.demo.utils.GenerateUtils;
-import no.nav.familie.dokumentgenerator.demo.utils.JsonUtils;
+import no.nav.familie.dokumentgenerator.dokgen.utils.FileUtils;
+import no.nav.familie.dokumentgenerator.dokgen.utils.GenerateUtils;
+import no.nav.familie.dokumentgenerator.dokgen.utils.JsonUtils;
 import org.jsoup.nodes.Document;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

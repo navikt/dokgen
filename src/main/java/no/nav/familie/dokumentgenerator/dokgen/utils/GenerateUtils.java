@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.demo.utils;
+package no.nav.familie.dokumentgenerator.dokgen.utils;
 
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
