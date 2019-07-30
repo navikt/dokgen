@@ -1,12 +1,10 @@
 {
-  "amountMonthly": 8050,
-  "beginDate": "2019-07-08",
-  "reasoning": "du oppfyller alle krav.",
-  "backPay": false,
-  "backPayMonth": "2019-06-01",
-  "backPayAmount": 0.50,
-  "daycareHours": 20,
-  "supportPercentage": 45,
-  "unit": "Enheten",
-  "caseworker": "Jon Jonsen"
+  "belop": 8050,
+  "startDato": "2019-07-08",
+  "begrunnelse": "du oppfyller alle krav",
+  "etterbetaling": false,
+  "antallTimer": 20,
+  "stotteProsent": 45,
+  "enhet": "Enheten",
+  "saksbehandler": "Jon Jonsen"
 }
