@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.demo.utils;
+package no.nav.familie.dokumentgenerator.dokgen.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

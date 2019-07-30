@@ -1,6 +1,6 @@
-package no.nav.familie.dokumentgenerator.demo.controller;
+package no.nav.familie.dokumentgenerator.dokgen.controller;
 
-import no.nav.familie.dokumentgenerator.demo.services.TemplateService;
+import no.nav.familie.dokumentgenerator.dokgen.services.TemplateService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
