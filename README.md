@@ -3,7 +3,6 @@
 ## Krav
 - OpenJDK 11
 - [Maven](https://maven.apache.org/)
-- PDFGen kjørende lokalt på maskinen som lytter på port 8090 (Vil bli erstattet med intern PDF-generering)
 
 ## Kom i gang
 Klon repositoriet, navigér til prosjektets mappe som inneholder `pom.xml` og kjør `mvn spring-boot:run` for å starte applikasjonen. 
