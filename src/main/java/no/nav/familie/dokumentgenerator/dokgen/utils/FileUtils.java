@@ -11,6 +11,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,5 +70,15 @@ public class FileUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    String getCss(String cssName){
+        try {
+            return new String(Files.readAllBytes(Paths.get("./content/assets/css/" + cssName + ".css")));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Kunne ikke åpne template malen");
+        }
+        return null;
     }
 }

@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -187,7 +188,10 @@ public class TemplateService {
         } else if (format.equals("pdf") || format.equals("pdfa")) {
             Document styledHtml = generateUtils.appendHtmlMetadata(compiledTemplate, "pdf");
             generateUtils.addDocumentParts(styledHtml);
-            byte[] pdfContent = generateUtils.generatePDF(styledHtml.html(), templateName);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            generateUtils.generatePDF(styledHtml, outputStream);
+            byte[] pdfContent = outputStream.toByteArray();
 
             if (pdfContent == null) {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
