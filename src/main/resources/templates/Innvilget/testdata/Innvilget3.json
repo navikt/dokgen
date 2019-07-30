@@ -1,10 +1,10 @@
 {
-  "amountMonthly": 6200,
-  "beginDate": "2019-10-21",
-  "reasoning": "du oppfyller alle krav.",
-  "backPay": false,
-  "daycareHours": 25,
-  "supportPercentage": 55,
-  "unit": "Bodø",
-  "caseworker": "Hanne Hansen"
+  "belop": 6200,
+  "startDato": "2019-10-21",
+  "begrunnelse": "du oppfyller alle krav",
+  "etterbetaling": false,
+  "antallTimer": 25,
+  "stotteProsent": 55,
+  "enhet": "Bodø",
+  "saksbehandler": "Hanne Hansen"
 }

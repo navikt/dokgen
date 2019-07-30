@@ -1,12 +1,12 @@
 {
-  "amountMonthly": "" ,
-  "beginDate": "yyyy-mm-dd",
-  "reasoning": "",
-  "backPay": true,
-  "backPayMonth": "yyyy-mm-dd",
-  "backPayAmount": "" ,
-  "daycareHours": "",
-  "supportPercentage": "" ,
-  "unit": "",
-  "caseworker": ""
+  "belop": "" ,
+  "startDato": "yyyy-mm-dd",
+  "begrunnelse": "",
+  "etterbetaling": true,
+  "etterbetalingsmaaned": "yyyy-mm-dd",
+  "etterbetalingsbelop": "" ,
+  "antallTimer": "",
+  "stotteProsent": "" ,
+  "enhet": "",
+  "saksbehandler": ""
 }
