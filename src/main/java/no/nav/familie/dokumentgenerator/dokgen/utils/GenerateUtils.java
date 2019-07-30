@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.demo.utils;
+package no.nav.familie.dokumentgenerator.dokgen.utils;
 
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
@@ -13,6 +13,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Service
 public class GenerateUtils {
@@ -22,19 +24,35 @@ public class GenerateUtils {
         return pdfGenURl;
     }
 
-    public Document appendHtmlMetadata(String html) {
+    public void addDocumentParts(Document document){
+        String resourceLocation = "./content/assets/htmlParts/";
+        try{
 
-        Document document = Jsoup.parse(html);
+            String header = new String(Files.readAllBytes(Paths.get(resourceLocation + "headerTemplate.html")));
+            String footer = new String(Files.readAllBytes(Paths.get(resourceLocation + "footerTemplate.html")));
+
+            Element body = document.body();
+            body.prepend(header);
+            body.append(footer);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public Document appendHtmlMetadata(String html, String cssName) {
+        String convertedTemplate = convertMarkdownTemplateToHtml(html);
+
+        Document document = Jsoup.parse(("<div id=\"content\">" + convertedTemplate + "</div>"));
         Element head = document.head();
-        String css = FileUtils.getCssFile("main.css");
 
         head.append("<meta charset=\"UTF-8\">");
-        head.append("\n<style>\n" + css + "\n</style>");
+        head.append("<link rel=\"stylesheet\" href=\"http://localhost:8080/css/" + cssName + ".css\">");
 
         return document;
     }
 
-    public String convertMarkdownTemplateToHtml(String content) {
+    private String convertMarkdownTemplateToHtml(String content) {
         Node document = parseDocument(content);
         return renderToHTML(document);
     }
@@ -55,7 +73,7 @@ public class GenerateUtils {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        return  null;
+        return null;
     }
 
     private Node parseDocument(String content) {

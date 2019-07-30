@@ -1,0 +1,166 @@
+version: 2.1
+
+executors:
+  docker-publisher:
+    environment:
+      REGISTRY_NAME: docker.pkg.github.com
+      IMAGE_NAME: familie-dokgen
+    docker:
+      - image: circleci/buildpack-deps:stretch
+  nais-deployer:
+    environment:
+      TEAM: teamfamilie
+      CLUSTER: dev-fss
+    docker:
+      - image: navikt/deployment-cli:latest
+
+jobs:
+  verify:
+    executor: docker-publisher
+    working_directory: ~/repo
+    steps:
+      - run:
+          name: Verify that docker login works
+          command: echo "$GITHUB_PASSWORD" | docker login $REGISTRY_NAME -u "$GITHUB_USERNAME" --password-stdin
+      - run:
+          name: Creating Github Apps Installation Token
+          command: |
+            git clone https://github.com/navikt/github-apps-support.git
+            export PATH=`pwd`/github-apps-support/bin:$PATH
+            echo $GITHUB_PRIVATE_KEY | base64 --decode > ./github.key.pem
+            GITHUB_TOKEN=$(generate-installation-token.sh `generate-jwt.sh ./github.key.pem $GITHUB_APP_ID`)
+            echo "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $BASH_ENV
+            source $BASH_ENV
+            echo -e "machine api.github.com login x-access-token password $GITHUB_TOKEN" >> .netrc
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./.netrc
+            - ./github.key.pem
+
+  build-jar:
+    docker:
+      - image: circleci/openjdk:latest
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore cached dependencies
+          keys:
+            - maven3-{{ checksum "pom.xml" }}
+      - run:
+          name: Resolve/Update Dependencies
+          command: mvn package dependency:resolve-plugins dependency:go-offline
+      - save_cache:
+          name: Cache Maven dependencies
+          key: maven3-{{ checksum "pom.xml" }}
+          paths:
+            - ~/.m2
+      - run:
+          name: Build (and run tests)
+          command: mvn clean install -B -e
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./target
+
+  build-docker:
+    executor: docker-publisher
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - checkout
+      - run:
+          name: Unpack variables
+          command: |
+            cp /tmp/workspace/.netrc ~/.netrc
+            cp -r /tmp/workspace/target ./target
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Determin release version
+          command: |
+            export GIT_COMMIT_HASH=$(git log -n 1 --pretty=format:'%h')
+            export GIT_COMMIT_DATE=$(git log -1 --pretty='%ad' --date=format:'%Y%m%d%H%M%S')
+            export VERSION=1.0_${GIT_COMMIT_DATE}_${GIT_COMMIT_HASH}
+            echo $VERSION > ./VERSION.txt
+            echo "export VERSION=$VERSION" >> $BASH_ENV
+      - run:
+          name: Build Docker image
+          command: |
+            docker build -t $REGISTRY_NAME/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$IMAGE_NAME:$VERSION .
+      - run:
+          name: Archive Docker image
+          command: docker save -o image.tar $REGISTRY_NAME/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$IMAGE_NAME:$VERSION
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image.tar
+            - ./VERSION.txt
+            - ./nais.yaml
+
+  publish-docker:
+    executor: docker-publisher
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Load archived Docker image
+          command: docker load -i /tmp/workspace/image.tar
+      - run:
+          name: Publish Docker Image to Github Package registry
+          command: |
+            export VERSION=$(cat /tmp/workspace/VERSION.txt)
+            echo "$GITHUB_PASSWORD" | docker login $REGISTRY_NAME -u "$GITHUB_USERNAME" --password-stdin
+            docker push $REGISTRY_NAME/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$IMAGE_NAME:$VERSION
+
+  deploy:
+    executor: nais-deployer
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Create NAIS Github deployment
+          command: |
+            export VERSION=$(cat /tmp/workspace/VERSION.txt)
+            deployment-cli deploy create \
+            --cluster=${CLUSTER} \
+            --repository=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME \
+            --appid=${GITHUB_APP_ID} \
+            --team=${TEAM} \
+            --version=${VERSION} \
+            --key=/tmp/workspace/github.key.pem \
+            --resource=/tmp/workspace/nais.yaml
+
+workflows:
+  version: 2
+  familie-pipeline:
+    jobs:
+      - verify:
+          context: familie-ci
+      - build-jar:
+          context: familie-ci
+          requires:
+            - verify
+      - build-docker:
+          context: familie-ci
+          requires:
+            - build-jar
+      - publish-docker:
+          context: familie-ci
+          requires:
+            - build-docker
+          filters:
+            branches:
+              only: master
+      - deploy:
+          context: familie-ci
+          requires:
+            - publish-docker
+          filters:
+            branches:
+              only: master

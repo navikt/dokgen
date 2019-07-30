@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>no.nav.familie.dokumentgenerator</groupId>
-    <artifactId>demo</artifactId>
+    <artifactId>dokgen</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>demo</name>
-    <description>Demo project for Spring Boot</description>
+    <name>dokgen</name>
+    <description>Dokumentgenerator for team Familie i NAV IT</description>
 
     <properties>
         <java.version>11</java.version>
@@ -26,10 +26,16 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -112,7 +118,24 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
+            </plugin>
         </plugins>
-    </build>
+        <!--
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                    </resource>
 
+                    <resource>
+                        <directory>target/classes/templates</directory>
+                        <targetPath>templates</targetPath>
+                    </resource>
+
+        </resources>
+-->
+    </build>
 </project>

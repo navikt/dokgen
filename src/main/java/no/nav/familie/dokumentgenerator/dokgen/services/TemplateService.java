@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.demo.services;
+package no.nav.familie.dokumentgenerator.dokgen.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.jknack.handlebars.Context;
@@ -9,14 +9,12 @@ import com.github.jknack.handlebars.context.FieldValueResolver;
 import com.github.jknack.handlebars.context.JavaBeanValueResolver;
 import com.github.jknack.handlebars.context.MapValueResolver;
 import com.github.jknack.handlebars.context.MethodValueResolver;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
+import com.github.jknack.handlebars.io.FileTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
-import no.nav.familie.dokumentgenerator.demo.utils.FileUtils;
-import no.nav.familie.dokumentgenerator.demo.utils.GenerateUtils;
-import no.nav.familie.dokumentgenerator.demo.utils.JsonUtils;
-import org.jsoup.Jsoup;
+import no.nav.familie.dokumentgenerator.dokgen.utils.FileUtils;
+import no.nav.familie.dokumentgenerator.dokgen.utils.GenerateUtils;
+import no.nav.familie.dokumentgenerator.dokgen.utils.JsonUtils;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,8 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -61,7 +59,7 @@ public class TemplateService {
 
     private Template compileTemplate(String templateName) {
         try {
-            return this.getHandlebars().compile(fileUtils.getTemplatePath(templateName));
+            return this.getHandlebars().compile(String.format("%1$s/%1$s", templateName));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -92,9 +90,26 @@ public class TemplateService {
                 ).build();
     }
 
+    private HttpHeaders genHtmlHeaders(){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_HTML);
+
+        return headers;
+    }
+
+    private HttpHeaders genPdfHeaders(String templateName){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        String filename = templateName + ".pdf";
+        headers.setContentDispositionFormData("inline", filename);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return headers;
+    }
+
     @PostConstruct
     public void loadHandlebarTemplates() {
-        TemplateLoader loader = new ClassPathTemplateLoader("/", null);
+        TemplateLoader loader = new FileTemplateLoader(new File("./content/templates/").getPath());
         setHandlebars(new Handlebars(loader));
         setFileUtils(new FileUtils());
         setGenerateUtils(new GenerateUtils());
@@ -102,20 +117,17 @@ public class TemplateService {
     }
 
     public List<String> getTemplateSuggestions() {
-        return fileUtils.getResourceNames("templates");
+        return fileUtils.getResourceNames("./content/templates");
     }
 
     public String getMarkdownTemplate(String templateName) {
         String content = null;
         String path = fileUtils.getTemplatePath(templateName);
         try {
-            content = new String(Files.readAllBytes(Paths.get(ClassLoader.getSystemResource(path).toURI())));
+            content = new String(Files.readAllBytes(Paths.get(path)));
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Kunne ikke åpne template malen");
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            System.out.println("Kunne ikke finne handlebars malen");
         }
         return content;
     }
@@ -165,48 +177,38 @@ public class TemplateService {
 
     private ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format) {
         String compiledTemplate = getCompiledTemplate(templateName, interleavingFields);
+        if(compiledTemplate == null){
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
 
         if (format.equals("html")) {
-            if(compiledTemplate == null){
-                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-            }
-            Document document = Jsoup.parse((compiledTemplate));
-            Element head = document.head();
-            head.append("<meta charset=\"UTF-8\">");
-            head.append(("<link rel=\"stylesheet\" href=\"css/main.css\">"));
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.TEXT_HTML);
-            return new ResponseEntity<>(generateUtils.convertMarkdownTemplateToHtml((compiledTemplate)), headers, HttpStatus.OK);
+            Document styledHtml = generateUtils.appendHtmlMetadata(compiledTemplate, "html");
+            return new ResponseEntity<>(styledHtml.html(), genHtmlHeaders(), HttpStatus.OK);
         } else if (format.equals("pdf") || format.equals("pdfa")) {
-            String htmlConvertedTemplate = generateUtils.convertMarkdownTemplateToHtml(compiledTemplate);
-            String styledHtml = generateUtils.appendHtmlMetadata(htmlConvertedTemplate).html();
-            byte[] pdfContent = generateUtils.generatePDF(styledHtml, templateName);
+            Document styledHtml = generateUtils.appendHtmlMetadata(compiledTemplate, "pdf");
+            generateUtils.addDocumentParts(styledHtml);
+            byte[] pdfContent = generateUtils.generatePDF(styledHtml.html(), templateName);
 
             if (pdfContent == null) {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            String filename = templateName + ".pdf";
-            headers.setContentDispositionFormData("inline", filename);
-            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-            return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+            return new ResponseEntity<>(pdfContent, genPdfHeaders(templateName), HttpStatus.OK);
         }
         return null;
     }
 
     public List<String> getTestdataNames(String templateName) {
-        String path = String.format("templates/%s/testdata/", templateName);
+        String path = String.format("./content/templates/%s/testdata/", templateName);
         return fileUtils.getResourceNames(path);
     }
+
 
     public String getEmptyTestSet(String templateName) {
         return jsonUtils.getEmptyTestData(templateName);
     }
 
     public void createNewTestSet(String templateName, String testSetName, String testSetContent) {
-        fileUtils.createNewTestSet(templateName, testSetName , testSetContent);
+        fileUtils.createNewTestSet(templateName, testSetName, testSetContent);
     }
 }
