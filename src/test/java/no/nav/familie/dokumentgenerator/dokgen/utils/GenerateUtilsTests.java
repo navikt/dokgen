@@ -91,4 +91,17 @@ public class GenerateUtilsTests {
 
         assertTrue(runTest("svg1", expectedBytes));
     }
+
+    @Test
+    public void testPdfGenerationWithList() throws IOException {
+        String html = getDocumentFromHtmlFixture("list1");
+        Document doc = generateUtils.appendHtmlMetadata(html, "pdf");
+        generateUtils.addDocumentParts(doc);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        generateUtils.generatePDF(doc, outputStream);
+        byte[] expectedBytes = outputStream.toByteArray();
+
+        assertTrue(runTest("list1", expectedBytes));
+    }
 }
