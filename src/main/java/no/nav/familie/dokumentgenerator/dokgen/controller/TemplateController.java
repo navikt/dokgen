@@ -54,19 +54,7 @@ public class TemplateController {
         );
     }
 
-    @PostMapping(value = "/brev/{format}/{templateName}", consumes = "application/json", produces = "text/html")
-    public ResponseEntity getTemplateContentInHtml(@PathVariable String format,
-                                                   @PathVariable String templateName,
-                                                   @RequestBody String payload) {
-        return templateManagementService.returnLetterResponse(
-                format,
-                templateName,
-                payload,
-                false
-        );
-    }
-
-    @GetMapping(value = "maler/{templateName}/testdata")
+    @GetMapping(value = "mal/{templateName}/testdata")
     public ResponseEntity<List<String>> getTestData(@PathVariable String templateName) {
         List<String> response = templateManagementService.getTestdataNames(templateName);
 
@@ -77,16 +65,28 @@ public class TemplateController {
         return new ResponseEntity<>(templateManagementService.getTestdataNames(templateName), HttpStatus.OK);
     }
 
-    @GetMapping(value = "maler/{templateName}/tomtTestSett", produces = "application/json")
+    @GetMapping(value = "mal/{templateName}/tomtTestSett", produces = "application/json")
     public ResponseEntity<String> getEmptyTestSet(@PathVariable String templateName) {
         return new ResponseEntity<>(templateManagementService.getEmptyTestSet(templateName), HttpStatus.OK);
     }
 
-    @PostMapping(value="maler/{templateName}/nyttTestSett", consumes = "application/json", produces = "application/json")
+    @PostMapping(value="mal/{templateName}/nyttTestSett", consumes = "application/json", produces = "application/json")
     public ResponseEntity setNewTestSet(@PathVariable String templateName, @RequestBody String payload) {
         JSONObject obj = new JSONObject(payload);
         String testSetName = obj.getString("name");
         String testSetContent = obj.getString("content");
         return templateManagementService.createNewTestSet(templateName, testSetName, testSetContent);
+    }
+
+    @PostMapping(value = "/brev/{format}/{templateName}", consumes = "application/json", produces = "text/html")
+    public ResponseEntity getTemplateContentInHtml(@PathVariable String format,
+                                                   @PathVariable String templateName,
+                                                   @RequestBody String payload) {
+        return templateManagementService.returnLetterResponse(
+                format,
+                templateName,
+                payload,
+                false
+        );
     }
 }
