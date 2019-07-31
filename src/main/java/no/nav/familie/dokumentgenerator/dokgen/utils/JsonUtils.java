@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
 @Service
@@ -32,7 +33,7 @@ public class JsonUtils {
         return null;
     }
 
-    private JsonNode getTestSetField(String templateName, String testSet){
+    private JsonNode getTestSetField(String templateName, String testSet) {
         URI path = Paths.get("./content/templates/" + templateName + "/testdata/" + testSet + ".json").toUri();
         return readJsonFile(path);
     }
@@ -42,7 +43,7 @@ public class JsonUtils {
         return mapper.readTree(json);
     }
 
-    public JsonNode extractInterleavingFields(String templateName, JsonNode jsonContent, boolean useTestSet){
+    public JsonNode extractInterleavingFields(String templateName, JsonNode jsonContent, boolean useTestSet) {
         JsonNode valueFields;
         if(useTestSet){
             valueFields = getTestSetField(
@@ -57,8 +58,7 @@ public class JsonUtils {
     }
 
     public String validateTestData(String templateName, String json) {
-        String statusMessage = null;
-        String jsonSchemaLocation = "./content/templates/" + templateName + "/testdata/" + templateName + ".schema.json";
+        String jsonSchemaLocation = "./content/templates/" + templateName + "/" + templateName + ".schema.json";
         try (InputStream inputStream = new FileInputStream(jsonSchemaLocation)) {
 
             JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
@@ -66,7 +66,6 @@ public class JsonUtils {
 
             try {
                 schema.validate(new JSONObject(json)); // throws a ValidationException if this object is invalid
-                statusMessage = "{ \"status\": \"Suksess!\" }";
             } catch (ValidationException e) {
                 JSONObject jsonObject = e.toJSON();
                 return jsonObject.toString();
@@ -74,7 +73,16 @@ public class JsonUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return statusMessage;
+        return null;
     }
 
+    public String getEmptyTestData(String templateName) {
+        String path = "./content/templates/" + templateName + "/TomtTestsett.json";
+        try {
+            return new String(Files.readAllBytes(Paths.get(path)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

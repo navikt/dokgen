@@ -1,0 +1,55 @@
+ {
+     "definitions": {},
+     "$schema": "http://json-schema.org/draft-07/schema#",
+     "$id": "http://example.com/root.json",
+     "type": "object",
+     "title": "The Root Schema",
+     "required": [
+         "dato",
+         "fritekst",
+         "enhet",
+         "saksbehandler"
+       ],
+     "properties": {
+         "dato": {
+             "$id": "#/properties/dato",
+             "type": "string",
+             "title": "The Dato Schema",
+             "default": "",
+             "examples": [
+                 "2019-08-23"
+               ],
+             "pattern": "^(.*)$"
+           },
+         "fritekst": {
+             "$id": "#/properties/fritekst",
+             "type": "string",
+             "title": "The Fritekst Schema",
+             "default": "",
+             "examples": [
+                 "Fødselsattest"
+               ],
+             "pattern": "^(.*)$"
+           },
+         "enhet": {
+             "$id": "#/properties/enhet",
+             "type": "string",
+             "title": "The Enhet Schema",
+             "default": "",
+             "examples": [
+                 "Gjøvik"
+               ],
+             "pattern": "^(.*)$"
+           },
+         "saksbehandler": {
+             "$id": "#/properties/saksbehandler",
+             "type": "string",
+             "title": "The Saksbehandler Schema",
+             "default": "",
+             "examples": [
+                 "Kari Petersen"
+               ],
+             "pattern": "^(.*)$"
+           }
+       }
+   }

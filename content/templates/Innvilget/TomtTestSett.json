@@ -1,0 +1,12 @@
+{
+  "belop": "" ,
+  "startDato": "yyyy-mm-dd",
+  "begrunnelse": "",
+  "etterbetaling": true,
+  "etterbetalingsmaaned": "yyyy-mm-dd",
+  "etterbetalingsbelop": "" ,
+  "antallTimer": "",
+  "stotteProsent": "" ,
+  "enhet": "",
+  "saksbehandler": ""
+}
