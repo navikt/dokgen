@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -22,8 +23,12 @@ public class FileUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class);
 
+    @Value("${path.content.root}")
+    private String contentRoot;
+
+
     public String getTemplatePath(String templateName) {
-        return String.format("./content/templates/%1$s/%1$s.hbs", templateName);
+        return String.format(contentRoot + "templates/%1$s/%1$s.hbs", templateName);
     }
 
     public List<String> getResourceNames(String path) {
@@ -48,7 +53,7 @@ public class FileUtils {
         String tempName = name + ".hbs";
         BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
-                        new File("./content/templates/" + name + "/" + tempName).getPath()
+                        new File(contentRoot + "templates/" + name + "/" + tempName).getPath()
                 )
         );
         writer.append(content);
@@ -74,7 +79,7 @@ public class FileUtils {
 
     String getCss(String cssName){
         try {
-            return new String(Files.readAllBytes(Paths.get("./content/assets/css/" + cssName + ".css")));
+            return new String(Files.readAllBytes(Paths.get(contentRoot + "assets/css/" + cssName + ".css")));
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Kunne ikke åpne template malen");
