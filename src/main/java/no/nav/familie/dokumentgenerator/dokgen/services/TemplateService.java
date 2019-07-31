@@ -214,12 +214,23 @@ public class TemplateService {
 
     public ResponseEntity createTestSet(String templateName, String testSetName, String testSetContent) {
         String errorMessage = jsonUtils.validateTestData(templateName, testSetContent);
+        String responseMessage = null;
+        String createdFileName = null;
+        HttpStatus httpStatus = HttpStatus.CREATED;
 
         if (errorMessage != null) {
-            return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+            httpStatus = HttpStatus.BAD_REQUEST;
+            responseMessage = errorMessage;
+        } else {
+            createdFileName = fileUtils.createNewTestSet(templateName, testSetName, testSetContent);
         }
 
-        fileUtils.createNewTestSet(templateName, testSetName, testSetContent);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        if (createdFileName == null) {
+            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+        } else {
+            responseMessage = createdFileName;
+        }
+
+        return new ResponseEntity<>(responseMessage, httpStatus);
     }
 }

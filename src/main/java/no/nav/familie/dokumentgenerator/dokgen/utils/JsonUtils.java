@@ -58,7 +58,7 @@ public class JsonUtils {
     }
 
     public String validateTestData(String templateName, String json) {
-        String jsonSchemaLocation = "./content/templates/" + templateName + "/testdata/" + templateName + ".schema.json";
+        String jsonSchemaLocation = "./content/templates/" + templateName + "/" + templateName + ".schema.json";
         try (InputStream inputStream = new FileInputStream(jsonSchemaLocation)) {
 
             JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
