@@ -60,7 +60,7 @@ public class TemplateService {
 
     private Template compileTemplate(String templateName) {
         try {
-            return this.getHandlebars().compile(String.format("%1$s/%1$s", templateName));
+            return this.getHandlebars().compile(templateName + "/" + templateName);
         } catch (IOException e) {
             e.printStackTrace();
         }
