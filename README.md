@@ -9,6 +9,7 @@ Klon repositoriet, navigér til prosjektets mappe som inneholder `pom.xml` og kj
 
 
 ## Endepunkter
+
 `GET /mal/alle`: Henter alle malforslagene som ligger i `resources/templates`
     
 `GET /mal/{templateName}`: Henter ønsket mal i markdownformat.
@@ -46,9 +47,10 @@ Klon repositoriet, navigér til prosjektets mappe som inneholder `pom.xml` og kj
 * Request body:
     * interleavingFields: Innflettingsfelt i JSON-format
     * markdownContent: Innholdet til markdown-malen (Vil fjernes)
+    
+#### Swagger dokumentasjon
+Gå til `http://localhost:8080/swagger-ui.html#/template-controller` for å få en Swagger 2 dokumentasjon over endepunktene.
 
-## Swagger dokumentasjon
-Gå til `http://localhost:8080/swagger-ui.html#/template-controller` for å få en Swagger dokumentasjon over endepunktene.
 
 ## Bygge og kjøre docker lokalt
 
