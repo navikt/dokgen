@@ -7,6 +7,7 @@
 ## Kom i gang
 Klon repositoriet, navigér til prosjektets mappe som inneholder `pom.xml` og kjør `mvn spring-boot:run` for å starte applikasjonen. 
 
+
 ## Endepunkter
 `GET /mal/alle`: Henter alle malforslagene som ligger i `resources/templates`
     
@@ -46,6 +47,8 @@ Klon repositoriet, navigér til prosjektets mappe som inneholder `pom.xml` og kj
     * interleavingFields: Innflettingsfelt i JSON-format
     * markdownContent: Innholdet til markdown-malen (Vil fjernes)
 
+## Swagger dokumentasjon
+Gå til `http://localhost:8080/swagger-ui.html#/template-controller` for å få en Swagger dokumentasjon over endepunktene.
 
 ## Bygge og kjøre docker lokalt
 
