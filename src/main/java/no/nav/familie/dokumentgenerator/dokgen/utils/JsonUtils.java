@@ -20,6 +20,8 @@ import java.nio.file.Paths;
 @Service
 public class JsonUtils {
 
+    private FileUtils fileUtils = FileUtils.getInstance();
+
     private JsonNode readJsonFile(URI path) {
         if (path != null) {
             ObjectMapper mapper = new ObjectMapper();
@@ -33,8 +35,8 @@ public class JsonUtils {
         return null;
     }
 
-    private JsonNode getTestSetField(String templateName, String testSet) {
-        URI path = Paths.get("./content/templates/" + templateName + "/testdata/" + testSet + ".json").toUri();
+    private JsonNode getTestSetField(String templateName, String testSet){
+        URI path = Paths.get(fileUtils.getContentRoot() + "templates/" + templateName + "/testdata/" + testSet + ".json").toUri();
         return readJsonFile(path);
     }
 
@@ -58,7 +60,7 @@ public class JsonUtils {
     }
 
     public String validateTestData(String templateName, String json) {
-        String jsonSchemaLocation = "./content/templates/" + templateName + "/" + templateName + ".schema.json";
+        String jsonSchemaLocation = fileUtils.getContentRoot() + "templates/" + templateName + "/" + templateName + ".schema.json";
         try (InputStream inputStream = new FileInputStream(jsonSchemaLocation)) {
 
             JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
@@ -77,7 +79,7 @@ public class JsonUtils {
     }
 
     public String getEmptyTestData(String templateName) {
-        String path = "./content/templates/" + templateName + "/TomtTestsett.json";
+        String path = fileUtils.getContentRoot() + "templates/" + templateName + "/TomtTestsett.json";
         try {
             return new String(Files.readAllBytes(Paths.get(path)));
         } catch (IOException e) {
