@@ -25,8 +25,38 @@ public class FileUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class);
 
+    private static FileUtils single_instance = null;
+    private final String contentRoot;
+
+
+    private FileUtils(){
+        this.contentRoot = "./content/";
+    }
+
+    private FileUtils(String contentRoot){
+        this.contentRoot = contentRoot;
+    }
+
+    public static FileUtils getInstance() {
+        if (single_instance == null)
+            single_instance = new FileUtils();
+
+        return single_instance;
+    }
+
+    public static FileUtils getInstance(String contentRoot) {
+        if (single_instance == null)
+            single_instance = new FileUtils(contentRoot);
+
+        return single_instance;
+    }
+
+    public String getContentRoot() {
+        return contentRoot;
+    }
+
     public String getTemplatePath(String templateName) {
-        return String.format("./content/templates/%1$s/%1$s.hbs", templateName);
+        return String.format(this.getContentRoot() + "templates/%1$s/%1$s.hbs", templateName);
     }
 
     public List<String> getResourceNames(String path) {
@@ -50,7 +80,7 @@ public class FileUtils {
     private void writeToFile(String folder, String fileName, String content) throws IOException {
         BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
-                        new File("./content/templates/" + folder + "/" + fileName).getPath()
+                        new File(this.getContentRoot() + "templates/" + folder + "/" + fileName).getPath()
                 )
         );
         writer.append(content);
@@ -77,7 +107,7 @@ public class FileUtils {
 
     String getCss(String cssName){
         try {
-            return new String(Files.readAllBytes(Paths.get("./content/assets/css/" + cssName + ".css")));
+            return new String(Files.readAllBytes(Paths.get(this.getContentRoot() + "assets/css/" + cssName + ".css")));
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Kunne ikke åpne template malen");
@@ -85,8 +115,8 @@ public class FileUtils {
         return null;
     }
 
-    public String createNewTestSet(String templateName, String testSetName, String testSetContent) throws IOException {
-        String path = "content/templates/" + templateName + "/testdata/" + testSetName + ".json";
+    public String createNewTestSet(String templateName, String testSetName, String testSetContent) throws IOException{
+        String path = this.getContentRoot() + "templates/" + templateName + "/testdata/" + testSetName + ".json";
         Path newFilePath = Paths.get(path);
         Files.write(newFilePath, testSetContent.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
         return testSetName;

@@ -39,6 +39,13 @@ public class TemplateService {
     private JsonUtils jsonUtils;
     private FileUtils fileUtils;
 
+    public TemplateService() {
+        this.fileUtils = FileUtils.getInstance();
+    }
+
+    public TemplateService(String contentRoot) {
+        this.fileUtils = FileUtils.getInstance(contentRoot);
+    }
 
     private Handlebars getHandlebars() {
         return handlebars;
@@ -54,10 +61,6 @@ public class TemplateService {
 
     private void setJsonUtils(JsonUtils jsonUtils) {
         this.jsonUtils = jsonUtils;
-    }
-
-    private void setFileUtils(FileUtils fileUtils) {
-        this.fileUtils = fileUtils;
     }
 
     private Template compileTemplate(String templateName) {
@@ -114,15 +117,14 @@ public class TemplateService {
 
     @PostConstruct
     public void loadHandlebarTemplates() {
-        TemplateLoader loader = new FileTemplateLoader(new File("./content/templates/").getPath());
+        TemplateLoader loader = new FileTemplateLoader(new File(this.fileUtils.getContentRoot() + "templates/").getPath());
         setHandlebars(new Handlebars(loader));
-        setFileUtils(new FileUtils());
         setGenerateUtils(new GenerateUtils());
         setJsonUtils(new JsonUtils());
     }
 
     public List<String> getTemplateSuggestions() {
-        return fileUtils.getResourceNames("./content/templates");
+        return fileUtils.getResourceNames(this.fileUtils.getContentRoot() + "templates/");
     }
 
     public String getMarkdownTemplate(String templateName) {
@@ -215,7 +217,7 @@ public class TemplateService {
     }
 
     public List<String> getTestdataNames(String templateName) {
-        String path = String.format("./content/templates/%s/testdata/", templateName);
+        String path = String.format(this.fileUtils.getContentRoot() + "templates/%s/testdata/", templateName);
         return fileUtils.getResourceNames(path);
     }
 
