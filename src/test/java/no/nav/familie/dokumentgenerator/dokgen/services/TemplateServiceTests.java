@@ -17,6 +17,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -29,8 +31,6 @@ public class TemplateServiceTests {
     private static void copyAssetsToContentRoot() throws IOException {
         File srcDir = new File("./src/test/resources/test-assets/content/assets");
         File destDir = new File(contentRoot + "/assets");
-
-        System.out.println(srcDir.getCanonicalPath() + "\n" + destDir.getCanonicalPath());
 
         try {
             org.apache.commons.io.FileUtils.copyDirectory(srcDir, destDir);
@@ -53,12 +53,18 @@ public class TemplateServiceTests {
     @BeforeClass
     public static void setup() throws IOException {
         File contentFolder = temporaryFolder.newFolder("content");
-        contentRoot = temporaryFolder.getRoot() + "\\" + contentFolder.getName() + "\\";
+        contentRoot = temporaryFolder.getRoot() + "/" + contentFolder.getName() + "/";
 
         copyAssetsToContentRoot();
 
         FileUtils fileUtils = FileUtils.getInstance();
         ReflectionTestUtils.setField(fileUtils, "contentRoot", contentRoot);
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        FileUtils fileUtils = FileUtils.getInstance();
+        ReflectionTestUtils.setField(fileUtils, "contentRoot", "./content/");
     }
 
 
@@ -78,5 +84,23 @@ public class TemplateServiceTests {
         Assert.assertEquals(HttpStatus.OK, res.getStatusCode());
         assertThat("Body", (String) res.getBody(), containsString("#Hei, Peter"));
         assertThat("Body", (String) res.getBody(), not(containsString("#Hallo, {{name}}")));
+    }
+
+    @Test
+    public void testGetTemplateSuggestionsShouldReturnCorrectTemplateNames() throws IOException {
+        writeTestTemplateToContentRoot("Tem1", "1");
+        writeTestTemplateToContentRoot("Tem2", "2");
+        writeTestTemplateToContentRoot("Tem3", "3");
+
+        List<String> expectedResult = new ArrayList<>() {
+            {
+                add("Tem1");
+                add("Tem2");
+                add("Tem3");
+            }
+        };
+
+        List<String> actualResult = templateService.getTemplateSuggestions();
+        Assert.assertEquals(expectedResult.toArray().length, actualResult.toArray().length);
     }
 }
