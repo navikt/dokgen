@@ -63,7 +63,7 @@ public class TemplateService {
 
     private Template compileTemplate(String templateName) {
         try {
-            return this.getHandlebars().compile(String.format("%1$s/%1$s", templateName));
+            return this.getHandlebars().compile(templateName + "/" + templateName);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -209,7 +209,30 @@ public class TemplateService {
         return fileUtils.getResourceNames(path);
     }
 
-    public String validateTestData(String name, String json) {
-        return jsonUtils.validateTestData(name, json);
+
+    public String getEmptyTestSet(String templateName) {
+        return jsonUtils.getEmptyTestData(templateName);
+    }
+
+    public ResponseEntity createTestSet(String templateName, String testSetName, String testSetContent) {
+        String errorMessage = jsonUtils.validateTestData(templateName, testSetContent);
+        String responseMessage = null;
+        String createdFileName = null;
+        HttpStatus httpStatus = HttpStatus.CREATED;
+
+        if (errorMessage != null) {
+            httpStatus = HttpStatus.BAD_REQUEST;
+            responseMessage = errorMessage;
+        } else {
+            createdFileName = fileUtils.createNewTestSet(templateName, testSetName, testSetContent);
+        }
+
+        if (createdFileName == null) {
+            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+        } else {
+            responseMessage = createdFileName;
+        }
+
+        return new ResponseEntity<>(responseMessage, httpStatus);
     }
 }

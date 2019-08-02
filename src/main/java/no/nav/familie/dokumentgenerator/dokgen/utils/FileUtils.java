@@ -11,8 +11,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,11 +77,10 @@ public class FileUtils {
         return resourceNames;
     }
 
-    private void writeToFile(String name, String content) throws IOException {
-        String tempName = name + ".hbs";
+    private void writeToFile(String folder, String fileName, String content) throws IOException {
         BufferedWriter writer = new BufferedWriter(
                 new FileWriter(
-                        new File(this.getContentRoot() + "templates/" + name + "/" + tempName).getPath()
+                        new File(this.getContentRoot() + "templates/" + folder + "/" + fileName).getPath()
                 )
         );
         writer.append(content);
@@ -96,7 +98,8 @@ public class FileUtils {
         );
 
         try {
-            writeToFile(templateName, strippedHtmlSyntax);
+            String fileName = templateName + ".hbs";
+            writeToFile(templateName, fileName, strippedHtmlSyntax);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -108,6 +111,19 @@ public class FileUtils {
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Kunne ikke åpne template malen");
+        }
+        return null;
+    }
+
+
+    public String createNewTestSet(String templateName, String testSetName, String testSetContent) {
+        String path = this.getContentRoot() + "templates/" + templateName + "/testdata/" + testSetName + ".json";
+        Path newFilePath = Paths.get(path);
+        try {
+            Files.write(newFilePath, testSetContent.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+            return testSetName;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return null;
     }
