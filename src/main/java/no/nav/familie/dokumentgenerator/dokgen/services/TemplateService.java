@@ -14,6 +14,7 @@ import com.github.jknack.handlebars.io.TemplateLoader;
 import no.nav.familie.dokumentgenerator.dokgen.utils.FileUtils;
 import no.nav.familie.dokumentgenerator.dokgen.utils.GenerateUtils;
 import no.nav.familie.dokumentgenerator.dokgen.utils.JsonUtils;
+import org.json.JSONObject;
 import org.jsoup.nodes.Document;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -212,7 +213,12 @@ public class TemplateService {
         return jsonUtils.getEmptyTestData(templateName);
     }
 
-    public ResponseEntity createTestSet(String templateName, String testSetName, String testSetContent) {
+    public ResponseEntity createTestSet(String templateName, String payload) {
+
+        JSONObject obj = new JSONObject(payload);
+        String testSetName = obj.getString("name");
+        String testSetContent = obj.getJSONObject("content").toString();
+
         String errorMessage = jsonUtils.validateTestData(templateName, testSetContent);
         String responseMessage = null;
         String createdFileName = null;
@@ -222,7 +228,7 @@ public class TemplateService {
             httpStatus = HttpStatus.BAD_REQUEST;
             responseMessage = errorMessage;
         } else {
-            createdFileName = fileUtils.createNewTestSet(templateName, testSetName, testSetContent);
+            createdFileName = fileUtils.createNewTestSet(templateName, testSetName, testSetName);
         }
 
         if (createdFileName == null) {

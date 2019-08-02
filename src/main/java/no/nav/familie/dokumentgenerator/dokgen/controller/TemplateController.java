@@ -73,10 +73,7 @@ public class TemplateController {
 
     @PostMapping(value="mal/{templateName}/nyttTestSett", consumes = "application/json", produces = "application/json")
     public ResponseEntity createNewTestSet(@PathVariable String templateName, @RequestBody String payload) {
-        JSONObject obj = new JSONObject(payload);
-        String testSetName = obj.getString("name");
-        String testSetContent = obj.getString("content");
-        return templateManagementService.createTestSet(templateName, testSetName, testSetContent);
+        return templateManagementService.createTestSet(templateName, payload);
     }
 
 
