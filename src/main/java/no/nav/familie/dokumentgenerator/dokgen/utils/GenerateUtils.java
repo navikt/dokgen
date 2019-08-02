@@ -57,7 +57,7 @@ public class GenerateUtils {
 
         PdfRendererBuilder builder = new PdfRendererBuilder();
         try{
-            byte[] colorProfile = IOUtils.toByteArray(new FileInputStream(fileUtils.getContentRoot() + "sRGB2014.icc"));
+            byte[] colorProfile = IOUtils.toByteArray(new FileInputStream(fileUtils.getContentRoot() + "assets/sRGB2014.icc"));
 
             builder
                     .useFont(
