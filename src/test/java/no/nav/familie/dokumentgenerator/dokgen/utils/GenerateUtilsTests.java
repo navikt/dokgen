@@ -20,7 +20,6 @@ public class GenerateUtilsTests {
     private static final String TEST_OUTPUT_PATH = "target/regression-tests/";
     private static final String EXPECTED_RES_PATH = "/test-fixtures/expected-pdf/";
     private GenerateUtils generateUtils = new GenerateUtils();
-    private FileUtils fileUtils = new FileUtils();
 
     private boolean runTest(String resource, byte[] actualPdfBytes) throws IOException {
         Files.createDirectories(Paths.get(TEST_OUTPUT_PATH));

@@ -7,7 +7,6 @@ import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -20,9 +19,7 @@ import java.nio.file.Paths;
 @Service
 public class JsonUtils {
 
-    @Value("${path.content.root}")
-    private String contentRoot;
-
+    private FileUtils fileUtils = FileUtils.getInstance();
 
     private JsonNode readJsonFile(URI path) {
         if (path != null) {
@@ -38,7 +35,7 @@ public class JsonUtils {
     }
 
     private JsonNode getTestSetField(String templateName, String testSet){
-        URI path = Paths.get(contentRoot + "templates/" + templateName + "/testdata/" + testSet + ".json").toUri();
+        URI path = Paths.get(fileUtils.getContentRoot() + "templates/" + templateName + "/testdata/" + testSet + ".json").toUri();
         return readJsonFile(path);
     }
 
@@ -63,7 +60,7 @@ public class JsonUtils {
 
     public String validateTestData(String templateName, String json) {
         String statusMessage = null;
-        String jsonSchemaLocation = contentRoot + "templates/" + templateName + "/testdata/" + templateName + ".schema.json";
+        String jsonSchemaLocation = fileUtils.getContentRoot() + "templates/" + templateName + "/testdata/" + templateName + ".schema.json";
         try (InputStream inputStream = new FileInputStream(jsonSchemaLocation)) {
 
             JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));

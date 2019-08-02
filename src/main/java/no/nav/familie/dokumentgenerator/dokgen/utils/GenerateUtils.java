@@ -12,7 +12,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -23,13 +22,10 @@ import java.nio.file.Paths;
 @Service
 public class GenerateUtils {
 
-    private FileUtils fileUtils = new FileUtils();
-
-    @Value("${path.content.root}")
-    private String contentRoot;
+    private FileUtils fileUtils = FileUtils.getInstance();
 
     public void addDocumentParts(Document document){
-        String resourceLocation = contentRoot + "assets/htmlParts/";
+        String resourceLocation = fileUtils.getContentRoot() + "assets/htmlParts/";
         try{
 
             String header = new String(Files.readAllBytes(Paths.get(resourceLocation + "headerTemplate.html")));
@@ -61,25 +57,25 @@ public class GenerateUtils {
 
         PdfRendererBuilder builder = new PdfRendererBuilder();
         try{
-            byte[] colorProfile = IOUtils.toByteArray(new FileInputStream(contentRoot + "sRGB2014.icc"));
+            byte[] colorProfile = IOUtils.toByteArray(new FileInputStream(fileUtils.getContentRoot() + "sRGB2014.icc"));
 
             builder
                     .useFont(
-                            new File(contentRoot + "assets/fonts/fontpack/SourceSansPro-Regular.ttf"),
+                            new File(fileUtils.getContentRoot() + "assets/fonts/fontpack/SourceSansPro-Regular.ttf"),
                             "Source Sans Pro",
                             400,
                             BaseRendererBuilder.FontStyle.NORMAL,
                             false
                     )
                     .useFont(
-                            new File(contentRoot + "assets/fonts/fontpack/SourceSansPro-Bold.ttf"),
+                            new File(fileUtils.getContentRoot() + "assets/fonts/fontpack/SourceSansPro-Bold.ttf"),
                             "Source Sans Pro",
                             700,
                             BaseRendererBuilder.FontStyle.OBLIQUE,
                             false
                     )
                     .useFont(
-                            new File(contentRoot + "assets/fonts/fontpack/SourceSansPro-Italic.ttf"),
+                            new File(fileUtils.getContentRoot() + "assets/fonts/fontpack/SourceSansPro-Italic.ttf"),
                             "Source Sans Pro",
                             400,
                             BaseRendererBuilder.FontStyle.ITALIC,
