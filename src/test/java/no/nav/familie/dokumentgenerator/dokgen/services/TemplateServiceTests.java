@@ -23,7 +23,7 @@ import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@TestPropertySource(properties = {"write.access = false"})
+@TestPropertySource(properties = {"write.access = true"})
 public class TemplateServiceTests {
 
     @Autowired
