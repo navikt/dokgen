@@ -97,6 +97,27 @@ public class TemplateServiceTests {
     }
 
     @Test
+    public void testSavingTemplateShouldReturnBadRequestIfInvalid() throws IOException {
+        String templateName = "testName";
+        String markdownContent = "\"#Hei, {{name}}\"";
+        String interleavingFields = "{\"name\": \"Peter\"}";
+        writeTestTemplateToContentRoot(
+                templateName,
+                "#Hallo, {{name}}",
+                "{\"properties\": {\"name\": {\"type\":\"boolean\"}}}"
+        );
+        ResponseEntity res = templateService.saveAndReturnTemplateResponse(
+                "html",
+                templateName,
+                "{\"markdownContent\": " + markdownContent + ", \"interleavingFields\": " + interleavingFields + "}",
+                false
+        );
+        
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
+        assertThat("Body", (String) res.getBody(), containsString("\"pointerToViolation\":\"#\\/name\""));
+    }
+
+    @Test
     public void testGetTemplateSuggestionsShouldReturnCorrectTemplateNames() throws IOException {
         writeTestTemplateToContentRoot("Tem1", "1", "{}");
         writeTestTemplateToContentRoot("Tem2", "2", "{}");
