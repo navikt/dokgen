@@ -158,14 +158,14 @@ public class TemplateService {
         return content;
     }
 
-    public ResponseEntity returnLetterResponse(String format, String templateName, String payload, boolean useTestSet){
+    public ResponseEntity returnLetterResponse(String format, String templateName, String payload){
         try{
             JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
 
             JsonNode valueFields = jsonUtils.extractInterleavingFields(
                     templateName,
                     jsonContent,
-                    useTestSet
+                    jsonContent.get("useTestSet").asBoolean()
             );
 
             HttpHeaders headers = genHeaders(format, templateName, false);
@@ -178,14 +178,14 @@ public class TemplateService {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity returnLetterResponseAndDownload(String templateName, String payload, boolean useTestSet){
+    public ResponseEntity returnLetterResponseAndDownload(String templateName, String payload){
         try{
             JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
 
             JsonNode valueFields = jsonUtils.extractInterleavingFields(
                     templateName,
                     jsonContent,
-                    useTestSet
+                    jsonContent.get("useTestSet").asBoolean()
             );
 
             HttpHeaders headers = genHeaders("pdf", templateName, true);
@@ -198,7 +198,7 @@ public class TemplateService {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity saveAndReturnTemplateResponse(String format, String templateName, String payload, boolean useTestSet) {
+    public ResponseEntity saveAndReturnTemplateResponse(String format, String templateName, String payload) {
         try{
             JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
 
@@ -210,7 +210,7 @@ public class TemplateService {
             JsonNode valueFields = jsonUtils.extractInterleavingFields(
                     templateName,
                     jsonContent,
-                    useTestSet
+                    jsonContent.get("useTestSet").asBoolean()
             );
 
             HttpHeaders headers = genHeaders(format, templateName, false);

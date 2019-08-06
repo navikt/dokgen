@@ -77,8 +77,9 @@ public class TemplateServiceTests {
         ResponseEntity res = templateService.saveAndReturnTemplateResponse(
                 "html",
                 templateName,
-                "{\"markdownContent\": " + markdownContent + ", \"interleavingFields\": " + interleavingFields + "}",
-                false
+                "{\"markdownContent\": " + markdownContent +
+                        ", \"interleavingFields\": " + interleavingFields +
+                        ", \"useTestSet\": false}"
         );
 
         Assert.assertEquals(HttpStatus.OK, res.getStatusCode());
