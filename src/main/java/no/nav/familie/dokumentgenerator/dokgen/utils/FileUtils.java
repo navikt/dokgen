@@ -115,16 +115,10 @@ public class FileUtils {
         return null;
     }
 
-
-    public String createNewTestSet(String templateName, String testSetName, String testSetContent) {
+    public String createNewTestSet(String templateName, String testSetName, String testSetContent) throws IOException{
         String path = this.getContentRoot() + "templates/" + templateName + "/testdata/" + testSetName + ".json";
         Path newFilePath = Paths.get(path);
-        try {
-            Files.write(newFilePath, testSetContent.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-            return testSetName;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        Files.write(newFilePath, testSetContent.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+        return testSetName;
     }
 }

@@ -41,10 +41,16 @@ public class TemplateServiceTests {
         }
     }
 
-    private void writeTestTemplateToContentRoot(String name, String content) throws IOException {
+    private void writeTestTemplateToContentRoot(String name, String content, String schema) throws IOException {
         org.apache.commons.io.FileUtils.writeStringToFile(
                 new File(contentRoot + "/templates/" + name + "/" + name + ".hbs"),
                 content,
+                StandardCharsets.UTF_8
+        );
+
+        org.apache.commons.io.FileUtils.writeStringToFile(
+                new File(contentRoot + "/templates/" + name + "/" + name + ".schema.json"),
+                schema,
                 StandardCharsets.UTF_8
         );
     }
@@ -75,7 +81,11 @@ public class TemplateServiceTests {
         String templateName = "testName";
         String markdownContent = "\"#Hei, {{name}}\"";
         String interleavingFields = "{\"name\": \"Peter\"}";
-        writeTestTemplateToContentRoot(templateName, "#Hallo, {{name}}");
+        writeTestTemplateToContentRoot(
+                templateName,
+                "#Hallo, {{name}}",
+                "{}"
+        );
         ResponseEntity res = templateService.saveAndReturnTemplateResponse(
                 "html",
                 templateName,
@@ -89,10 +99,31 @@ public class TemplateServiceTests {
     }
 
     @Test
+    public void testSavingTemplateShouldReturnBadRequestIfInvalid() throws IOException {
+        String templateName = "testName";
+        String markdownContent = "\"#Hei, {{name}}\"";
+        String interleavingFields = "{\"name\": \"Peter\"}";
+        writeTestTemplateToContentRoot(
+                templateName,
+                "#Hallo, {{name}}",
+                "{\"properties\": {\"name\": {\"type\":\"boolean\"}}}"
+        );
+        ResponseEntity res = templateService.saveAndReturnTemplateResponse(
+                "html",
+                templateName,
+                "{\"markdownContent\": " + markdownContent + ", \"interleavingFields\": " + interleavingFields + "}",
+                false
+        );
+        
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
+        assertThat("Body", (String) res.getBody(), containsString("\"pointerToViolation\":\"#\\/name\""));
+    }
+
+    @Test
     public void testGetTemplateSuggestionsShouldReturnCorrectTemplateNames() throws IOException {
-        writeTestTemplateToContentRoot("Tem1", "1");
-        writeTestTemplateToContentRoot("Tem2", "2");
-        writeTestTemplateToContentRoot("Tem3", "3");
+        writeTestTemplateToContentRoot("Tem1", "1", "{}");
+        writeTestTemplateToContentRoot("Tem2", "2", "{}");
+        writeTestTemplateToContentRoot("Tem3", "3", "{}");
 
         List<String> expectedResult = new ArrayList<>() {
             {
