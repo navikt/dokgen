@@ -15,6 +15,7 @@ import no.nav.familie.dokumentgenerator.dokgen.utils.FileUtils;
 import no.nav.familie.dokumentgenerator.dokgen.utils.GenerateUtils;
 import no.nav.familie.dokumentgenerator.dokgen.utils.JsonUtils;
 import org.jsoup.nodes.Document;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,6 +37,9 @@ public class TemplateService {
     private GenerateUtils generateUtils;
     private JsonUtils jsonUtils;
     private FileUtils fileUtils;
+
+    @Value("${write.access:false}")
+    private Boolean writeAccess;
 
     public TemplateService() {
         this.fileUtils = FileUtils.getInstance();
@@ -155,6 +159,10 @@ public class TemplateService {
     }
 
     public ResponseEntity saveAndReturnTemplateResponse(String format, String templateName, String payload, boolean useTestSet) {
+        if(!writeAccess) {
+            return new ResponseEntity(HttpStatus.FORBIDDEN);
+        }
+
         try{
             JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
 

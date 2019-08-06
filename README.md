@@ -54,6 +54,8 @@ Gå til `http://localhost:8080/swagger-ui.html#/template-controller` for å få 
 
 ## Bygge og kjøre docker lokalt
 
+`write.access` er satt til `false` under prod for å hindre at maler blir endret på mens systemet er i bruk, dette må settes til `true` i `application.properties` under lokal testing.
+
 ```
 mvn -B -Dfile.encoding=UTF-8 -DinstallAtEnd=true -DdeployAtEnd=true  -DskipTests clean install
 
