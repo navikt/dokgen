@@ -80,12 +80,22 @@ public class TemplateController {
     }
 
 
-    @PostMapping(value = "/brev/{format}/{templateName}", consumes = "application/json", produces = "text/html")
-    public ResponseEntity getTemplateContentInHtml(@PathVariable String format,
+    @PostMapping(value = "/brev/{format}/{templateName}", consumes = "application/json")
+    public ResponseEntity getGeneratedContent(@PathVariable String format,
                                                    @PathVariable String templateName,
                                                    @RequestBody String payload) {
         return templateManagementService.returnLetterResponse(
                 format,
+                templateName,
+                payload,
+                false
+        );
+    }
+
+    @PostMapping(value = "/brev/{templateName}/download", consumes = "application/json")
+    public ResponseEntity getGeneratedContentDownload(@PathVariable String templateName,
+                                                      @RequestBody String payload) {
+        return templateManagementService.returnLetterResponseAndDownload(
                 templateName,
                 payload,
                 false

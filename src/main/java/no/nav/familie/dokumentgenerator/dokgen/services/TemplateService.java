@@ -94,6 +94,19 @@ public class TemplateService {
                 ).build();
     }
 
+    private HttpHeaders genHeaders(String format, String templateName, boolean download) {
+        if(format.equals("html")) {
+            return genHtmlHeaders();
+        }
+        else if(format.equals("pdf") && download) {
+            return genPdfHeadersWithDownload(templateName);
+        }
+        else if(format.equals("pdf")) {
+            return genPdfHeaders(templateName);
+        }
+        return null;
+    }
+
     private HttpHeaders genHtmlHeaders(){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_HTML);
@@ -106,6 +119,16 @@ public class TemplateService {
         headers.setContentType(MediaType.APPLICATION_PDF);
         String filename = templateName + ".pdf";
         headers.setContentDispositionFormData("inline", filename);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return headers;
+    }
+
+    private HttpHeaders genPdfHeadersWithDownload(String templateName){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        String filename = templateName + ".pdf";
+        headers.setContentDispositionFormData("attachment", filename);
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
         return headers;
@@ -145,7 +168,28 @@ public class TemplateService {
                     useTestSet
             );
 
-            return returnConvertedLetter(templateName, valueFields, format);
+            HttpHeaders headers = genHeaders(format, templateName, false);
+            return returnConvertedLetter(templateName, valueFields, format, headers);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity returnLetterResponseAndDownload(String templateName, String payload, boolean useTestSet){
+        try{
+            JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
+
+            JsonNode valueFields = jsonUtils.extractInterleavingFields(
+                    templateName,
+                    jsonContent,
+                    useTestSet
+            );
+
+            HttpHeaders headers = genHeaders("pdf", templateName, true);
+            return returnConvertedLetter(templateName, valueFields, "pdf", headers);
         }
         catch (IOException e){
             e.printStackTrace();
@@ -169,7 +213,8 @@ public class TemplateService {
                     useTestSet
             );
 
-            return returnConvertedLetter(templateName, valueFields, format);
+            HttpHeaders headers = genHeaders(format, templateName, false);
+            return returnConvertedLetter(templateName, valueFields, format, headers);
         }
         catch (IOException e){
             e.printStackTrace();
@@ -178,7 +223,7 @@ public class TemplateService {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format) {
+    private ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format, HttpHeaders headers) {
         String compiledTemplate = getCompiledTemplate(templateName, interleavingFields);
         if(compiledTemplate == null){
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
@@ -186,7 +231,7 @@ public class TemplateService {
 
         if (format.equals("html")) {
             Document styledHtml = generateUtils.appendHtmlMetadata(compiledTemplate, "html");
-            return new ResponseEntity<>(styledHtml.html(), genHtmlHeaders(), HttpStatus.OK);
+            return new ResponseEntity<>(styledHtml.html(), headers, HttpStatus.OK);
         } else if (format.equals("pdf") || format.equals("pdfa")) {
             Document styledHtml = generateUtils.appendHtmlMetadata(compiledTemplate, "pdf");
             generateUtils.addDocumentParts(styledHtml);
@@ -199,7 +244,7 @@ public class TemplateService {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
-            return new ResponseEntity<>(pdfContent, genPdfHeaders(templateName), HttpStatus.OK);
+            return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
         }
         return null;
     }
