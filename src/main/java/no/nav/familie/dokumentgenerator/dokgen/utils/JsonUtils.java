@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -59,23 +60,19 @@ public class JsonUtils {
         return valueFields;
     }
 
-    public String validateTestData(String templateName, String json) {
+    public void validateTestData(String templateName, String json) throws ValidationException {
         String jsonSchemaLocation = fileUtils.getContentRoot() + "templates/" + templateName + "/" + templateName + ".schema.json";
         try (InputStream inputStream = new FileInputStream(jsonSchemaLocation)) {
 
-            JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
+            String stringSchema = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+
+            JSONObject rawSchema = new JSONObject(new JSONTokener(stringSchema));
             Schema schema = SchemaLoader.load(rawSchema);
 
-            try {
-                schema.validate(new JSONObject(json)); // throws a ValidationException if this object is invalid
-            } catch (ValidationException e) {
-                JSONObject jsonObject = e.toJSON();
-                return jsonObject.toString();
-            }
+            schema.validate(new JSONObject(json)); // throws a ValidationException if this object is invalid
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     public String getEmptyTestData(String templateName) {

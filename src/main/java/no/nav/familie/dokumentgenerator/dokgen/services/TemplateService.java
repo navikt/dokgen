@@ -14,7 +14,10 @@ import com.github.jknack.handlebars.io.TemplateLoader;
 import no.nav.familie.dokumentgenerator.dokgen.utils.FileUtils;
 import no.nav.familie.dokumentgenerator.dokgen.utils.GenerateUtils;
 import no.nav.familie.dokumentgenerator.dokgen.utils.JsonUtils;
+import org.everit.json.schema.ValidationException;
+import org.json.JSONObject;
 import org.jsoup.nodes.Document;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,6 +39,9 @@ public class TemplateService {
     private GenerateUtils generateUtils;
     private JsonUtils jsonUtils;
     private FileUtils fileUtils;
+
+    @Value("${write.access:false}")
+    private Boolean writeAccess;
 
     public TemplateService() {
         this.fileUtils = FileUtils.getInstance();
@@ -70,9 +76,11 @@ public class TemplateService {
         return null;
     }
 
-    private String getCompiledTemplate(String templateName, JsonNode interleavingFields) {
+    private String getCompiledTemplate(String templateName, JsonNode interleavingFields) throws ValidationException {
         try {
             Template template = compileTemplate(templateName);
+
+            jsonUtils.validateTestData(templateName, interleavingFields.toString());
             if(template != null){
                 return template.apply(insertTestData(interleavingFields));
             }
@@ -199,6 +207,10 @@ public class TemplateService {
     }
 
     public ResponseEntity saveAndReturnTemplateResponse(String format, String templateName, String payload) {
+        if(!writeAccess) {
+            return new ResponseEntity(HttpStatus.FORBIDDEN);
+        }
+
         try{
             JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
 
@@ -223,8 +235,16 @@ public class TemplateService {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format, HttpHeaders headers) {
-        String compiledTemplate = getCompiledTemplate(templateName, interleavingFields);
+    private ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format, HttpHeaders headers)  {
+        String compiledTemplate;
+
+        try {
+            compiledTemplate = getCompiledTemplate(templateName, interleavingFields);
+        }
+        catch (ValidationException e) {
+            return new ResponseEntity<>(e.toJSON().toString(), HttpStatus.BAD_REQUEST);
+        }
+
         if(compiledTemplate == null){
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
@@ -259,25 +279,24 @@ public class TemplateService {
         return jsonUtils.getEmptyTestData(templateName);
     }
 
-    public ResponseEntity createTestSet(String templateName, String testSetName, String testSetContent) {
-        String errorMessage = jsonUtils.validateTestData(templateName, testSetContent);
-        String responseMessage = null;
-        String createdFileName = null;
-        HttpStatus httpStatus = HttpStatus.CREATED;
+    public ResponseEntity createTestSet(String templateName, String payload) {
 
-        if (errorMessage != null) {
-            httpStatus = HttpStatus.BAD_REQUEST;
-            responseMessage = errorMessage;
-        } else {
+        JSONObject obj = new JSONObject(payload);
+        String testSetName = obj.getString("name");
+        String testSetContent = obj.getJSONObject("content").toString(4);
+        String createdFileName;
+
+        try{
+            jsonUtils.validateTestData(templateName, testSetContent);
             createdFileName = fileUtils.createNewTestSet(templateName, testSetName, testSetContent);
         }
-
-        if (createdFileName == null) {
-            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-        } else {
-            responseMessage = createdFileName;
+        catch (ValidationException e) {
+            return new ResponseEntity<>(e.toJSON().toString(), HttpStatus.BAD_REQUEST);
+        }
+        catch (IOException e){
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<>(responseMessage, httpStatus);
+        return new ResponseEntity<>(createdFileName, HttpStatus.CREATED);
     }
 }
