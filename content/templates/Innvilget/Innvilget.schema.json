@@ -6,31 +6,34 @@
   "title": "The Root Schema",
   "required": [
     "belop",
-    "dato",
+    "startDato",
     "begrunnelse",
-    "antall_timer",
-    "kontantstotte_lov",
+    "etterbetaling",
+    "antallTimer",
+    "stotteProsent",
+    "enhet",
     "saksbehandler"
   ],
   "properties": {
     "belop": {
       "$id": "#/properties/belop",
-      "type": "integer",
+      "type": "number",
       "title": "The Belop Schema",
       "default": "",
       "examples": [
-        "5000"
+        ""
       ]
     },
-    "dato": {
-      "$id": "#/properties/dato",
+    "startDato": {
+      "$id": "#/properties/startDato",
       "type": "string",
-      "title": "The Dato Schema",
+      "title": "The Startdato Schema",
       "default": "",
       "examples": [
-        "01.07"
+        "yyyy-mm-dd"
       ],
-      "pattern": "^(.*)$"
+      "pattern": "",
+      "format": "date"
     },
     "begrunnelse": {
       "$id": "#/properties/begrunnelse",
@@ -38,46 +41,63 @@
       "title": "The Begrunnelse Schema",
       "default": "",
       "examples": [
-        "BEGRUNNELSE"
+        ""
       ],
       "pattern": "^(.*)$"
     },
-    "mnd_etterbetaling": {
-      "$id": "#/properties/mnd_etterbetaling",
-      "type": "string",
-      "title": "The Mnd_etterbetaling Schema",
-      "default": "",
+    "etterbetaling": {
+      "$id": "#/properties/etterbetaling",
+      "type": "boolean",
+      "title": "The Etterbetaling Schema",
+      "default": false,
       "examples": [
-        "01.06"
-      ],
-      "pattern": "^(.*)$"
-    },
-    "belop_etterbetaling": {
-      "$id": "#/properties/belop_etterbetaling",
-      "type": "string",
-      "title": "The Belop_etterbetaling Schema",
-      "default": "",
-      "examples": [
-        "1500"
-      ],
-      "pattern": "^(.*)$"
-    },
-    "antall_timer": {
-      "$id": "#/properties/antall_timer",
-      "type": "integer",
-      "title": "The Antall_timer Schema",
-      "default": "",
-      "examples": [
-        "40"
+        true
       ]
     },
-    "kontantstotte_lov": {
-      "$id": "#/properties/kontantstotte_lov",
+    "etterbetalingsmaaned": {
+      "$id": "#/properties/etterbetalingsmaaned",
       "type": "string",
-      "title": "The Kontantstotte_lov Schema",
+      "title": "The Etterbetalingsmaaned Schema",
       "default": "",
       "examples": [
-        "2, 3, 7, 8 og 9"
+        "yyyy-mm-dd"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "etterbetalingsbelop": {
+      "$id": "#/properties/etterbetalingsbelop",
+      "type": "number",
+      "title": "The Etterbetalingsbelop Schema",
+      "default": "",
+      "examples": [
+        ""
+      ]
+    },
+    "antallTimer": {
+      "$id": "#/properties/antallTimer",
+      "type": "integer",
+      "title": "The Antalltimer Schema",
+      "default": "",
+      "examples": [
+        ""
+      ]
+    },
+    "stotteProsent": {
+      "$id": "#/properties/stotteProsent",
+      "type": "integer",
+      "title": "The Stotteprosent Schema",
+      "default": "",
+      "examples": [
+        ""
+      ]
+    },
+    "enhet": {
+      "$id": "#/properties/enhet",
+      "type": "string",
+      "title": "The Enhet Schema",
+      "default": "",
+      "examples": [
+        ""
       ],
       "pattern": "^(.*)$"
     },
@@ -87,7 +107,7 @@
       "title": "The Saksbehandler Schema",
       "default": "",
       "examples": [
-        "SAKSBEHANDLER"
+        ""
       ],
       "pattern": "^(.*)$"
     }
