@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.dokgen.utils;
+package no.nav.familie.dokumentgenerator.dokgen.services;
 
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
@@ -12,21 +12,32 @@ import org.jsoup.Jsoup;
 import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Service
-public class GenerateUtils {
+public class DokumentGeneratorService {
+    private static final Logger LOG = LoggerFactory.getLogger(DokumentGeneratorService.class);
 
-    private FileUtils fileUtils = FileUtils.getInstance();
+    private Path contentRoot;
 
-    public void addDocumentParts(Document document){
-        String resourceLocation = fileUtils.getContentRoot() + "assets/htmlParts/";
-        try{
+    @Autowired
+    public DokumentGeneratorService(@Value("${path.content.root:./content/}") Path contentRoot) {
+        this.contentRoot = contentRoot;
+    }
+
+    public void addDocumentParts(Document document) {
+        String resourceLocation = contentRoot + "/assets/htmlParts/";
+        try {
 
             String header = new String(Files.readAllBytes(Paths.get(resourceLocation + "headerTemplate.html")));
             String footer = new String(Files.readAllBytes(Paths.get(resourceLocation + "footerTemplate.html")));
@@ -34,8 +45,7 @@ public class GenerateUtils {
             Element body = document.body();
             body.prepend(header);
             body.append(footer);
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -47,35 +57,35 @@ public class GenerateUtils {
         Element head = document.head();
 
         head.append("<meta charset=\"UTF-8\">");
-        head.append("<style>" + fileUtils.getCss(cssName) + "</style>");
+        head.append("<style>" + hentCss(cssName) + "</style>");
 
         return document;
     }
 
-    public void generatePDF(Document html, ByteArrayOutputStream outputStream) {
+    public void genererPDF(Document html, ByteArrayOutputStream outputStream) {
         org.w3c.dom.Document doc = new W3CDom().fromJsoup(html);
 
         PdfRendererBuilder builder = new PdfRendererBuilder();
-        try{
-            byte[] colorProfile = IOUtils.toByteArray(new FileInputStream(fileUtils.getContentRoot() + "assets/sRGB2014.icc"));
+        try {
+            byte[] colorProfile = IOUtils.toByteArray(new FileInputStream(new File(contentRoot.toFile(), "assets/sRGB2014.icc")));
 
             builder
                     .useFont(
-                            new File(fileUtils.getContentRoot() + "assets/fonts/fontpack/SourceSansPro-Regular.ttf"),
+                            new File(contentRoot.toFile(), "assets/fonts/fontpack/SourceSansPro-Regular.ttf"),
                             "Source Sans Pro",
                             400,
                             BaseRendererBuilder.FontStyle.NORMAL,
                             false
                     )
                     .useFont(
-                            new File(fileUtils.getContentRoot() + "assets/fonts/fontpack/SourceSansPro-Bold.ttf"),
+                            new File(contentRoot.toFile(), "assets/fonts/fontpack/SourceSansPro-Bold.ttf"),
                             "Source Sans Pro",
                             700,
                             BaseRendererBuilder.FontStyle.OBLIQUE,
                             false
                     )
                     .useFont(
-                            new File(fileUtils.getContentRoot() + "assets/fonts/fontpack/SourceSansPro-Italic.ttf"),
+                            new File(contentRoot.toFile(), "assets/fonts/fontpack/SourceSansPro-Italic.ttf"),
                             "Source Sans Pro",
                             400,
                             BaseRendererBuilder.FontStyle.ITALIC,
@@ -88,9 +98,8 @@ public class GenerateUtils {
                     .toStream(outputStream)
                     .buildPdfRenderer()
                     .createPDF();
-        }
-        catch (IOException e){
-            e.printStackTrace();
+        } catch (IOException e) {
+            LOG.error("Kunne ikke generere pdf", e); //TODO Bedre feilhåndtering
         }
     }
 
@@ -105,6 +114,15 @@ public class GenerateUtils {
 
     private String renderToHTML(Node document) {
         return getHtmlRenderer().render(document);
+    }
+
+    String hentCss(String cssName) {
+        try {
+            return new String(Files.readAllBytes(Paths.get(contentRoot + "/assets/css/" + cssName + ".css")));
+        } catch (IOException e) {
+            LOG.error("Kunne ikke åpne template malen", e); //FIXME sjekke om man det er en grunn til at man ikke bare feiler.
+        }
+        return null;
     }
 
     private Parser getMarkdownToHtmlParser() {

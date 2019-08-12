@@ -2,10 +2,17 @@ package no.nav.familie.dokumentgenerator.dokgen.controller;
 
 
 import io.swagger.annotations.ApiOperation;
-import org.json.JSONObject;
+import no.nav.familie.dokumentgenerator.dokgen.feil.DokgenValideringException;
+import no.nav.familie.dokumentgenerator.dokgen.services.TestdataService;
 
 import no.nav.familie.dokumentgenerator.dokgen.services.TemplateService;
+import org.everit.json.schema.ValidationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,71 +21,127 @@ import java.util.List;
 @CrossOrigin(origins = {"http://localhost:3000"})
 @RestController
 public class TemplateController {
+    private static final Logger LOG = LoggerFactory.getLogger(TemplateController.class);
 
-    private final TemplateService templateManagementService;
+    @Value("${write.access:false}")
+    private Boolean writeAccess;
 
-    public TemplateController(TemplateService templateManagementService) {
-        this.templateManagementService = templateManagementService;
+
+    private final TemplateService malService;
+    private final TestdataService testdataService;
+
+    public TemplateController(TemplateService malService, TestdataService testdataService) {
+        this.malService = malService;
+        this.testdataService = testdataService;
     }
 
     @GetMapping("/mal/alle")
     @ApiOperation(value = "Få en liste over alle malene som er tilgjengelig")
-    public List<String> getAllTemplateNames() {
-        return templateManagementService.getTemplateSuggestions();
+    public List<String> hentAlleMaler() {
+        return malService.hentAlleMaler();
     }
 
-    @GetMapping(value = "/mal/{templateName}", produces = "text/plain")
+    @GetMapping(value = "/mal/{malNavn}", produces = "text/plain")
     @ApiOperation(value = "Hent malen i markdown")
-    public String getTemplateContentInMarkdown(@PathVariable String templateName) {
-        return templateManagementService.getMarkdownTemplate(templateName);
+    public String hentMal(@PathVariable String malNavn) {
+        return malService.hentMal(malNavn);
     }
 
-    @PostMapping(value = "/mal/{format}/{templateName}", consumes = "application/json")
+    @PostMapping(value = "/mal/{format}/{malNavn}", consumes = "application/json")
     @ApiOperation(
             value = "Generer malen i ønsket format",
             notes = "Støttede formater er <b>html</b> og <b>pdf</b>, hvor PDF er av versjonen PDF/A"
     )
     public ResponseEntity setTemplateContent(@PathVariable String format,
-                                             @PathVariable String templateName,
+                                             @PathVariable String malNavn,
                                              @RequestBody String payload) {
-        return templateManagementService.returnLetterResponse(
-                format,
-                templateName,
-                payload
-        );
+        LOG.info("Genererer mal i ønsket format. Format={}, malNavn={}, payload={}", format, malNavn, payload);
+        Object dokument;
+        try {
+            if ("pdf".equals(format)) {
+                dokument = malService.lagPdf(malNavn, payload);
+            } else if ("html".equals(format)) {
+                dokument = malService.lagHtml(malNavn, payload);
+            } else {
+                return new ResponseEntity<>("Ukjent format " + format, HttpStatus.BAD_REQUEST);
+            }
+        } catch (ValidationException e) {
+            return new ResponseEntity<>(e.toJSON().toString(), HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if (dokument == null) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity<>(dokument, genHeaders(format, malNavn, false), HttpStatus.OK);
+        }
     }
 
-    @PutMapping(value = "/mal/{format}/{templateName}", consumes = "application/json")
-    public ResponseEntity updateTemplateContent(@PathVariable String format,
-                                                @PathVariable String templateName,
-                                                @RequestBody String payload) {
-        return templateManagementService.saveAndReturnTemplateResponse(
-                format,
-                templateName,
-                payload
-        );
+    private HttpHeaders genHeaders(String format, String malNavn, boolean download) {
+        if (format.equals("html")) {
+            return genHtmlHeaders();
+        } else if (format.equals("pdf")) {
+            return genPdfHeaders(malNavn, download);
+        }
+        return null;
     }
 
-    @GetMapping(value = "mal/{templateName}/testdata")
+    private HttpHeaders genHtmlHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_HTML);
+        return headers;
+    }
+
+    private HttpHeaders genPdfHeaders(String malNavn, boolean download) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        String filename = malNavn + ".pdf";
+        headers.setContentDispositionFormData(download ? "attachment" : "inline", filename);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        return headers;
+    }
+
+    @PutMapping(value = "/mal/{format}/{malNavn}", consumes = "application/json")
+    public ResponseEntity endreMalInnhold(@PathVariable String format,
+                                          @PathVariable String malNavn,
+                                          @RequestBody String payload) {
+        if (!writeAccess) {
+            return new ResponseEntity(HttpStatus.FORBIDDEN);
+        }
+        try {
+            malService.lagreMal(
+                    malNavn,
+                    payload
+            );
+        } catch (RuntimeException e) {
+            LOG.error("Feil ved endring av mal={}", malNavn, e);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return this.setTemplateContent(format, malNavn, payload);
+    }
+
+    @GetMapping(value = "mal/{malNavn}/testdata")
     @ApiOperation(value = "Hent de forskjellige testdataene for spesifikk mal")
-    public ResponseEntity<List<String>> getTestData(@PathVariable String templateName) {
-        List<String> response = templateManagementService.getTestdataNames(templateName);
+    public ResponseEntity<List<String>> hentTestdataForMal(@PathVariable String malNavn) {
+        List<String> response = testdataService.hentTestdatasettForMal(malNavn);
 
         if (response == null) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<>(templateManagementService.getTestdataNames(templateName), HttpStatus.OK);
+        return new ResponseEntity<>(testdataService.hentTestdatasettForMal(malNavn), HttpStatus.OK);
     }
 
-    @GetMapping(value = "mal/{templateName}/tomtTestSett", produces = "application/json")
+    @GetMapping(value = "mal/{malNavn}/tomtTestSett", produces = "application/json")
     @ApiOperation(value = "Hent et tomt testsett for malen som kan fylles ut")
-    public ResponseEntity<String> getEmptyTestSet(@PathVariable String templateName) {
-        return new ResponseEntity<>(templateManagementService.getEmptyTestSet(templateName), HttpStatus.OK);
+    public ResponseEntity<String> hentTomtTestdataSett(@PathVariable String malNavn) {
+        return new ResponseEntity<>(testdataService.hentTomtTestsett(malNavn), HttpStatus.OK);
     }
 
 
-    @PostMapping(value="mal/{templateName}/nyttTestSett", consumes = "application/json", produces = "application/json")
+    @PostMapping(value = "mal/{malNavn}/nyttTestSett", consumes = "application/json", produces = "application/json")
     @ApiOperation(
             value = "Lag et nytt testsett for en mal",
             notes = "For å generere et tomt testsett må oppsettet i payloaden følge lignende struktur: \n" +
@@ -92,23 +155,21 @@ public class TemplateController {
                     "\"name\": \"Navn på testsettet\"\n" +
                     "}"
     )
-    public ResponseEntity createNewTestSet(@PathVariable String templateName, @RequestBody String payload) {
-        return templateManagementService.createTestSet(templateName, payload);
+    public ResponseEntity lagreNyttTestset(@PathVariable String malNavn, @RequestBody String payload) {
+        String testSetName = null;
+        try {
+            testSetName = testdataService.lagTestsett(malNavn, payload);
+            return new ResponseEntity<>(testSetName, HttpStatus.CREATED);
+        } catch (DokgenValideringException e) {
+            LOG.info("Valideringsfeil ved lagring av nytt testdata for mal={}", malNavn);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            LOG.error("Ukjent feil ved lagring av nytt testdata for mal={}", malNavn, e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-
-    @PostMapping(value = "/brev/{format}/{templateName}", consumes = "application/json")
-    public ResponseEntity getGeneratedContent(@PathVariable String format,
-                                                   @PathVariable String templateName,
-                                                   @RequestBody String payload) {
-        return templateManagementService.returnLetterResponse(
-                format,
-                templateName,
-                payload
-        );
-    }
-
-    @PostMapping(value = "/brev/{templateName}/download", consumes = "application/json")
+    @PostMapping(value = "/brev/{malNavn}/download", consumes = "application/json")
     @ApiOperation(value = "Last ned et brev i PDF/A-format",
             notes = "Dersom det er ønskelig å bruke et <b>eksisterende</b> testset må payloaden se f.eks. slik ut dersom du skal laste ned et brev for Avslag: \n" +
                     "{\n" +
@@ -124,12 +185,23 @@ public class TemplateController {
                     "   \"enhet\": \"ENHET\",\n" +
                     "   \"saksbehandler\": \"Ola Nordmann\"\n" +
                     "}\n" +
-                    "}" )
-    public ResponseEntity getGeneratedContentDownload(@PathVariable String templateName,
-                                                      @RequestBody String payload) {
-        return templateManagementService.returnLetterResponseAndDownload(
-                templateName,
-                payload
-        );
+                    "}")
+    public ResponseEntity hentPdf(@PathVariable String malNavn,
+                                  @RequestBody String payload) {
+        try {
+            byte[] pdf = malService.lagPdf(malNavn, payload);
+            if (pdf == null) {
+                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            } else {
+                return new ResponseEntity<>(pdf, genHeaders("pdf", malNavn, true), HttpStatus.OK);
+            }
+
+        } catch (ValidationException e) {
+            LOG.info("Valideringsfeil ved henting av pdf for mal={}", malNavn);
+            return new ResponseEntity<>(e.toJSON().toString(), HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            LOG.error("Ukjent feil ved henting av pdf for mal={}", malNavn, e);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
