@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.dokgen.utils;
+package no.nav.familie.dokumentgenerator.dokgen.services;
 
 import static org.junit.Assert.assertTrue;
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester;
@@ -7,6 +7,7 @@ import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester.PdfCompareResult
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,10 +17,10 @@ import org.apache.commons.io.IOUtils;
 import org.jsoup.nodes.Document;
 import org.junit.Test;
 
-public class GenerateUtilsTests {
+public class DokumentGeneratorServiceTests {
     private static final String TEST_OUTPUT_PATH = "target/regression-tests/";
     private static final String EXPECTED_RES_PATH = "/test-fixtures/expected-pdf/";
-    private GenerateUtils generateUtils = new GenerateUtils();
+    private DokumentGeneratorService dokumentGeneratorService = new DokumentGeneratorService(Path.of("./content"));
 
     private boolean runTest(String resource, byte[] actualPdfBytes) throws IOException {
         Files.createDirectories(Paths.get(TEST_OUTPUT_PATH));
@@ -27,7 +28,7 @@ public class GenerateUtilsTests {
         // Load expected PDF document from resources, change class below.
         byte[] expectedPdfBytes;
 
-        try (InputStream expectedIs = GenerateUtilsTests.class.getResourceAsStream(EXPECTED_RES_PATH + resource + ".pdf")) {
+        try (InputStream expectedIs = DokumentGeneratorServiceTests.class.getResourceAsStream(EXPECTED_RES_PATH + resource + ".pdf")) {
             expectedPdfBytes = IOUtils.toByteArray(expectedIs);
         }
 
@@ -69,10 +70,10 @@ public class GenerateUtilsTests {
     @Test
     public void testPdfGeneration() throws IOException {
         String html = getDocumentFromHtmlFixture("minimal1");
-        Document doc = generateUtils.appendHtmlMetadata(html, "pdf");
+        Document doc = dokumentGeneratorService.appendHtmlMetadata(html, "pdf");
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        generateUtils.generatePDF(doc, outputStream);
+        dokumentGeneratorService.genererPDF(doc, outputStream);
         byte[] expectedBytes = outputStream.toByteArray();
 
         assertTrue(runTest("minimal1", expectedBytes));
@@ -81,11 +82,11 @@ public class GenerateUtilsTests {
     @Test
     public void testPdfGenerationWithSvg() throws IOException {
         String html = getDocumentFromHtmlFixture("svg1");
-        Document doc = generateUtils.appendHtmlMetadata(html, "pdf");
-        generateUtils.addDocumentParts(doc);
+        Document doc = dokumentGeneratorService.appendHtmlMetadata(html, "pdf");
+        dokumentGeneratorService.addDocumentParts(doc);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        generateUtils.generatePDF(doc, outputStream);
+        dokumentGeneratorService.genererPDF(doc, outputStream);
         byte[] expectedBytes = outputStream.toByteArray();
 
         assertTrue(runTest("svg1", expectedBytes));
@@ -94,11 +95,11 @@ public class GenerateUtilsTests {
     @Test
     public void testPdfGenerationWithList() throws IOException {
         String html = getDocumentFromHtmlFixture("list1");
-        Document doc = generateUtils.appendHtmlMetadata(html, "pdf");
-        generateUtils.addDocumentParts(doc);
+        Document doc = dokumentGeneratorService.appendHtmlMetadata(html, "pdf");
+        dokumentGeneratorService.addDocumentParts(doc);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        generateUtils.generatePDF(doc, outputStream);
+        dokumentGeneratorService.genererPDF(doc, outputStream);
         byte[] expectedBytes = outputStream.toByteArray();
 
         assertTrue(runTest("list1", expectedBytes));

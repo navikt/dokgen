@@ -11,82 +11,63 @@ import com.github.jknack.handlebars.context.MapValueResolver;
 import com.github.jknack.handlebars.context.MethodValueResolver;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
-import no.nav.familie.dokumentgenerator.dokgen.utils.FileUtils;
-import no.nav.familie.dokumentgenerator.dokgen.utils.GenerateUtils;
-import no.nav.familie.dokumentgenerator.dokgen.utils.JsonUtils;
+import no.nav.familie.dokumentgenerator.dokgen.util.MalUtil;
 import org.everit.json.schema.ValidationException;
-import org.json.JSONObject;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.safety.Whitelist;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
 public class TemplateService {
+    private static final Logger LOG = LoggerFactory.getLogger(TemplateService.class);
+
     private Handlebars handlebars;
-    private GenerateUtils generateUtils;
-    private JsonUtils jsonUtils;
-    private FileUtils fileUtils;
+    private DokumentGeneratorService dokumentGeneratorService;
+    private JsonService jsonService;
 
-    @Value("${write.access:false}")
-    private Boolean writeAccess;
+    private Path contentRoot;
 
-    public TemplateService() {
-        this.fileUtils = FileUtils.getInstance();
+    @Autowired
+    TemplateService(@Value("${path.content.root:./content/}") Path contentRoot, DokumentGeneratorService dokumentGeneratorService, JsonService jsonService) {
+        this.contentRoot = contentRoot;
+        TemplateLoader loader = new FileTemplateLoader(MalUtil.hentMalRoot(contentRoot).toFile());
+        handlebars = new Handlebars(loader);
+        this.dokumentGeneratorService = dokumentGeneratorService;
+        this.jsonService = jsonService;
     }
 
-    public TemplateService(String contentRoot) {
-        this.fileUtils = FileUtils.getInstance(contentRoot);
-    }
-
-    private Handlebars getHandlebars() {
-        return handlebars;
-    }
-
-    private void setHandlebars(Handlebars handlebars) {
-        this.handlebars = handlebars;
-    }
-
-    private void setGenerateUtils(GenerateUtils generateUtils) {
-        this.generateUtils = generateUtils;
-    }
-
-    private void setJsonUtils(JsonUtils jsonUtils) {
-        this.jsonUtils = jsonUtils;
-    }
-
-    private Template compileTemplate(String templateName) {
+    private Template kompilerMal(String malNavn) {
         try {
-            return this.getHandlebars().compile(templateName + "/" + templateName);
+            return handlebars.compile(malNavn + "/" + malNavn);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Kompilering av templates feiler", e);
         }
         return null;
     }
 
-    private String getCompiledTemplate(String templateName, JsonNode interleavingFields) throws ValidationException {
-        try {
-            Template template = compileTemplate(templateName);
+    private String hentKompilertMal(String malNavn, JsonNode interleavingFields) throws ValidationException, IOException {
+        Template template = kompilerMal(malNavn);
 
-            jsonUtils.validateTestData(templateName, interleavingFields.toString());
-            if(template != null){
-                return template.apply(insertTestData(interleavingFields));
-            }
-            return null;
-        } catch (IOException e) {
-            e.printStackTrace();
+        jsonService.validateTestData(MalUtil.hentJsonSchemaForMal(contentRoot, malNavn), interleavingFields.toString());
+        if (template != null) {
+            return template.apply(insertTestData(interleavingFields));
         }
         return null;
     }
@@ -102,201 +83,111 @@ public class TemplateService {
                 ).build();
     }
 
-    private HttpHeaders genHeaders(String format, String templateName, boolean download) {
-        if(format.equals("html")) {
-            return genHtmlHeaders();
+
+    public List<String> hentAlleMaler() {
+        try (Stream<Path> paths = Files.list(MalUtil.hentMalRoot(contentRoot))) {
+            return paths
+                    .filter(Files::isDirectory)
+                    .map(x -> x.getFileName().toString())
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            LOG.error("Kan ikke hente maler i contentRoot={}", contentRoot, e);
+            return new ArrayList<>();
         }
-        else if(format.equals("pdf") && download) {
-            return genPdfHeadersWithDownload(templateName);
-        }
-        else if(format.equals("pdf")) {
-            return genPdfHeaders(templateName);
+    }
+
+    public String hentMal(String malNavn) {
+        try {
+            return new String(Files.readAllBytes(MalUtil.hentMal(contentRoot, malNavn)));
+        } catch (IOException e) {
+            LOG.error("Kan ikke hente mal={}", malNavn, e);
         }
         return null;
     }
 
-    private HttpHeaders genHtmlHeaders(){
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.TEXT_HTML);
-
-        return headers;
-    }
-
-    private HttpHeaders genPdfHeaders(String templateName){
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        String filename = templateName + ".pdf";
-        headers.setContentDispositionFormData("inline", filename);
-        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-
-        return headers;
-    }
-
-    private HttpHeaders genPdfHeadersWithDownload(String templateName){
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        String filename = templateName + ".pdf";
-        headers.setContentDispositionFormData("attachment", filename);
-        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-
-        return headers;
-    }
-
-    @PostConstruct
-    public void loadHandlebarTemplates() {
-        TemplateLoader loader = new FileTemplateLoader(new File(this.fileUtils.getContentRoot() + "templates/").getPath());
-        setHandlebars(new Handlebars(loader));
-        setGenerateUtils(new GenerateUtils());
-        setJsonUtils(new JsonUtils());
-    }
-
-    public List<String> getTemplateSuggestions() {
-        return fileUtils.getResourceNames(this.fileUtils.getContentRoot() + "templates/");
-    }
-
-    public String getMarkdownTemplate(String templateName) {
-        String content = null;
-        String path = fileUtils.getTemplatePath(templateName);
+    public byte[] lagPdf(String malNavn, String payload) {
         try {
-            content = new String(Files.readAllBytes(Paths.get(path)));
+            JsonNode jsonContent = jsonService.getJsonFromString(payload);
+
+            JsonNode valueFields = jsonService.extractInterleavingFields(
+                    malNavn,
+                    jsonContent,
+                    jsonContent.get("useTestSet").asBoolean()
+            );
+            return konverterBrevTilPdf(malNavn, valueFields);
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Kunne ikke åpne template malen");
+            LOG.error("Feil ved henting av brev respons", e);
+            throw new RuntimeException("Kunne ikke lage pdf, malNavn={} " + malNavn, e);
         }
-        return content;
     }
 
-    public ResponseEntity returnLetterResponse(String format, String templateName, String payload){
-        try{
-            JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
+    public String lagHtml(String malNavn, String payload) {
+        try {
+            JsonNode jsonContent = jsonService.getJsonFromString(payload);
 
-            JsonNode valueFields = jsonUtils.extractInterleavingFields(
-                    templateName,
+            JsonNode valueFields = jsonService.extractInterleavingFields(
+                    malNavn,
                     jsonContent,
                     jsonContent.get("useTestSet").asBoolean()
             );
 
-            HttpHeaders headers = genHeaders(format, templateName, false);
-            return returnConvertedLetter(templateName, valueFields, format, headers);
+            return konverterBrevTilHtml(malNavn, valueFields);
+        } catch (IOException e) {
+            LOG.error("Feil ved henting av brev respons", e);
+            throw new RuntimeException("Kunne ikke lage pdf, malNavn={} " + malNavn, e);
         }
-        catch (IOException e){
-            e.printStackTrace();
-        }
-
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity returnLetterResponseAndDownload(String templateName, String payload){
-        try{
-            JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
+    public void lagreMal(String malNavn, String payload) {
+        try {
+            JsonNode jsonContent = jsonService.getJsonFromString(payload);
 
-            JsonNode valueFields = jsonUtils.extractInterleavingFields(
-                    templateName,
-                    jsonContent,
-                    jsonContent.get("useTestSet").asBoolean()
+            Document.OutputSettings settings = new Document.OutputSettings();
+            settings.prettyPrint(false);
+            String markdownContent = jsonContent.get("markdownContent").textValue();
+
+            String strippedHtmlSyntax = Jsoup.clean(
+                    markdownContent,
+                    "",
+                    Whitelist.none(),
+                    settings
             );
 
-            HttpHeaders headers = genHeaders("pdf", templateName, true);
-            return returnConvertedLetter(templateName, valueFields, "pdf", headers);
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
+            String path = "templates/" + malNavn + "/" + malNavn + ".hbs";
 
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            Path newFilePath = contentRoot.resolve(path);
+            Files.write(newFilePath, strippedHtmlSyntax.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            throw new RuntimeException("Feil ved lagring av mal=" + malNavn + " payload=" + payload);
+        }
     }
 
-    public ResponseEntity saveAndReturnTemplateResponse(String format, String templateName, String payload) {
-        if(!writeAccess) {
-            return new ResponseEntity(HttpStatus.FORBIDDEN);
-        }
-
-        try{
-            JsonNode jsonContent = jsonUtils.getJsonFromString(payload);
-
-            fileUtils.saveTemplateFile(
-                    templateName,
-                    jsonContent.get("markdownContent").textValue()
-            );
-
-            JsonNode valueFields = jsonUtils.extractInterleavingFields(
-                    templateName,
-                    jsonContent,
-                    jsonContent.get("useTestSet").asBoolean()
-            );
-
-            HttpHeaders headers = genHeaders(format, templateName, false);
-            return returnConvertedLetter(templateName, valueFields, format, headers);
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
-
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    private ResponseEntity returnConvertedLetter(String templateName, JsonNode interleavingFields, String format, HttpHeaders headers)  {
+    private String konverterBrevTilHtml(String malNavn, JsonNode interleavingFields) {
         String compiledTemplate;
 
         try {
-            compiledTemplate = getCompiledTemplate(templateName, interleavingFields);
-        }
-        catch (ValidationException e) {
-            return new ResponseEntity<>(e.toJSON().toString(), HttpStatus.BAD_REQUEST);
-        }
-
-        if(compiledTemplate == null){
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            compiledTemplate = hentKompilertMal(malNavn, interleavingFields);
+        } catch (IOException e) {
+            throw new RuntimeException("Ukjent feil ved konvertering av brev mal={}" + malNavn, e);
         }
 
-        if (format.equals("html")) {
-            Document styledHtml = generateUtils.appendHtmlMetadata(compiledTemplate, "html");
-            return new ResponseEntity<>(styledHtml.html(), headers, HttpStatus.OK);
-        } else if (format.equals("pdf") || format.equals("pdfa")) {
-            Document styledHtml = generateUtils.appendHtmlMetadata(compiledTemplate, "pdf");
-            generateUtils.addDocumentParts(styledHtml);
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            generateUtils.generatePDF(styledHtml, outputStream);
-            byte[] pdfContent = outputStream.toByteArray();
-
-            if (pdfContent == null) {
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-
-            return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
-        }
-        return null;
+        Document styledHtml = dokumentGeneratorService.appendHtmlMetadata(compiledTemplate, "html");
+        return styledHtml.html();
     }
 
-    public List<String> getTestdataNames(String templateName) {
-        String path = String.format(this.fileUtils.getContentRoot() + "templates/%s/testdata/", templateName);
-        return fileUtils.getResourceNames(path);
-    }
+    private byte[] konverterBrevTilPdf(String malNavn, JsonNode interleavingFields) {
+        String compiledTemplate;
 
-
-    public String getEmptyTestSet(String templateName) {
-        return jsonUtils.getEmptyTestData(templateName);
-    }
-
-    public ResponseEntity createTestSet(String templateName, String payload) {
-
-        JSONObject obj = new JSONObject(payload);
-        String testSetName = obj.getString("name");
-        String testSetContent = obj.getJSONObject("content").toString(4);
-        String createdFileName;
-
-        try{
-            jsonUtils.validateTestData(templateName, testSetContent);
-            createdFileName = fileUtils.createNewTestSet(templateName, testSetName, testSetContent);
+        try {
+            compiledTemplate = hentKompilertMal(malNavn, interleavingFields);
+        } catch (IOException e) {
+            throw new RuntimeException("Ukjent feil ved konvertering av brev mal={}" + malNavn, e);
         }
-        catch (ValidationException e) {
-            return new ResponseEntity<>(e.toJSON().toString(), HttpStatus.BAD_REQUEST);
-        }
-        catch (IOException e){
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Document styledHtml = dokumentGeneratorService.appendHtmlMetadata(compiledTemplate, "pdf");
+        dokumentGeneratorService.addDocumentParts(styledHtml);
 
-        return new ResponseEntity<>(createdFileName, HttpStatus.CREATED);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        dokumentGeneratorService.genererPDF(styledHtml, outputStream);
+        return outputStream.toByteArray();
     }
 }

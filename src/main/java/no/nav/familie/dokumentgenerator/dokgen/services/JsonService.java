@@ -1,12 +1,17 @@
-package no.nav.familie.dokumentgenerator.dokgen.utils;
+package no.nav.familie.dokumentgenerator.dokgen.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import no.nav.familie.dokumentgenerator.dokgen.feil.DokgenValideringException;
+import no.nav.familie.dokumentgenerator.dokgen.util.MalUtil;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -16,12 +21,14 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 @Service
-public class JsonUtils {
+public class JsonService {
+    private static final Logger LOG = LoggerFactory.getLogger(JsonService.class);
 
-    private FileUtils fileUtils = FileUtils.getInstance();
+    @Value("${path.content.root:./content/}")
+    private Path contentRoot;
 
     private JsonNode readJsonFile(URI path) {
         if (path != null) {
@@ -29,15 +36,14 @@ public class JsonUtils {
             try {
                 return mapper.readTree(new File(path));
             } catch (IOException e) {
-                System.out.println("Kan ikke finne JSON fil!");
-                e.printStackTrace();
+                LOG.error("Feil ved lesing av JSON", e);
             }
         }
         return null;
     }
 
-    private JsonNode getTestSetField(String templateName, String testSet){
-        URI path = Paths.get(fileUtils.getContentRoot() + "templates/" + templateName + "/testdata/" + testSet + ".json").toUri();
+    private JsonNode getTestSetField(String templateName, String testSet) {
+        URI path = MalUtil.hentTestsett(contentRoot, templateName, testSet).toUri();
         return readJsonFile(path);
     }
 
@@ -48,39 +54,35 @@ public class JsonUtils {
 
     public JsonNode extractInterleavingFields(String templateName, JsonNode jsonContent, boolean useTestSet) {
         JsonNode valueFields;
-        if(useTestSet){
+        if (useTestSet) {
             valueFields = getTestSetField(
                     templateName,
                     jsonContent.get("testSetName").textValue()
             );
-        }
-        else{
+        } else {
             return jsonContent.get("interleavingFields");
         }
         return valueFields;
     }
 
-    public void validateTestData(String templateName, String json) throws ValidationException {
-        String jsonSchemaLocation = fileUtils.getContentRoot() + "templates/" + templateName + "/" + templateName + ".schema.json";
-        try (InputStream inputStream = new FileInputStream(jsonSchemaLocation)) {
-
+    public void validateTestData(Path jsonSchema,  String json) throws IOException {
+        try (InputStream inputStream = new FileInputStream(jsonSchema.toFile())) {
             String stringSchema = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
             JSONObject rawSchema = new JSONObject(new JSONTokener(stringSchema));
             Schema schema = SchemaLoader.load(rawSchema);
 
             schema.validate(new JSONObject(json)); // throws a ValidationException if this object is invalid
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (ValidationException e) {
+            throw new DokgenValideringException(e.toJSON().toString(), e);
         }
     }
 
     public String getEmptyTestData(String templateName) {
-        String path = fileUtils.getContentRoot() + "templates/" + templateName + "/TomtTestsett.json";
         try {
-            return new String(Files.readAllBytes(Paths.get(path)));
+            return new String(Files.readAllBytes(MalUtil.hentTomtTestsett(contentRoot, templateName)));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Kunne ikke lese tomt testdata", e);
         }
         return null;
     }
