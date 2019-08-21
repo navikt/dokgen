@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -27,8 +28,11 @@ import java.nio.file.Path;
 public class JsonService {
     private static final Logger LOG = LoggerFactory.getLogger(JsonService.class);
 
-    @Value("${path.content.root:./content/}")
     private Path contentRoot;
+    @Autowired
+    public JsonService(@Value("${path.content.root:./content/}") Path contentRoot) {
+        this.contentRoot = contentRoot;
+    }
 
     private JsonNode readJsonFile(URI path) {
         if (path != null) {
@@ -82,7 +86,7 @@ public class JsonService {
         try {
             return new String(Files.readAllBytes(MalUtil.hentTomtTestsett(contentRoot, templateName)));
         } catch (IOException e) {
-            LOG.error("Kunne ikke lese tomt testdata", e);
+            LOG.error("Kunne ikke lese tomt testdata for {}", templateName, e);
         }
         return null;
     }

@@ -2,6 +2,7 @@ package no.nav.familie.dokumentgenerator.dokgen.services;
 
 import no.nav.familie.dokumentgenerator.dokgen.util.MalUtil;
 import org.apache.commons.io.FilenameUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -4,6 +4,7 @@ import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 
+import com.openhtmltopdf.util.XRLog;
 import org.apache.commons.io.IOUtils;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
@@ -33,6 +34,7 @@ public class DokumentGeneratorService {
     @Autowired
     public DokumentGeneratorService(@Value("${path.content.root:./content/}") Path contentRoot) {
         this.contentRoot = contentRoot;
+        XRLog.setLoggingEnabled(false);
     }
 
     public void addDocumentParts(Document document) {
