@@ -101,8 +101,8 @@ public class TemplateService {
             return new String(Files.readAllBytes(MalUtil.hentMal(contentRoot, malNavn)));
         } catch (IOException e) {
             LOG.error("Kan ikke hente mal={}", malNavn, e);
+            throw new RuntimeException("Kan ikke hente mal " + malNavn, e);
         }
-        return null;
     }
 
     public byte[] lagPdf(String malNavn, String payload) {
@@ -125,10 +125,13 @@ public class TemplateService {
         try {
             JsonNode jsonContent = jsonService.getJsonFromString(payload);
 
+
+            boolean use = jsonContent.get("useTestSet") != null && jsonContent.get("useTestSet").asBoolean();
+
             JsonNode valueFields = jsonService.extractInterleavingFields(
                     malNavn,
                     jsonContent,
-                    jsonContent.get("useTestSet").asBoolean()
+                    jsonContent.get("useTestSet") != null && jsonContent.get("useTestSet").asBoolean()
             );
 
             return konverterBrevTilHtml(malNavn, valueFields);
@@ -144,21 +147,26 @@ public class TemplateService {
 
             Document.OutputSettings settings = new Document.OutputSettings();
             settings.prettyPrint(false);
-            String markdownContent = jsonContent.get("markdownContent").textValue();
+            JsonNode markdownContent1 = jsonContent.get("markdownContent");
+            if (markdownContent1 != null) {
+                String markdownContent = jsonContent.get("markdownContent").textValue();
+                String strippedHtmlSyntax = Jsoup.clean(
+                        markdownContent,
+                        "",
+                        Whitelist.none(),
+                        settings
+                );
 
-            String strippedHtmlSyntax = Jsoup.clean(
-                    markdownContent,
-                    "",
-                    Whitelist.none(),
-                    settings
-            );
+                Path malPath = MalUtil.hentMal(contentRoot, malNavn);
+                Files.createDirectories(malPath.getParent());
 
-            String path = "templates/" + malNavn + "/" + malNavn + ".hbs";
+                Files.write(malPath, strippedHtmlSyntax.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+            } else {
+                throw new IllegalArgumentException("Kan ikke hente markdown for payload=" + payload);
+            }
 
-            Path newFilePath = contentRoot.resolve(path);
-            Files.write(newFilePath, strippedHtmlSyntax.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
         } catch (IOException e) {
-            throw new RuntimeException("Feil ved lagring av mal=" + malNavn + " payload=" + payload);
+            throw new RuntimeException("Feil ved lagring av mal=" + malNavn + " payload=" + payload, e);
         }
     }
 
@@ -168,7 +176,7 @@ public class TemplateService {
         try {
             compiledTemplate = hentKompilertMal(malNavn, interleavingFields);
         } catch (IOException e) {
-            throw new RuntimeException("Ukjent feil ved konvertering av brev mal={}" + malNavn, e);
+            throw new RuntimeException("Ukjent feil ved konvertering av brev mal=" + malNavn, e);
         }
 
         Document styledHtml = dokumentGeneratorService.appendHtmlMetadata(compiledTemplate, "html");
