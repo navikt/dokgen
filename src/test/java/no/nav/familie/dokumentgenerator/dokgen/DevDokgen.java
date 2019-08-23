@@ -4,16 +4,18 @@ import no.nav.familie.dokumentgenerator.dokgen.configuration.ApplicationConfig;
 import no.nav.familie.dokumentgenerator.dokgen.configuration.DelayedShutdownHook;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Profile;
 
-@SpringBootApplication
-public class Dokgen {
+@SpringBootApplication(exclude = ErrorMvcAutoConfiguration.class)
+public class DevDokgen {
 
     public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(ApplicationConfig.class);
-        app.setRegisterShutdownHook(false);
-        ConfigurableApplicationContext applicationContext = app.run(args);
-        Runtime.getRuntime().addShutdownHook(new DelayedShutdownHook(applicationContext));
+        new SpringApplicationBuilder(ApplicationConfig.class)
+                .profiles("dev")
+                .run(args);
     }
 
 }

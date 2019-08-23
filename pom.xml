@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.6.RELEASE</version>
+        <version>2.1.7.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>no.nav.familie.dokumentgenerator</groupId>
@@ -16,13 +16,26 @@
 
     <properties>
         <java.version>11</java.version>
+        <felles.version>1.0_20190819103533_69f5183</felles.version>
+        <handlebar.version>4.1.2</handlebar.version>
     </properties>
 
     <dependencies>
         <!-- Spring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -55,13 +68,13 @@
         <dependency>
             <groupId>com.github.jknack</groupId>
             <artifactId>handlebars</artifactId>
-            <version>4.0.5</version>
+            <version>${handlebar.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.jknack</groupId>
             <artifactId>handlebars-jackson2</artifactId>
-            <version>4.0.5</version>
+            <version>${handlebar.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
@@ -116,6 +129,12 @@
             <groupId>com.openhtmltopdf</groupId>
             <artifactId>openhtmltopdf-pdfbox</artifactId>
             <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>no.nav.familie.felles</groupId>
+            <artifactId>log</artifactId>
+            <version>${felles.version}</version>
         </dependency>
 
         <dependency>

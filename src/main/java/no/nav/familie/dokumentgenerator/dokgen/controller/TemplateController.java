@@ -14,8 +14,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 
 @CrossOrigin(origins = {"http://localhost:3000"})
@@ -88,7 +92,9 @@ public class TemplateController {
     }
 
     private HttpHeaders genHtmlHeaders() {
-        HttpHeaders headers = new HttpHeaders();
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.put("charset", Collections.singletonList(StandardCharsets.UTF_8.toString()));
+        HttpHeaders headers = new HttpHeaders(map);
         headers.setContentType(MediaType.TEXT_HTML);
         return headers;
     }

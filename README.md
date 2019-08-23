@@ -54,15 +54,15 @@ Gå til `http://localhost:8080/swagger-ui.html#/template-controller` for å få 
 
 ## Bygge og kjøre docker lokalt
 
-`write.access` er satt til `false` under prod for å hindre at maler blir endret på mens systemet er i bruk, dette må settes til `true` i `application.properties` under lokal testing.
+`write.access` er satt til `false` under prod for å hindre at maler blir endret på mens systemet er i bruk, dette må settes til `true` i `application.yml` under lokal testing.
 
 ```
 mvn -B -Dfile.encoding=UTF-8 -DinstallAtEnd=true -DdeployAtEnd=true  -DskipTests clean install
 
-docker build -t famile-dokgen .
+docker build -t familie-dokgen .
 
-docker run -p 8080:8080 -d --name famile-dokgen famile-dokgen 
+docker run -p 8080:8080 -d --name familie-dokgen familie-dokgen 
 
-docker stop famile-dokgen; docker rm famile-dokgen
+docker stop familie-dokgen; docker rm familie-dokgen
 ```
 
