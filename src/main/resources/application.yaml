@@ -1,0 +1,5 @@
+path.content.root: ./content/
+write.access: false
+
+logging:
+  config: "classpath:logback-spring.xml"

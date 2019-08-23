@@ -1,0 +1,4 @@
+path.content.root: ./content/
+write.access: true
+logging:
+  config: "classpath:logback-test.xml"

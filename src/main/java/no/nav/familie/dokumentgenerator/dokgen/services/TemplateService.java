@@ -9,6 +9,7 @@ import com.github.jknack.handlebars.context.FieldValueResolver;
 import com.github.jknack.handlebars.context.JavaBeanValueResolver;
 import com.github.jknack.handlebars.context.MapValueResolver;
 import com.github.jknack.handlebars.context.MethodValueResolver;
+import com.github.jknack.handlebars.helper.ConditionalHelpers;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import no.nav.familie.dokumentgenerator.dokgen.util.MalUtil;
@@ -49,6 +50,8 @@ public class TemplateService {
         this.contentRoot = contentRoot;
         TemplateLoader loader = new FileTemplateLoader(MalUtil.hentMalRoot(contentRoot).toFile());
         handlebars = new Handlebars(loader);
+        handlebars.registerHelper("eq", ConditionalHelpers.eq);
+        handlebars.registerHelper("neq", ConditionalHelpers.neq);
         this.dokumentGeneratorService = dokumentGeneratorService;
         this.jsonService = jsonService;
     }
@@ -98,7 +101,7 @@ public class TemplateService {
 
     public String hentMal(String malNavn) {
         try {
-            return new String(Files.readAllBytes(MalUtil.hentMal(contentRoot, malNavn)));
+            return Files.readString(MalUtil.hentMal(contentRoot, malNavn), StandardCharsets.UTF_8);
         } catch (IOException e) {
             LOG.error("Kan ikke hente mal={}", malNavn, e);
             throw new RuntimeException("Kan ikke hente mal " + malNavn, e);
@@ -124,9 +127,6 @@ public class TemplateService {
     public String lagHtml(String malNavn, String payload) {
         try {
             JsonNode jsonContent = jsonService.getJsonFromString(payload);
-
-
-            boolean use = jsonContent.get("useTestSet") != null && jsonContent.get("useTestSet").asBoolean();
 
             JsonNode valueFields = jsonService.extractInterleavingFields(
                     malNavn,
