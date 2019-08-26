@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.dokgen.configuration;
+package no.nav.familie.dokgen.configuration;
 
 import org.springframework.context.ConfigurableApplicationContext;
 

@@ -1,11 +1,11 @@
-package no.nav.familie.dokumentgenerator.dokgen.controller;
+package no.nav.familie.dokgen.controller;
 
 
 import io.swagger.annotations.ApiOperation;
-import no.nav.familie.dokumentgenerator.dokgen.feil.DokgenValideringException;
-import no.nav.familie.dokumentgenerator.dokgen.services.TestdataService;
+import no.nav.familie.dokgen.feil.DokgenValideringException;
+import no.nav.familie.dokgen.services.TestdataService;
 
-import no.nav.familie.dokumentgenerator.dokgen.services.TemplateService;
+import no.nav.familie.dokgen.services.TemplateService;
 import org.everit.json.schema.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

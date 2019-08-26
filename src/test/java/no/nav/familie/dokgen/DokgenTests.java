@@ -1,5 +1,6 @@
-package no.nav.familie.dokumentgenerator.dokgen;
+package no.nav.familie.dokgen;
 
+import no.nav.familie.dokgen.Dokgen;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;

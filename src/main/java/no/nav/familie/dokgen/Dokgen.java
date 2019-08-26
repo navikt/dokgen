@@ -1,7 +1,7 @@
-package no.nav.familie.dokumentgenerator.dokgen;
+package no.nav.familie.dokgen;
 
-import no.nav.familie.dokumentgenerator.dokgen.configuration.ApplicationConfig;
-import no.nav.familie.dokumentgenerator.dokgen.configuration.DelayedShutdownHook;
+import no.nav.familie.dokgen.configuration.ApplicationConfig;
+import no.nav.familie.dokgen.configuration.DelayedShutdownHook;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;

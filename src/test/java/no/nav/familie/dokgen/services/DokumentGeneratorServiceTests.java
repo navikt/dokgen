@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.dokgen.services;
+package no.nav.familie.dokgen.services;
 
 import static org.junit.Assert.assertTrue;
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester;

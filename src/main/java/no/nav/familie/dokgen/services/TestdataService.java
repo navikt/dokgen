@@ -1,8 +1,7 @@
-package no.nav.familie.dokumentgenerator.dokgen.services;
+package no.nav.familie.dokgen.services;
 
-import no.nav.familie.dokumentgenerator.dokgen.util.MalUtil;
+import no.nav.familie.dokgen.util.MalUtil;
 import org.apache.commons.io.FilenameUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +13,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.stream.Collectors;

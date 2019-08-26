@@ -1,6 +1,6 @@
-package no.nav.familie.dokumentgenerator.dokgen.services;
+package no.nav.familie.dokgen.services;
 
-import no.nav.familie.dokumentgenerator.dokgen.util.MalUtil;
+import no.nav.familie.dokgen.util.MalUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;

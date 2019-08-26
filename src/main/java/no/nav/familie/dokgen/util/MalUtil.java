@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.dokgen.util;
+package no.nav.familie.dokgen.util;
 
 import java.nio.file.Path;
 

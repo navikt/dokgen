@@ -8,7 +8,7 @@
         <version>2.1.7.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>no.nav.familie.dokumentgenerator</groupId>
+    <groupId>no.nav.familie.dokgen</groupId>
     <artifactId>dokgen</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>dokgen</name>

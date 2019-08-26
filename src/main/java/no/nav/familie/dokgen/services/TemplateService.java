@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.dokgen.services;
+package no.nav.familie.dokgen.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.jknack.handlebars.Context;
@@ -12,7 +12,7 @@ import com.github.jknack.handlebars.context.MethodValueResolver;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
-import no.nav.familie.dokumentgenerator.dokgen.util.MalUtil;
+import no.nav.familie.dokgen.util.MalUtil;
 import org.everit.json.schema.ValidationException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

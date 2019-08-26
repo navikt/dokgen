@@ -1,9 +1,9 @@
-package no.nav.familie.dokumentgenerator.dokgen.services;
+package no.nav.familie.dokgen.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import no.nav.familie.dokumentgenerator.dokgen.feil.DokgenValideringException;
-import no.nav.familie.dokumentgenerator.dokgen.util.MalUtil;
+import no.nav.familie.dokgen.feil.DokgenValideringException;
+import no.nav.familie.dokgen.util.MalUtil;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
