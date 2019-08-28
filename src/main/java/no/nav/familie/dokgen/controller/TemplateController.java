@@ -1,14 +1,10 @@
-package no.nav.familie.dokumentgenerator.dokgen.controller;
+package no.nav.familie.dokgen.controller;
 
 
 import io.swagger.annotations.ApiOperation;
-import no.nav.familie.dokumentgenerator.dokgen.feil.DokgenValideringException;
-import no.nav.familie.dokumentgenerator.dokgen.services.TestdataService;
+import no.nav.familie.dokgen.services.TestdataService;
 
-import no.nav.familie.dokumentgenerator.dokgen.services.TemplateService;
-import org.everit.json.schema.ValidationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import no.nav.familie.dokgen.services.TemplateService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,7 +21,6 @@ import java.util.List;
 @CrossOrigin(origins = {"http://localhost:3000"})
 @RestController
 public class TemplateController {
-    private static final Logger LOG = LoggerFactory.getLogger(TemplateController.class);
 
     @Value("${write.access:false}")
     private Boolean writeAccess;
@@ -56,29 +51,17 @@ public class TemplateController {
             value = "Generer malen i ønsket format",
             notes = "Støttede formater er <b>html</b> og <b>pdf</b>, hvor PDF er av versjonen PDF/A"
     )
-    public ResponseEntity setTemplateContent(@PathVariable String format,
-                                             @PathVariable String malNavn,
-                                             @RequestBody String payload) {
-        LOG.info("Genererer mal i ønsket format. Format={}, malNavn={}, payload={}", format, malNavn, payload);
-        Object dokument;
-        try {
-            if ("pdf".equals(format)) {
-                dokument = malService.lagPdf(malNavn, payload);
-            } else if ("html".equals(format)) {
-                dokument = malService.lagHtml(malNavn, payload);
-            } else {
-                return new ResponseEntity<>("Ukjent format " + format, HttpStatus.BAD_REQUEST);
-            }
-        } catch (ValidationException e) {
-            return new ResponseEntity<>(e.toJSON().toString(), HttpStatus.BAD_REQUEST);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        if (dokument == null) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    public ResponseEntity genererMal(@PathVariable String format,
+                                     @PathVariable String malNavn,
+                                     @RequestBody String payload) {
+        if ("pdf".equals(format)) {
+            byte[] pdf = malService.lagPdf(malNavn, payload);
+            return new ResponseEntity<>(pdf, genHeaders(format, malNavn, false), HttpStatus.OK);
+        } else if ("html".equals(format)) {
+            String html = malService.lagHtml(malNavn, payload);
+            return new ResponseEntity<>(html, genHeaders(format, malNavn, false), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(dokument, genHeaders(format, malNavn, false), HttpStatus.OK);
+            throw new IllegalArgumentException("Ukjent format " + format);
         }
     }
 
@@ -115,28 +98,17 @@ public class TemplateController {
         if (!writeAccess) {
             return new ResponseEntity(HttpStatus.FORBIDDEN);
         }
-        try {
-            malService.lagreMal(
-                    malNavn,
-                    payload
-            );
-        } catch (RuntimeException e) {
-            LOG.error("Feil ved endring av mal={}", malNavn, e);
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        malService.lagreMal(
+                malNavn,
+                payload
+        );
 
-        return this.setTemplateContent(format, malNavn, payload);
+        return this.genererMal(format, malNavn, payload);
     }
 
     @GetMapping(value = "mal/{malNavn}/testdata")
     @ApiOperation(value = "Hent de forskjellige testdataene for spesifikk mal")
     public ResponseEntity<List<String>> hentTestdataForMal(@PathVariable String malNavn) {
-        List<String> response = testdataService.hentTestdatasettForMal(malNavn);
-
-        if (response == null) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
         return new ResponseEntity<>(testdataService.hentTestdatasettForMal(malNavn), HttpStatus.OK);
     }
 
@@ -162,17 +134,8 @@ public class TemplateController {
                     "}"
     )
     public ResponseEntity lagreNyttTestset(@PathVariable String malNavn, @RequestBody String payload) {
-        String testSetName = null;
-        try {
-            testSetName = testdataService.lagTestsett(malNavn, payload);
-            return new ResponseEntity<>(testSetName, HttpStatus.CREATED);
-        } catch (DokgenValideringException e) {
-            LOG.info("Valideringsfeil ved lagring av nytt testdata for mal={}", malNavn);
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (RuntimeException e) {
-            LOG.error("Ukjent feil ved lagring av nytt testdata for mal={}", malNavn, e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        String testSetName = testdataService.lagTestsett(malNavn, payload);
+        return new ResponseEntity<>(testSetName, HttpStatus.CREATED);
     }
 
     @PostMapping(value = "/brev/{malNavn}/download", consumes = "application/json")
@@ -194,20 +157,7 @@ public class TemplateController {
                     "}")
     public ResponseEntity hentPdf(@PathVariable String malNavn,
                                   @RequestBody String payload) {
-        try {
-            byte[] pdf = malService.lagPdf(malNavn, payload);
-            if (pdf == null) {
-                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-            } else {
-                return new ResponseEntity<>(pdf, genHeaders("pdf", malNavn, true), HttpStatus.OK);
-            }
-
-        } catch (ValidationException e) {
-            LOG.info("Valideringsfeil ved henting av pdf for mal={}", malNavn);
-            return new ResponseEntity<>(e.toJSON().toString(), HttpStatus.BAD_REQUEST);
-        } catch (RuntimeException e) {
-            LOG.error("Ukjent feil ved henting av pdf for mal={}", malNavn, e);
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        byte[] pdf = malService.lagPdf(malNavn, payload);
+        return new ResponseEntity<>(pdf, genHeaders("pdf", malNavn, true), HttpStatus.OK);
     }
 }

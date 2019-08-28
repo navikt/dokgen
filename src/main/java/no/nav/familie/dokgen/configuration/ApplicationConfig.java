@@ -1,17 +1,15 @@
-package no.nav.familie.dokumentgenerator.dokgen.configuration;
+package no.nav.familie.dokgen.configuration;
 
 import no.nav.familie.log.filter.LogFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootConfiguration
-@ComponentScan({"no.nav.familie.dokumentgenerator.dokgen"})
+@ComponentScan({"no.nav.familie.dokgen"})
 public class ApplicationConfig {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationConfig.class);

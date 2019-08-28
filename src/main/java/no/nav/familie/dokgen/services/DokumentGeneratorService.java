@@ -1,4 +1,4 @@
-package no.nav.familie.dokumentgenerator.dokgen.services;
+package no.nav.familie.dokgen.services;
 
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,7 +28,7 @@ import java.nio.file.Paths;
 public class DokumentGeneratorService {
     private static final Logger LOG = LoggerFactory.getLogger(DokumentGeneratorService.class);
 
-    private Path contentRoot;
+    private final Path contentRoot;
 
     @Autowired
     public DokumentGeneratorService(@Value("${path.content.root:./content/}") Path contentRoot) {
@@ -101,7 +100,7 @@ public class DokumentGeneratorService {
                     .buildPdfRenderer()
                     .createPDF();
         } catch (IOException e) {
-            LOG.error("Kunne ikke generere pdf", e); //TODO Bedre feilhåndtering
+            throw new RuntimeException("Feil ved generering av pdf", e);
         }
     }
 
@@ -118,11 +117,11 @@ public class DokumentGeneratorService {
         return getHtmlRenderer().render(document);
     }
 
-    String hentCss(String cssName) {
+    private String hentCss(String cssName) {
         try {
             return new String(Files.readAllBytes(Paths.get(contentRoot + "/assets/css/" + cssName + ".css")));
         } catch (IOException e) {
-            LOG.error("Kunne ikke åpne template malen", e); //FIXME sjekke om man det er en grunn til at man ikke bare feiler.
+            LOG.error("Kunne ikke åpne template malen", e);
         }
         return null;
     }
