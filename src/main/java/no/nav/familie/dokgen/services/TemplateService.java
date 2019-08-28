@@ -12,6 +12,7 @@ import com.github.jknack.handlebars.context.MethodValueResolver;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
+import no.nav.familie.dokgen.feil.DokgenIkkeFunnetException;
 import no.nav.familie.dokgen.util.MalUtil;
 import org.everit.json.schema.ValidationException;
 import org.jsoup.Jsoup;
@@ -27,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -39,11 +41,11 @@ import java.util.stream.Stream;
 public class TemplateService {
     private static final Logger LOG = LoggerFactory.getLogger(TemplateService.class);
 
-    private Handlebars handlebars;
-    private DokumentGeneratorService dokumentGeneratorService;
-    private JsonService jsonService;
+    private final Handlebars handlebars;
+    private final DokumentGeneratorService dokumentGeneratorService;
+    private final JsonService jsonService;
 
-    private Path contentRoot;
+    private final Path contentRoot;
 
     @Autowired
     TemplateService(@Value("${path.content.root:./content/}") Path contentRoot, DokumentGeneratorService dokumentGeneratorService, JsonService jsonService) {
@@ -68,7 +70,7 @@ public class TemplateService {
     private String hentKompilertMal(String malNavn, JsonNode interleavingFields) throws ValidationException, IOException {
         Template template = kompilerMal(malNavn);
 
-        jsonService.validateTestData(MalUtil.hentJsonSchemaForMal(contentRoot, malNavn), interleavingFields.toString());
+        jsonService.validereJson(MalUtil.hentJsonSchemaForMal(contentRoot, malNavn), interleavingFields.toString());
         if (template != null) {
             return template.apply(insertTestData(interleavingFields));
         }
@@ -94,7 +96,6 @@ public class TemplateService {
                     .map(x -> x.getFileName().toString())
                     .collect(Collectors.toList());
         } catch (IOException e) {
-            LOG.error("Kan ikke hente maler i contentRoot={}", contentRoot, e);
             return new ArrayList<>();
         }
     }
@@ -102,8 +103,9 @@ public class TemplateService {
     public String hentMal(String malNavn) {
         try {
             return Files.readString(MalUtil.hentMal(contentRoot, malNavn), StandardCharsets.UTF_8);
+        } catch (NoSuchFileException e) {
+            throw new DokgenIkkeFunnetException("Kan ikke finne mal med navn " + malNavn);
         } catch (IOException e) {
-            LOG.error("Kan ikke hente mal={}", malNavn, e);
             throw new RuntimeException("Kan ikke hente mal " + malNavn, e);
         }
     }
@@ -115,11 +117,10 @@ public class TemplateService {
             JsonNode valueFields = jsonService.extractInterleavingFields(
                     malNavn,
                     jsonContent,
-                    jsonContent.get("useTestSet").asBoolean()
+                    jsonContent.get("useTestSet") != null && jsonContent.get("useTestSet").asBoolean()
             );
             return konverterBrevTilPdf(malNavn, valueFields);
         } catch (IOException e) {
-            LOG.error("Feil ved henting av brev respons", e);
             throw new RuntimeException("Kunne ikke lage pdf, malNavn={} " + malNavn, e);
         }
     }
@@ -136,7 +137,6 @@ public class TemplateService {
 
             return konverterBrevTilHtml(malNavn, valueFields);
         } catch (IOException e) {
-            LOG.error("Feil ved henting av brev respons", e);
             throw new RuntimeException("Kunne ikke lage pdf, malNavn={} " + malNavn, e);
         }
     }
@@ -164,7 +164,6 @@ public class TemplateService {
             } else {
                 throw new IllegalArgumentException("Kan ikke hente markdown for payload=" + payload);
             }
-
         } catch (IOException e) {
             throw new RuntimeException("Feil ved lagring av mal=" + malNavn + " payload=" + payload, e);
         }

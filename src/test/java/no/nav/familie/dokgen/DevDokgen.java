@@ -1,7 +1,6 @@
 package no.nav.familie.dokgen;
 
 import no.nav.familie.dokgen.configuration.ApplicationConfig;
-import no.nav.familie.dokgen.configuration.DelayedShutdownHook;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;

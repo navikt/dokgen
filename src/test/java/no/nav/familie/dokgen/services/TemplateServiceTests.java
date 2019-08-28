@@ -63,12 +63,10 @@ public class TemplateServiceTests {
     public void skalReturnereExceptionVedHentingAvMal() {
 
         // expect
-        Throwable thrown = catchThrowable(() -> {
-            malService.hentMal("IkkeEksisterendeMal");
-        });
+        Throwable thrown = catchThrowable(() -> malService.hentMal("IkkeEksisterendeMal"));
 
         // when
-        assertThat(thrown).isInstanceOf(RuntimeException.class).hasMessage("Kan ikke hente mal IkkeEksisterendeMal");
+        assertThat(thrown).isInstanceOf(RuntimeException.class).hasMessage("Kan ikke finne mal med navn IkkeEksisterendeMal");
     }
 
     @Test
@@ -86,13 +84,10 @@ public class TemplateServiceTests {
     }
 
     @Test
-    public void skalReturnereIllegalArgumentExceptionVedLagreMalUtenPayloadUtenMarkdown() throws IOException {
+    public void skalReturnereIllegalArgumentExceptionVedLagreMalUtenPayloadUtenMarkdown() {
 
         // expect
-        Throwable thrown = catchThrowable(() -> {
-            malService.lagreMal("tomPayload", "{}");
-        });
-
+        Throwable thrown = catchThrowable(() -> malService.lagreMal("tomPayload", "{}"));
 
         assertThat(thrown).isInstanceOf(IllegalArgumentException.class).hasMessage("Kan ikke hente markdown for payload={}");
     }
