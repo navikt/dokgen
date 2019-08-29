@@ -65,4 +65,3 @@ docker run -p 8080:8080 -d --name familie-dokgen familie-dokgen
 
 docker stop familie-dokgen; docker rm familie-dokgen
 ```
-

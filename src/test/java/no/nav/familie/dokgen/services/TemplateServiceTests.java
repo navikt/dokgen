@@ -7,7 +7,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -38,13 +37,6 @@ public class TemplateServiceTests {
         templateRoot = contentRoot.resolve("templates/");
         Files.createDirectories(templateRoot);
         malService = new TemplateService(contentRoot, new DokumentGeneratorService(contentRoot), new JsonService(contentRoot));
-        copyAssetsToContentRoot();
-    }
-
-    private void copyAssetsToContentRoot() throws IOException {
-        File srcDir = new File("./src/test/resources/test-assets/content/assets");
-        File destDir = new File(contentRoot.toFile(), "/assets");
-        FileUtils.copyDirectory(srcDir, destDir);
     }
 
     @Test

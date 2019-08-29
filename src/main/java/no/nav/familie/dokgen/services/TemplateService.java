@@ -50,10 +50,11 @@ public class TemplateService {
     @Autowired
     TemplateService(@Value("${path.content.root:./content/}") Path contentRoot, DokumentGeneratorService dokumentGeneratorService, JsonService jsonService) {
         this.contentRoot = contentRoot;
-        TemplateLoader loader = new FileTemplateLoader(MalUtil.hentMalRoot(contentRoot).toFile());
-        handlebars = new Handlebars(loader);
+
+        handlebars = Files.exists(MalUtil.hentMalRoot(contentRoot)) ? new Handlebars(new FileTemplateLoader(MalUtil.hentMalRoot(contentRoot).toFile())) : new Handlebars();
         handlebars.registerHelper("eq", ConditionalHelpers.eq);
         handlebars.registerHelper("neq", ConditionalHelpers.neq);
+
         this.dokumentGeneratorService = dokumentGeneratorService;
         this.jsonService = jsonService;
     }
