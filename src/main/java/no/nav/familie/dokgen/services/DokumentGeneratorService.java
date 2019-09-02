@@ -3,9 +3,7 @@ package no.nav.familie.dokgen.services;
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
-
 import com.openhtmltopdf.util.XRLog;
-import org.apache.commons.io.IOUtils;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -17,37 +15,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Service
 public class DokumentGeneratorService {
     private static final Logger LOG = LoggerFactory.getLogger(DokumentGeneratorService.class);
-
-    private final Path contentRoot;
+    private static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     @Autowired
     public DokumentGeneratorService(@Value("${path.content.root:./content/}") Path contentRoot) {
-        this.contentRoot = contentRoot;
         XRLog.setLoggingEnabled(false);
     }
 
     public void addDocumentParts(Document document) {
-        String resourceLocation = contentRoot + "/assets/htmlParts/";
         try {
-
-            String header = new String(Files.readAllBytes(Paths.get(resourceLocation + "headerTemplate.html")));
-            String footer = new String(Files.readAllBytes(Paths.get(resourceLocation + "footerTemplate.html")));
+            String header = Files.readString(new ClassPathResource("htmlParts/headerTemplate.html").getFile().toPath(), UTF_8);
+            String footer = Files.readString(new ClassPathResource("htmlParts/footerTemplate.html").getFile().toPath(), UTF_8);
 
             Element body = document.body();
             body.prepend(header);
             body.append(footer);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Kunne ikke legge til header/footer å dokumentet", e);
         }
     }
 
@@ -68,25 +65,25 @@ public class DokumentGeneratorService {
 
         PdfRendererBuilder builder = new PdfRendererBuilder();
         try {
-            byte[] colorProfile = IOUtils.toByteArray(new FileInputStream(new File(contentRoot.toFile(), "assets/sRGB2014.icc")));
+            byte[] colorProfile = Files.readAllBytes(new ClassPathResource("sRGB2014.icc").getFile().toPath());
 
             builder
                     .useFont(
-                            new File(contentRoot.toFile(), "assets/fonts/fontpack/SourceSansPro-Regular.ttf"),
+                            new ClassPathResource("fonts/fontpack/SourceSansPro-Regular.ttf").getFile(),
                             "Source Sans Pro",
                             400,
                             BaseRendererBuilder.FontStyle.NORMAL,
                             false
                     )
                     .useFont(
-                            new File(contentRoot.toFile(), "assets/fonts/fontpack/SourceSansPro-Bold.ttf"),
+                            new ClassPathResource("fonts/fontpack/SourceSansPro-Bold.ttf").getFile(),
                             "Source Sans Pro",
                             700,
                             BaseRendererBuilder.FontStyle.OBLIQUE,
                             false
                     )
                     .useFont(
-                            new File(contentRoot.toFile(), "assets/fonts/fontpack/SourceSansPro-Italic.ttf"),
+                            new ClassPathResource("fonts/fontpack/SourceSansPro-Italic.ttf").getFile(),
                             "Source Sans Pro",
                             400,
                             BaseRendererBuilder.FontStyle.ITALIC,
@@ -119,11 +116,10 @@ public class DokumentGeneratorService {
 
     private String hentCss(String cssName) {
         try {
-            return new String(Files.readAllBytes(Paths.get(contentRoot + "/assets/css/" + cssName + ".css")));
+            return Files.readString(new ClassPathResource("css/" + cssName + ".css").getFile().toPath(), UTF_8);
         } catch (IOException e) {
-            LOG.error("Kunne ikke åpne template malen", e);
+            throw new RuntimeException("Kan ikke hente " + cssName + ".css", e);
         }
-        return null;
     }
 
     private Parser getMarkdownToHtmlParser() {
