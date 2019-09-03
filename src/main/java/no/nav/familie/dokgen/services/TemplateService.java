@@ -94,6 +94,7 @@ public class TemplateService {
         try (Stream<Path> paths = Files.list(MalUtil.hentMalRoot(contentRoot))) {
             return paths
                     .filter(Files::isDirectory)
+                    .filter(p -> !p.toFile().isHidden())
                     .map(x -> x.getFileName().toString())
                     .collect(Collectors.toList());
         } catch (IOException e) {
