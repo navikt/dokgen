@@ -22,7 +22,7 @@ import java.util.List;
 @RestController
 public class TemplateController {
 
-    @Value("${write.access:false}")
+    @Value("${write.access:true}")
     private Boolean writeAccess;
 
 
@@ -117,7 +117,6 @@ public class TemplateController {
     public ResponseEntity<String> hentTomtTestdataSett(@PathVariable String malNavn) {
         return new ResponseEntity<>(testdataService.hentTomtTestsett(malNavn), HttpStatus.OK);
     }
-
 
     @PostMapping(value = "mal/{malNavn}/nyttTestSett", consumes = "application/json", produces = "application/json")
     @ApiOperation(

@@ -1,6 +1,7 @@
 package no.nav.familie.dokgen.util;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
 public class MalUtil {
 
@@ -26,5 +27,33 @@ public class MalUtil {
 
     public static Path hentMalRoot(Path contentRoot) {
         return contentRoot.resolve("templates");
+    }
+
+    public static final class Fold {
+        int start;
+        int end;
+
+        public Fold(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public boolean contains(int lineNr) {
+            return lineNr >= start && lineNr <= end;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Fold fold = (Fold) o;
+            return start == fold.start &&
+                    end == fold.end;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(start, end);
+        }
     }
 }
