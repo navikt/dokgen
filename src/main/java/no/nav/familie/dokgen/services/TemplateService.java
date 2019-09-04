@@ -83,7 +83,7 @@ public class TemplateService {
             String fulltBrev = template.apply(insertTestData(interleavingFields, malNavn));
 
             Stream<String> brevmalInnhold = fulltBrev.lines().takeWhile(linje -> !markererStartenPåFellesdel(linje));
-            Stream<String> fellesmalInnhold = fulltBrev.lines().dropWhile(linje -> !markererStartenPåFellesdel(linje)).skip(1);
+            Stream<String> fellesmalInnhold = fulltBrev.lines().dropWhile(linje -> !markererStartenPåFellesdel(linje));
 
             var brevmalfilter = this.filter.getOrDefault(malNavn, Collections.emptySet());
             var fellesmalfilter = this.filter.getOrDefault("Fellesmal", Collections.emptySet());
@@ -106,9 +106,9 @@ public class TemplateService {
     private Predicate<String> linjerFraEkskluderteAvsnitt(Set<Fold> filter) {
         var linjeNr = new AtomicInteger(0);
         return linje -> {
-            boolean b = filter.stream().noneMatch(fold -> fold.contains(linjeNr.get()));
+            boolean inkluder = filter.stream().noneMatch(fold -> fold.contains(linjeNr.get()));
             linjeNr.incrementAndGet();
-            return b;
+            return inkluder;
         };
     }
 
@@ -117,9 +117,11 @@ public class TemplateService {
             return;
         }
         JsonNode range = filter.get("range");
-        int offset = malNavn.equals("Fellesmal") ? -2 : 0;
-        Fold fold = new Fold(range.get("start").get("row").asInt() + offset, range.get("end").get("row").asInt() + offset);
-
+        int forsvunnedeLinjerFraMalEtterKompilering = malNavn.equals("Fellesmal") ? 1 : 0;
+        Fold fold = new Fold(
+                range.get("start").get("row").asInt() - forsvunnedeLinjerFraMalEtterKompilering,
+                range.get("end").get("row").asInt() - forsvunnedeLinjerFraMalEtterKompilering
+        );
         var kollapsedeLinjer = this.filter.getOrDefault(malNavn, new HashSet<>());
 
         switch (filter.get("action").asText()) {
