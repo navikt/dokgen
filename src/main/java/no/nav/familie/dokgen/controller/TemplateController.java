@@ -22,7 +22,7 @@ import java.util.List;
 @RestController
 public class TemplateController {
 
-    @Value("${write.access:true}")
+    @Value("${write.access:false}")
     private Boolean writeAccess;
 
 
