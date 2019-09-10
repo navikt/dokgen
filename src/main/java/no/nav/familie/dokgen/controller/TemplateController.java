@@ -118,7 +118,6 @@ public class TemplateController {
         return new ResponseEntity<>(testdataService.hentTomtTestsett(malNavn), HttpStatus.OK);
     }
 
-
     @PostMapping(value = "mal/{malNavn}/nyttTestSett", consumes = "application/json", produces = "application/json")
     @ApiOperation(
             value = "Lag et nytt testsett for en mal",

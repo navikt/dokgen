@@ -16,12 +16,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.catchThrowable;
 
 public class TemplateServiceTests {
+    private static final String MALNAVN = "lagretMal";
     private static final String MARKDOWN = "# Hei, {{name}}";
     private static final String MARKDOWN_CONTENT = "\"" + MARKDOWN + "\"";
     private static final String INTERLEAVING_FIELDS = "{\"name\": \"Peter\"}";
-    private static final String GYLDIG_PAYLOAD = "{\"markdownContent\": " + MARKDOWN_CONTENT +
-            ", \"interleavingFields\": " + INTERLEAVING_FIELDS +
-            ", \"useTestSet\": false}";
+    private static final String GYLDIG_PAYLOAD = lagTestPayload(MARKDOWN_CONTENT, INTERLEAVING_FIELDS);
+
+    private static String lagTestPayload(String markdownContent, String interleavingFields) {
+        return "{\"markdownContent\": " + markdownContent +
+                ", \"interleavingFields\": " + interleavingFields +
+                ", \"useTestSet\": false}";
+    }
+
     private static final String TOM_JSON = "{}";
 
     private TemplateService malService;
@@ -86,13 +92,22 @@ public class TemplateServiceTests {
 
     @Test
     public void skalLagreMal() throws IOException {
-        String malNavn = "lagretMal";
 
         // expect
-        malService.lagreMal(malNavn, GYLDIG_PAYLOAD);
+        malService.lagreMal(MALNAVN, GYLDIG_PAYLOAD);
 
-        String malData = Files.readString(MalUtil.hentMal(contentRoot, malNavn));
+        String malData = Files.readString(MalUtil.hentMal(contentRoot, MALNAVN));
         assertThat(malData).isEqualTo(MARKDOWN);
+    }
+
+    @Test
+    public void skal_overskrive_alt_ved_lagring_av_nytt_slankere_innhold() throws IOException {
+        skalLagreMal();
+
+        malService.lagreMal(MALNAVN, lagTestPayload("\"" + MARKDOWN.substring(3) + "\"", INTERLEAVING_FIELDS));
+
+        String malData = Files.readString(MalUtil.hentMal(contentRoot, MALNAVN));
+        assertThat(malData).isEqualTo(MARKDOWN.substring(3));
     }
 
     @Test
