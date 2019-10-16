@@ -1,67 +1,63 @@
-# familie-dokgen-java 
+# DOKGEN
+A document generator for creation of PDFs or html based on markdown templates with handlebars. We think that keeping
+the templates in a separate service give our product teams greater flexibility to iterate on the content. We experienced
+that often these letters, receipts or confirmation messages is generated at the end of a transaction. This makes it harder
+to test and develop.
 
-## Krav
-- OpenJDK 11
-- [Maven](https://maven.apache.org/)
+## Requirements
+- OpenJDK 11 and [Maven](https://maven.apache.org/)
+- ...or Docker
 
-## Kom i gang
-Klon repositoriet, navigér til prosjektets mappe som inneholder `pom.xml` og kjør `mvn spring-boot:run` for å starte applikasjonen. 
+## Getting started
+`Dokgen` is distributed in several ways. This repository contains the server that actually validated input and serve
+the templates to the enduser. You can clone/fork the repository and build your own image, or you could simply create
+your own repository where you just extend this docker-image. The latest solution is probably the easiest in most 
+use-cases.
 
+```Dockerfile
+FROM navikt/dokgen:latest
+COPY content content
+```
 
-## Endepunkter
+If you want to run it with Java just go to the root folder where `pom.xml` is and run `mvn spring-boot:run` 
+to start the application.
 
-`GET /mal/alle`: Henter alle malforslagene som ligger i `resources/templates`
+### Structure of the content-folder
+
+-  fonts/{fontName}.ttf
+-  formats/pdf/style.css
+-  formats/pdf/header.html
+-  formats/pdf/footer.html
+-  formats/html/style.css
+-  templates/{templateName}/template.hbs
+-  templates/{templateName}/schema.json
+-  templates/{templateName}/testdata/{testDataName}.json
+-  templates/partial.hbs
+
+### Partials
+To solve sharing of templatecode between templates you could simply use the built in concept of partials in handlebars
+this can be done by putting a `.hbs` file at the root folder of the `content/templates`-folder. And can be included
+with a simple `{{> footer }}`. 
+
+### Variation (language for instance)
+Not yet implemented
+
+### Swagger 
+This application uses the standard Swagger setup which can be found at `http://localhost:8080/swagger-ui.html` when
+running in test.
+
+### Endpoints
+`GET /templates`: Will return all templates with relevant links from `content/templates` for other endpoints please use
+the swagger route as api documentation.
     
-`GET /mal/{templateName}`: Henter ønsket mal i markdownformat.
 
-* Parametre:
-    * templateName: Navnet på ønsket mal
-    
-`GET /maler/{templateName}/testData`: Henter navn på alle datasett for testing av innflettingsfelter.
-* Parametre:
-* templateName: Navnet på malen for ønsket testdata
-    
-`POST /mal/{format}/{templateName}`: Henter det genererte dokumentet i ønsket format.
-
-* Parametre:
-    * templateName: Navnet på ønsket mal
-    * format: Enten `html` eller `pdf`
-* Request body:
-    * interleavingFields: Innflettingsfelt i JSON-format
-    * markdownContent: Innholdet til markdown-malen (Oppdaterer foreløpig ikke)
-    
-`PUT /mal/{format}/{templateName}`: Oppdaterer/genererer mal og henter det genererte dokumentet i ønsket format.
-
-* Parametre:
-    * templateName: Navnet på ønsket mal
-    * format: Enten `html` eller `pdf`
-* Request body:
-    * interleavingFields: Innflettingsfelt i JSON-format
-    * markdownContent: Innholdet til markdown-malen
-
-`POST /brev/{format}/{templateName}`: Henter den genererte dokumentet i ønsket format.
-
-* Parametre:
-    * templateName: Navnet på ønsket mal
-    * format: Enten `html` eller `put`
-* Request body:
-    * interleavingFields: Innflettingsfelt i JSON-format
-    * markdownContent: Innholdet til markdown-malen (Vil fjernes)
-    
-#### Swagger dokumentasjon
-Gå til `http://localhost:8080/swagger-ui.html#/template-controller` for å få en Swagger 2 dokumentasjon over endepunktene.
-
-
-## Bygge og kjøre docker lokalt
+## Build and run docker locally
 
 `write.access` er satt til `false` under prod for å hindre at maler blir endret på mens systemet er i bruk, dette må settes til `true` i `application.yml` under lokal testing.
 
 ```
 mvn -B -Dfile.encoding=UTF-8 -DinstallAtEnd=true -DdeployAtEnd=true  -DskipTests clean install
-
-docker build -t familie-dokgen .
-
-docker run -p 8080:8080 -d --name familie-dokgen familie-dokgen 
-
-docker stop familie-dokgen; docker rm familie-dokgen
+docker build -t navikt/dokgen .
+docker run -p 8081:8080 -d --name dokgen navikt/dokgen
+docker stop dokgen; docker rm dokgen
 ```
