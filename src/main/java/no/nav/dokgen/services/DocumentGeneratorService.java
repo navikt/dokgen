@@ -6,9 +6,11 @@ import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 import com.openhtmltopdf.util.XRLog;
 import no.nav.dokgen.util.DocFormat;
 import no.nav.dokgen.util.FileStructureUtil;
+import org.commonmark.Extension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
@@ -27,6 +29,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class DocumentGeneratorService {
@@ -129,12 +133,18 @@ public class DocumentGeneratorService {
             throw new RuntimeException("Kan ikke hente " + format + ".css", e);
         }
     }
-
+    private List<Extension> getMarkdownExtensions(){
+        return Arrays.asList(TablesExtension.create());
+    }
     private Parser getMarkdownToHtmlParser() {
-        return Parser.builder().build();
+        return Parser.builder()
+                .extensions(getMarkdownExtensions())
+                .build();
     }
 
     private HtmlRenderer getHtmlRenderer() {
-        return HtmlRenderer.builder().build();
+        return HtmlRenderer.builder()
+                .extensions(getMarkdownExtensions())
+                .build();
     }
 }
