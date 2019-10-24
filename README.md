@@ -34,13 +34,24 @@ to start the application.
 -  templates/{templateName}/testdata/{testDataName}.json
 -  templates/partial.hbs
 
+## Handlebars
+
 ### Partials
 To solve sharing of templatecode between templates you could simply use the built in concept of partials in handlebars
 this can be done by putting a `.hbs` file at the root folder of the `content/templates`-folder. And can be included
 with a simple `{{> footer }}`. 
 
+### Helpers
+`jknack/handlebars` is preconfigured with a series of [builtin helpers](https://github.com/jknack/handlebars.java#helpers)
+we have added some extra by default.
+* `dateFormat`
+
+In future releases hopefully all helpers could conditionally be turned on at runtime.
+
 ### Variation (language for instance)
-Not yet implemented
+Not yet implemented. By adding a `?var=my-variation`-parameter to the urls which would map to 
+`templates/{templateName}/{varName}.hbs` which would open up for reusing schemas and testdata for several lanuages or
+other variations on the same data. This is all about how you want to structure your `dokgen`-instance.
 
 ### Swagger 
 This application uses the standard Swagger setup which can be found at `http://localhost:8080/swagger-ui.html` when
@@ -61,3 +72,4 @@ docker build -t navikt/dokgen .
 docker run -p 8081:8080 -d --name dokgen navikt/dokgen
 docker stop dokgen; docker rm dokgen
 ```
+

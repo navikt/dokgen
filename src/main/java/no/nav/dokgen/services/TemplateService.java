@@ -12,6 +12,7 @@ import com.github.jknack.handlebars.context.JavaBeanValueResolver;
 import com.github.jknack.handlebars.context.MapValueResolver;
 import com.github.jknack.handlebars.context.MethodValueResolver;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
+import com.github.jknack.handlebars.helper.StringHelpers;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
 import no.nav.dokgen.exceptions.DokgenNotFoundException;
 import no.nav.dokgen.resources.TemplateResource;
@@ -59,6 +60,7 @@ public class TemplateService {
         handlebars = Files.exists(FileStructureUtil.getTemplateRootPath(contentRoot)) ? new Handlebars(new FileTemplateLoader(FileStructureUtil.getTemplateRootPath(contentRoot).toFile())) : new Handlebars();
         handlebars.registerHelper("eq", ConditionalHelpers.eq);
         handlebars.registerHelper("neq", ConditionalHelpers.neq);
+        handlebars.registerHelper("dateFormat", StringHelpers.dateFormat);
 
         this.documentGeneratorService = documentGeneratorService;
         this.jsonService = jsonService;
