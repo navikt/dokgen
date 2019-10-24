@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 docker stop familie-dokgen; docker rm familie-dokgen
 mvn -B -Dfile.encoding=UTF-8 -DinstallAtEnd=true -DdeployAtEnd=true  -DskipTests clean install

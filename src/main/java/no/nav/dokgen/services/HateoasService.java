@@ -27,4 +27,5 @@ public class HateoasService {
                 linkTo(methodOn(TemplateController.class).previewPdf(templateName, testDataName)).withRel("preview-pdf")
         );
     }
+
 }
