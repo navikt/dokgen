@@ -153,6 +153,15 @@ public class TemplateService {
         return createHtml(templateResource, payload);
     }
 
+    public String createMarkdown(String templateName, String mergefields) {
+        try {
+            TemplateResource templateResource = getTemplate(templateName);
+            return getCompiledTemplate(templateResource, jsonService.getJsonFromString(mergefields));
+        } catch (IOException e) {
+            throw new RuntimeException("Kunne ikke lage Markdown, templateName={} " + templateName, e);
+        }
+    }
+
     public byte[] createPdf(TemplateResource templateResource, String payload) {
         try {
             return convertToPdf(templateResource, jsonService.getJsonFromString(payload));
