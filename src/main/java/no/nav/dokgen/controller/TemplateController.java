@@ -79,6 +79,13 @@ public class TemplateController {
         return new ResponseEntity<>(html, HttpUtil.genHeaders(DocFormat.HTML, templateName, false), HttpStatus.OK);
     }
 
+    @PostMapping(value = "/template/{templateName}/create-markdown", consumes = "application/json")
+    @ApiOperation(value = "Lager Markdown av flettefeltene og malen.", notes = "")
+    public ResponseEntity createMarkdown(@PathVariable String templateName, @RequestBody String mergefields) {
+        String markdown = templateService.createMarkdown(templateName, mergefields);
+        return new ResponseEntity<>(markdown, HttpUtil.genHtmlHeaders(), HttpStatus.OK);
+    }
+
     @GetMapping(value = "/template/{templateName}/preview-pdf/{testDataName}")
     @ApiOperation(value = "Generer malen som PDF med test data")
     public ResponseEntity previewPdf(@PathVariable String templateName, @PathVariable String testDataName) {
