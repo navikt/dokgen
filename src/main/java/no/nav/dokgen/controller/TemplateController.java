@@ -4,13 +4,9 @@ package no.nav.dokgen.controller;
 import io.swagger.annotations.ApiOperation;
 import no.nav.dokgen.resources.TemplateResource;
 import no.nav.dokgen.resources.TestDataResource;
-import no.nav.dokgen.services.HateoasService;
+import no.nav.dokgen.services.*;
 import no.nav.dokgen.util.DocFormat;
 import no.nav.dokgen.util.HttpUtil;
-import no.nav.dokgen.services.JsonService;
-import no.nav.dokgen.services.TestDataService;
-
-import no.nav.dokgen.services.TemplateService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Resource;
@@ -30,11 +26,14 @@ public class TemplateController {
     private final TemplateService templateService;
     private final TestDataService testdataService;
     private final JsonService jsonService;
+    private final DocumentGeneratorService documentGeneratorService;
 
-    public TemplateController(TemplateService templateService, TestDataService testdataService, JsonService jsonService) {
+    public TemplateController(TemplateService templateService, TestDataService testdataService, JsonService jsonService,
+                              DocumentGeneratorService documentGeneratorService) {
         this.templateService = templateService;
         this.testdataService = testdataService;
         this.jsonService = jsonService;
+        this.documentGeneratorService = documentGeneratorService;
     }
 
     @GetMapping("/templates")
@@ -79,11 +78,18 @@ public class TemplateController {
         return new ResponseEntity<>(html, HttpUtil.genHeaders(DocFormat.HTML, templateName, false), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/template/{templateName}/create-markdown", consumes = "application/json")
+    @PostMapping(value = "/template/{templateName}/create-markdown", consumes = "application/json", produces = "text/plain")
     @ApiOperation(value = "Lager Markdown av flettefeltene og malen.", notes = "")
     public ResponseEntity createMarkdown(@PathVariable String templateName, @RequestBody String mergefields) {
         String markdown = templateService.createMarkdown(templateName, mergefields);
-        return new ResponseEntity<>(markdown, HttpUtil.genHtmlHeaders(), HttpStatus.OK);
+        return new ResponseEntity<>(markdown, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/template/markdown/to-html", consumes = "text/markdown")
+    @ApiOperation(value = "Konverterer markdown til HTML.", notes = "")
+    public ResponseEntity createHtmlCustom(@RequestBody String markdownContent) {
+        var content = documentGeneratorService.appendHtmlMetadata(markdownContent, DocFormat.HTML);
+        return new ResponseEntity<>(content.html(), HttpUtil.genHtmlHeaders(), HttpStatus.OK);
     }
 
     @GetMapping(value = "/template/{templateName}/preview-pdf/{testDataName}")
