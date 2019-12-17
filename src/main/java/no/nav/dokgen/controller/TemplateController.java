@@ -85,7 +85,7 @@ public class TemplateController {
         return new ResponseEntity<>(markdown, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/template/markdown/to-html", consumes = "text/plain")
+    @PostMapping(value = "/template/markdown/to-html", consumes = "text/markdown")
     @ApiOperation(value = "Konverterer markdown til HTML.", notes = "")
     public ResponseEntity createHtmlCustom(@RequestBody String markdownContent) {
         var content = documentGeneratorService.appendHtmlMetadata(markdownContent, DocFormat.HTML);
