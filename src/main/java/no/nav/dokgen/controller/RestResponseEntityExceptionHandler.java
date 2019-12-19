@@ -16,6 +16,7 @@ import java.util.Map;
 
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler {
+    private static final Logger secureLogger = LoggerFactory.getLogger("secureLogger");
     private static final Logger LOG = LoggerFactory.getLogger(RestResponseEntityExceptionHandler.class);
 
     @ExceptionHandler({IllegalArgumentException.class})
@@ -53,11 +54,14 @@ public class RestResponseEntityExceptionHandler {
         body.put("timestamp", LocalDateTime.now().toString());
         body.put("status", status.value());
         body.put("error", status.getReasonPhrase());
-        body.put("message", ex.getMessage());
         body.put("type", ex.getClass().getSimpleName() );
         body.put("path", req.getRequest().getRequestURI());
 
-        LOG.warn("En feil har oppstått " + body, ex);
+        LOG.warn("En feil har oppstått " + body);
+
+        body.put("message", ex.getMessage());
+        secureLogger.warn("En feil har oppstått " + body, ex);
+
         return body;
     }
 
