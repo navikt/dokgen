@@ -57,10 +57,10 @@ public class RestResponseEntityExceptionHandler {
         body.put("type", ex.getClass().getSimpleName() );
         body.put("path", req.getRequest().getRequestURI());
 
-        LOG.warn("En feil har oppstått " + body);
+        LOG.error("En feil har oppstått " + body);
 
         body.put("message", ex.getMessage());
-        secureLogger.warn("En feil har oppstått " + body, ex);
+        secureLogger.error("En feil har oppstått " + body, ex);
 
         return body;
     }
