@@ -1,7 +1,5 @@
 package no.nav.dokgen.services;
 
-import static no.nav.dokgen.util.FileStructureUtil.Fold;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
@@ -35,8 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,28 +47,22 @@ public class TemplateService {
 
     private final Path contentRoot;
 
-    private Map<String, Set<Fold>> filter = new HashMap<>();
-
     @Autowired
-    TemplateService(@Value("${path.content.root:./content/}") Path contentRoot, DocumentGeneratorService documentGeneratorService, JsonService jsonService) {
+    TemplateService(@Value("${path.content.root:./content/}") Path contentRoot,
+                    DocumentGeneratorService documentGeneratorService,
+                    JsonService jsonService) {
+
         this.contentRoot = contentRoot;
 
-        handlebars = Files.exists(FileStructureUtil.getTemplateRootPath(contentRoot)) ? new Handlebars(new FileTemplateLoader(FileStructureUtil.getTemplateRootPath(contentRoot).toFile())) : new Handlebars();
+        handlebars = Files.exists(FileStructureUtil.getTemplateRootPath(contentRoot))
+                ? new Handlebars(new FileTemplateLoader(FileStructureUtil.getTemplateRootPath(contentRoot).toFile()))
+                : new Handlebars();
         handlebars.registerHelper("eq", ConditionalHelpers.eq);
         handlebars.registerHelper("neq", ConditionalHelpers.neq);
         handlebars.registerHelper("dateFormat", StringHelpers.dateFormat);
 
         this.documentGeneratorService = documentGeneratorService;
         this.jsonService = jsonService;
-    }
-
-    private Template compileTemplate(String templateName) {
-        try {
-            return handlebars.compile(templateName + "/template");
-        } catch (IOException e) {
-            LOG.error("Kompilering av templates feiler", e);
-        }
-        return null;
     }
 
     public Template compileInLineTemplate(String templateContent) {
@@ -84,30 +74,25 @@ public class TemplateService {
         return null;
     }
 
+    public String compileInlineAndApply(String templateContent, Context data) {
+        try {
+            return handlebars.compileInline(templateContent).apply(data);
+        } catch (IOException e) {
+            LOG.warn("Kompilering av malinnhold feilet: " + templateContent);
+        }
+        return templateContent;
+    }
+
     private String getCompiledTemplate(TemplateResource templateResource, JsonNode mergeFields) throws ValidationException, IOException {
         Template template = compileInLineTemplate(templateResource.getContent());
         jsonService.validereJson(FileStructureUtil.getTemplateSchemaPath(contentRoot, templateResource.name), mergeFields.toString());
         if (template != null) {
-            return template.apply(insertTestData(mergeFields, templateResource.name));
+            return template.apply(with(mergeFields));
         }
         return null;
     }
 
-    private String applyFilter(Set<Fold> filter, Stream<String> content) {
-        return content.filter(excludedLines(filter))
-                .collect(Collectors.joining("\n"));
-    }
-
-    private Predicate<String> excludedLines(Set<Fold> filter) {
-        var lineNumber = new AtomicInteger(0);
-        return line -> {
-            boolean include = filter.stream().noneMatch(fold -> fold.contains(lineNumber.get()));
-            lineNumber.incrementAndGet();
-            return include;
-        };
-    }
-
-    public Context insertTestData(JsonNode model, String templateName) {
+    private Context with(JsonNode model) {
         return Context
                 .newBuilder(model)
                 .resolver(JsonNodeValueResolver.INSTANCE,
@@ -212,7 +197,7 @@ public class TemplateService {
 
     private byte[] convertToPdf(TemplateResource template, JsonNode mergeFields) {
         Document styledHtml = convertToDocument(template, mergeFields, DocFormat.PDF);
-        documentGeneratorService.wrapDocument(styledHtml, DocFormat.PDF);
+        documentGeneratorService.wrapDocument(styledHtml, DocFormat.PDF, header -> compileInlineAndApply(header, with(mergeFields)));
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         documentGeneratorService.genererPDF(styledHtml, outputStream);
@@ -226,7 +211,6 @@ public class TemplateService {
         } catch (IOException e) {
             throw new RuntimeException("Ukjent feil ved konvertering av brev", e);
         }
-
     }
 
 }
