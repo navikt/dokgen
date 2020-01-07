@@ -59,7 +59,7 @@ public class TemplateService {
                 : new Handlebars();
         handlebars.registerHelper("eq", ConditionalHelpers.eq);
         handlebars.registerHelper("neq", ConditionalHelpers.neq);
-        handlebars.registerHelper("dateFormat", StringHelpers.dateFormat);
+        handlebars.registerHelpers(StringHelpers.class);
 
         this.documentGeneratorService = documentGeneratorService;
         this.jsonService = jsonService;
@@ -197,8 +197,8 @@ public class TemplateService {
 
     private byte[] convertToPdf(TemplateResource template, JsonNode mergeFields) {
         Document styledHtml = convertToDocument(template, mergeFields, DocFormat.PDF);
-        documentGeneratorService.wrapDocument(styledHtml, DocFormat.PDF, header -> compileInlineAndApply(header, with(mergeFields)));
-
+        documentGeneratorService.wrapDocument(styledHtml, DocFormat.PDF, header ->
+                compileInlineAndApply(header, with(mergeFields).combine("templateName", template.name)));
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         documentGeneratorService.genererPDF(styledHtml, outputStream);
         return outputStream.toByteArray();
