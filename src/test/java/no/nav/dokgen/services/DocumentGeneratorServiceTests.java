@@ -135,7 +135,7 @@ public class DocumentGeneratorServiceTests {
     public void testPdfGenerationWithSvg() throws IOException {
         String html = getDocumentFromHtmlFixture("svg1");
         Document doc = documentGeneratorService.appendHtmlMetadata(html, DocFormat.PDF);
-        documentGeneratorService.wrapDocument(doc, DocFormat.PDF);
+        documentGeneratorService.wrapDocument(doc, DocFormat.PDF, header -> header);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         documentGeneratorService.genererPDF(doc, outputStream);
@@ -148,7 +148,7 @@ public class DocumentGeneratorServiceTests {
     public void testPdfGenerationWithList() throws IOException {
         String html = getDocumentFromHtmlFixture("list1");
         Document doc = documentGeneratorService.appendHtmlMetadata(html, DocFormat.PDF);
-        documentGeneratorService.wrapDocument(doc, DocFormat.PDF);
+        documentGeneratorService.wrapDocument(doc, DocFormat.PDF, header -> header);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         documentGeneratorService.genererPDF(doc, outputStream);

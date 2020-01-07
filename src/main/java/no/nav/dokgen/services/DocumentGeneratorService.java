@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 @Service
 public class DocumentGeneratorService {
@@ -44,12 +45,12 @@ public class DocumentGeneratorService {
         XRLog.setLoggingEnabled(false);
     }
 
-    public void wrapDocument(Document document, DocFormat format) {
+    public void wrapDocument(Document document, DocFormat format, Function<String, String> withMergeFields) {
         try {
             String header = Files.readString(FileStructureUtil.getFormatHeader(contentRoot, format), UTF_8);
             String footer = Files.readString(FileStructureUtil.getFormatFooter(contentRoot, format), UTF_8);
             Element body = document.body();
-            body.prepend(header);
+            body.prepend(withMergeFields.apply(header));
             body.append(footer);
         } catch (IOException e) {
             throw new RuntimeException("Kunne ikke legge til header/footer å dokumentet", e);

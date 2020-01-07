@@ -72,7 +72,7 @@ jobs:
             cp /tmp/workspace/.netrc ~/.netrc
             cp -r /tmp/workspace/target ./target
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: false
       - run:
           name: Determin release version
           command: |
