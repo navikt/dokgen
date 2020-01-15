@@ -45,12 +45,12 @@ public class DocumentGeneratorService {
         XRLog.setLoggingEnabled(false);
     }
 
-    public void wrapDocument(Document document, DocFormat format, Function<String, String> withMergeFields) {
+    public void wrapDocument(Document document, DocFormat format, Function<String, String> headerFunction) {
         try {
             String header = Files.readString(FileStructureUtil.getFormatHeader(contentRoot, format), UTF_8);
             String footer = Files.readString(FileStructureUtil.getFormatFooter(contentRoot, format), UTF_8);
             Element body = document.body();
-            body.prepend(withMergeFields.apply(header));
+            body.prepend(headerFunction.apply(header));
             body.append(footer);
         } catch (IOException e) {
             throw new RuntimeException("Kunne ikke legge til header/footer å dokumentet", e);
