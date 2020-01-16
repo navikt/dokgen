@@ -96,7 +96,7 @@ public class TemplateController {
     }
 
     @PostMapping(value = "/template/{templateName}/create-doc", consumes = "application/json")
-    @ApiOperation(value = "Lager dokument, med eller uten header/footer, ut ifra request-objekt", notes = "")
+    @ApiOperation(value = "Lager dokument ut ifra request-objekt", notes = "")
     public ResponseEntity createDocument(@PathVariable String templateName, @RequestBody CreateDocumentRequest documentRequest) {
         Document document = templateService.createDocument(documentRequest, templateName);
         switch (documentRequest.getDocFormat()) {
