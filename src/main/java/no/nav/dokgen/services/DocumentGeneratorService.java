@@ -53,7 +53,7 @@ public class DocumentGeneratorService {
             body.prepend(headerFunction.apply(header));
             body.append(footer);
         } catch (IOException e) {
-            throw new RuntimeException("Kunne ikke legge til header/footer å dokumentet", e);
+            throw new RuntimeException("Kunne ikke legge til header/footer på dokumentet", e);
         }
     }
 

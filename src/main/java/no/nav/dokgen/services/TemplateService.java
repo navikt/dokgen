@@ -91,7 +91,7 @@ public class TemplateService {
 
     private String getCompiledTemplate(TemplateResource templateResource, JsonNode mergeFields) throws ValidationException, IOException {
         Template template = compileInLineTemplate(templateResource.getContent());
-        jsonService.validereJson(FileStructureUtil.getTemplateSchemaPath(contentRoot, templateResource.name), mergeFields.toString());
+        jsonService.validereJson(FileStructureUtil.getTemplateSchemaPath(contentRoot, templateResource.name), mergeFields);
         if (template != null) {
             return template.apply(with(mergeFields));
         }
@@ -199,7 +199,7 @@ public class TemplateService {
             }
             return template;
         } catch (IOException e) {
-            throw new RuntimeException("Kunne ikke lage HTML, templateName={} " + templateName, e);
+            throw new RuntimeException("Kunne ikke lage dokument med angitt flettefelt-json", e);
         }
     }
 
@@ -265,8 +265,7 @@ public class TemplateService {
 
     private void validateIfRequired(JsonNode mergeFields, DocFormat format) {
         try {
-            jsonService.validereJson(FileStructureUtil.getFormatSchema(contentRoot, format),
-                    Objects.requireNonNull(mergeFields, "Valideringsfeil: Mangler header-felter").toString());
+            jsonService.validereJson(FileStructureUtil.getFormatSchema(contentRoot, format), mergeFields);
         } catch (FileNotFoundException ignore) {
             // This header does not require validation
         } catch (Exception e) {
