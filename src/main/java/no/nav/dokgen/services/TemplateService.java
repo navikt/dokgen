@@ -12,6 +12,7 @@ import com.github.jknack.handlebars.context.MethodValueResolver;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
 import com.github.jknack.handlebars.helper.StringHelpers;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
+import no.nav.dokgen.controller.api.CreateDocumentRequest;
 import no.nav.dokgen.exceptions.DokgenNotFoundException;
 import no.nav.dokgen.resources.TemplateResource;
 import no.nav.dokgen.util.DocFormat;
@@ -27,14 +28,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static no.nav.dokgen.util.DocFormat.HTML;
+import static no.nav.dokgen.util.DocFormat.PDF;
 
 
 @Service
@@ -85,7 +91,7 @@ public class TemplateService {
 
     private String getCompiledTemplate(TemplateResource templateResource, JsonNode mergeFields) throws ValidationException, IOException {
         Template template = compileInLineTemplate(templateResource.getContent());
-        jsonService.validereJson(FileStructureUtil.getTemplateSchemaPath(contentRoot, templateResource.name), mergeFields.toString());
+        jsonService.validereJson(FileStructureUtil.getTemplateSchemaPath(contentRoot, templateResource.name), mergeFields);
         if (template != null) {
             return template.apply(with(mergeFields));
         }
@@ -163,6 +169,40 @@ public class TemplateService {
         }
     }
 
+    public Document createDocument(CreateDocumentRequest request, String templateName) {
+        try {
+            var template = getCompiledTemplate(request, templateName);
+            JsonNode headerFields = request.getHeaderFields() == null || !request.isIncludeHeader()
+                    ? null
+                    : jsonService.getJsonFromString(request.getHeaderFields());
+            return convertToDocument(request.getDocFormat(), template, request.isIncludeHeader(), headerFields);
+        } catch (IOException e) {
+            throw new RuntimeException("Kunne ikke mappe header-felter til Json", e);
+        }
+    }
+
+    private TemplateResource getCompiledTemplate(CreateDocumentRequest request, String templateName) {
+        try {
+            var template = new TemplateResource(templateName);
+            if (request.getTemplateContent() != null) {
+                // use precompiled or custom template content
+                if (request.isPrecompiled()) {
+                    template.compiledContent = request.getTemplateContent();
+                } else {
+                    JsonNode mergeFields = jsonService.getJsonFromString(request.getMergeFields());
+                    template.compiledContent = compileInlineAndApply(request.getTemplateContent(), with(mergeFields));
+                }
+            } else {
+                // load and compile template from file.
+                JsonNode mergeFields = jsonService.getJsonFromString(request.getMergeFields());
+                template.compiledContent = getCompiledTemplate(getTemplate(templateName), mergeFields);
+            }
+            return template;
+        } catch (IOException e) {
+            throw new RuntimeException("Kunne ikke lage dokument med angitt flettefelt-json", e);
+        }
+    }
+
     public void saveTemplate(String templateName, String payload) {
         try {
             JsonNode jsonContent = jsonService.getJsonFromString(payload);
@@ -190,26 +230,46 @@ public class TemplateService {
         }
     }
 
-    private String convertToHtml(TemplateResource template, JsonNode mergeFields) {
-        Document styledHtml = convertToDocument(template, mergeFields, DocFormat.HTML);
+    private String convertToHtml(TemplateResource template, JsonNode mergeFields) throws IOException {
+        template.compiledContent = getCompiledTemplate(template, mergeFields);
+        Document styledHtml = convertToDocument(HTML, template, false, null);
         return styledHtml.html();
     }
 
-    private byte[] convertToPdf(TemplateResource template, JsonNode mergeFields) {
-        Document styledHtml = convertToDocument(template, mergeFields, DocFormat.PDF);
-        documentGeneratorService.wrapDocument(styledHtml, DocFormat.PDF, header ->
-                compileInlineAndApply(header, with(mergeFields).combine("templateName", template.name)));
+    private byte[] convertToPdf(TemplateResource template, JsonNode mergeFields) throws IOException {
+        template.compiledContent = getCompiledTemplate(template, mergeFields);
+        Document styledHtml = convertToDocument(PDF, template, true, mergeFields);
+        return generatePdf(styledHtml);
+    }
+
+    public byte[] generatePdf(Document document) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        documentGeneratorService.genererPDF(styledHtml, outputStream);
+        documentGeneratorService.genererPDF(document, outputStream);
         return outputStream.toByteArray();
     }
 
-    private Document convertToDocument(TemplateResource template, JsonNode mergeFields, DocFormat format) {
+    private Document convertToDocument(DocFormat format, TemplateResource template, boolean wrapDocument, JsonNode headerFields) {
+        Document styledHtml = documentGeneratorService.appendHtmlMetadata(template.compiledContent, format);
+        if (wrapDocument) {
+            documentGeneratorService.wrapDocument(styledHtml, format, headerFunction(format, template.name, headerFields));
+        }
+        return styledHtml;
+    }
+
+    private Function<String, String> headerFunction(DocFormat format, String templateName, JsonNode mergeFields) {
+        return header -> {
+            validateIfRequired(mergeFields, format);
+            return compileInlineAndApply(header, with(mergeFields).combine("templateName", templateName));
+        };
+    }
+
+    private void validateIfRequired(JsonNode mergeFields, DocFormat format) {
         try {
-            String markdownDocument = getCompiledTemplate(template, mergeFields);
-            return documentGeneratorService.appendHtmlMetadata(markdownDocument, format);
-        } catch (IOException e) {
-            throw new RuntimeException("Ukjent feil ved konvertering av brev", e);
+            jsonService.validereJson(FileStructureUtil.getFormatSchema(contentRoot, format), mergeFields);
+        } catch (FileNotFoundException ignore) {
+            // This header does not require validation
+        } catch (Exception e) {
+            throw new RuntimeException("Feil ved validering av header-felter", e);
         }
     }
 

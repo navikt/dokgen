@@ -7,6 +7,8 @@ public class TemplateResource {
 
     public String content;
 
+    public String compiledContent;
+
     public TemplateResource(String name) {
         this.name = name;
     }

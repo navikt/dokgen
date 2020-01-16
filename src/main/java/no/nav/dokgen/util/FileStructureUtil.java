@@ -1,7 +1,6 @@
 package no.nav.dokgen.util;
 
 import java.nio.file.Path;
-import java.util.Objects;
 
 public class FileStructureUtil {
 
@@ -25,6 +24,10 @@ public class FileStructureUtil {
         return contentRoot.resolve("templates");
     }
 
+    public static Path getFormatSchema(Path contentRoot, DocFormat format) {
+        return contentRoot.resolve("formats/" + format + "schema.json");
+    }
+
     public static Path getFormatHeader(Path contentRoot, DocFormat format) {
         return contentRoot.resolve("formats/" + format + "/header.html");
     }
@@ -41,31 +44,4 @@ public class FileStructureUtil {
         return contentRoot.resolve("fonts/" + fontName);
     }
 
-    public static final class Fold {
-        int start;
-        int end;
-
-        public Fold(int start, int end) {
-            this.start = start;
-            this.end = end;
-        }
-
-        public boolean contains(int lineNr) {
-            return lineNr >= start && lineNr <= end;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Fold fold = (Fold) o;
-            return start == fold.start &&
-                    end == fold.end;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(start, end);
-        }
-    }
 }

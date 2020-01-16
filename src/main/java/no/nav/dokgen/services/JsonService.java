@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,10 +59,10 @@ public class JsonService {
         return SchemaLoader.load(rawSchema);
     }
 
-    public void validereJson(Path schemaPath, String json) throws IOException {
+    public void validereJson(Path schemaPath, JsonNode json) throws IOException {
         try {
             Schema schema = getSchema(schemaPath);
-            schema.validate(new JSONObject(json));
+            schema.validate(new JSONObject(Objects.requireNonNull(json, "Ved validering av flettefelt-json").toString()));
         } catch (ValidationException e) {
             Map<String, String> valideringsFeil = e.getCausingExceptions().stream()
                     .collect(Collectors.toMap(ValidationException::getPointerToViolation, ValidationException::getErrorMessage));

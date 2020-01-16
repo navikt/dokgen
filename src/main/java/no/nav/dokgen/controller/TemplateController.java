@@ -2,12 +2,14 @@ package no.nav.dokgen.controller;
 
 
 import io.swagger.annotations.ApiOperation;
+import no.nav.dokgen.controller.api.CreateDocumentRequest;
 import no.nav.dokgen.resources.TemplateResource;
 import no.nav.dokgen.resources.TestDataResource;
 import no.nav.dokgen.services.*;
 import no.nav.dokgen.util.DocFormat;
 import no.nav.dokgen.util.HttpUtil;
 
+import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -85,11 +87,28 @@ public class TemplateController {
         return new ResponseEntity<>(markdown, HttpStatus.OK);
     }
 
+    @Deprecated
     @PostMapping(value = "/template/markdown/to-html", consumes = "text/markdown")
     @ApiOperation(value = "Konverterer markdown til HTML.", notes = "")
     public ResponseEntity createHtmlCustom(@RequestBody String markdownContent) {
         var content = documentGeneratorService.appendHtmlMetadata(markdownContent, DocFormat.HTML);
         return new ResponseEntity<>(content.html(), HttpUtil.genHtmlHeaders(), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/template/{templateName}/create-doc", consumes = "application/json")
+    @ApiOperation(value = "Lager dokument ut ifra request-objekt", notes = "")
+    public ResponseEntity createDocument(@PathVariable String templateName, @RequestBody CreateDocumentRequest documentRequest) {
+        Document document = templateService.createDocument(documentRequest, templateName);
+        switch (documentRequest.getDocFormat()) {
+            case HTML:
+            return new ResponseEntity<>(document.html(), HttpUtil.genHeaders(DocFormat.HTML, templateName, false), HttpStatus.OK);
+
+            case PDF:
+            return new ResponseEntity<>(templateService.generatePdf(document), HttpUtil.genHeaders(DocFormat.PDF, templateName, false), HttpStatus.OK);
+
+            default:
+            throw new RuntimeException("Not yet implemented for CreateDocumentRequest.docFormat = " + documentRequest.getDocFormat().toString());
+        }
     }
 
     @GetMapping(value = "/template/{templateName}/preview-pdf/{testDataName}")
@@ -165,4 +184,5 @@ public class TemplateController {
         byte[] pdf = templateService.createPdf(templateName, payload);
         return new ResponseEntity<>(pdf, HttpUtil.genHeaders(DocFormat.PDF, templateName, true), HttpStatus.OK);
     }
+
 }

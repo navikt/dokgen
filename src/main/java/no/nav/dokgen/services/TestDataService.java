@@ -59,7 +59,7 @@ public class TestDataService {
         JSONObject testDataObject = new JSONObject(testData);
         String testDataContent = testDataObject.toString(2);
         try {
-            jsonService.validereJson(FileStructureUtil.getTemplateSchemaPath(contentRoot, templateName), testDataContent);
+            jsonService.validereJson(FileStructureUtil.getTemplateSchemaPath(contentRoot, templateName), jsonService.getJsonFromString(testData));
             Files.write(FileStructureUtil.getTestDataPath(contentRoot, templateName, testDataName), testDataContent.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
         } catch (IOException e) {
             throw new RuntimeException("Feil ved lagring av testdata for mal=" + templateName, e);
