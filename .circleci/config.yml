@@ -6,12 +6,6 @@ executors:
       DOCKER_REPO: dokgen
     docker:
       - image: circleci/buildpack-deps:stretch
-  nais-deployer:
-    environment:
-      TEAM: teamfamilie
-      CLUSTER: dev-fss
-    docker:
-      - image: navikt/deployment-cli:latest
 
 jobs:
   verify:
@@ -102,7 +96,7 @@ jobs:
       - attach_workspace:
           at: /tmp/workspace
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: false
       - run:
           name: Load archived Docker image
           command: docker load -i /tmp/workspace/image.tar
