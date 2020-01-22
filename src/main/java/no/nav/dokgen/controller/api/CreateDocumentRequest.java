@@ -6,7 +6,7 @@ public class CreateDocumentRequest {
     DocFormat docFormat;
     String templateContent;
 
-    boolean isPrecompiled;
+    boolean precompiled;
     String mergeFields;
 
     boolean includeHeader;
@@ -17,13 +17,13 @@ public class CreateDocumentRequest {
 
     public CreateDocumentRequest(DocFormat docFormat,
                                  String templateContent,
-                                 boolean isPrecompiled,
+                                 boolean precompiled,
                                  String mergeFields,
                                  boolean includeHeader,
                                  String headerFields) {
         this.docFormat = docFormat;
         this.templateContent = templateContent;
-        this.isPrecompiled = isPrecompiled;
+        this.precompiled = precompiled;
         this.mergeFields = mergeFields;
         this.includeHeader = includeHeader;
         this.headerFields = headerFields;
@@ -38,7 +38,7 @@ public class CreateDocumentRequest {
     }
 
     public boolean isPrecompiled() {
-        return isPrecompiled;
+        return precompiled;
     }
 
     public String getMergeFields() {
