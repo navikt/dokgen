@@ -95,7 +95,7 @@ public class DocumentGeneratorService {
                             true
                     )
                     .useFont(
-                            FileStructureUtil.getFont(contentRoot, "SourceSansPro-lt.ttf").toFile(),
+                            FileStructureUtil.getFont(contentRoot, "SourceSansPro-It.ttf").toFile(),
                             "Source Sans Pro",
                             400,
                             BaseRendererBuilder.FontStyle.ITALIC,
