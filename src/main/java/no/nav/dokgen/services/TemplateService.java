@@ -1,5 +1,31 @@
 package no.nav.dokgen.services;
 
+import static no.nav.dokgen.util.DocFormat.HTML;
+import static no.nav.dokgen.util.DocFormat.PDF;
+
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.everit.json.schema.ValidationException;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.safety.Whitelist;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
@@ -12,35 +38,12 @@ import com.github.jknack.handlebars.context.MethodValueResolver;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
 import com.github.jknack.handlebars.helper.StringHelpers;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
+
 import no.nav.dokgen.controller.api.CreateDocumentRequest;
 import no.nav.dokgen.exceptions.DokgenNotFoundException;
 import no.nav.dokgen.resources.TemplateResource;
 import no.nav.dokgen.util.DocFormat;
 import no.nav.dokgen.util.FileStructureUtil;
-import org.everit.json.schema.ValidationException;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.safety.Whitelist;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static no.nav.dokgen.util.DocFormat.HTML;
-import static no.nav.dokgen.util.DocFormat.PDF;
 
 
 @Service
@@ -122,9 +125,17 @@ public class TemplateService {
     }
 
     public TemplateResource getTemplate(String templateName) {
+        return getTemplate(templateName, FileStructureUtil.getTemplatePath(contentRoot, templateName));
+    }
+
+    public TemplateResource getTemplate(String templateName, String variation) {
+        return getTemplate(templateName, FileStructureUtil.getTemplatePath(contentRoot, templateName, variation));
+    }
+
+    private TemplateResource getTemplate(String templateName, Path templatePath) {
         try {
             TemplateResource resource = new TemplateResource(templateName);
-            String content = Files.readString(FileStructureUtil.getTemplatePath(contentRoot, templateName), StandardCharsets.UTF_8);
+            String content = Files.readString(templatePath, StandardCharsets.UTF_8);
             resource.setContent(content);
             return resource;
         } catch (NoSuchFileException e) {
@@ -139,14 +150,33 @@ public class TemplateService {
         return createPdf(templateResource, payload);
     }
 
+    public byte[] createPdf(String templateName, String payload, String variation) {
+        TemplateResource templateResource = getTemplate(templateName, variation);
+        return createPdf(templateResource, payload);
+    }
+
     public String createHtml(String templateName, String payload) {
         TemplateResource templateResource = getTemplate(templateName);
         return createHtml(templateResource, payload);
     }
 
+    public String createHtml(String templateName, String payload, String variation) {
+        TemplateResource templateResource = getTemplate(templateName, variation);
+        return createHtml(templateResource, payload);
+    }
+
     public String createMarkdown(String templateName, String mergefields) {
+        TemplateResource templateResource = getTemplate(templateName);
+        return createMarkdown(templateName, mergefields, templateResource);
+    }
+
+    public String createMarkdown(String templateName, String mergefields, String variation) {
+        TemplateResource templateResource = getTemplate(templateName, variation);
+        return createMarkdown(templateName, mergefields, templateResource);
+    }
+
+    private String createMarkdown(String templateName, String mergefields, TemplateResource templateResource) {
         try {
-            TemplateResource templateResource = getTemplate(templateName);
             return getCompiledTemplate(templateResource, jsonService.getJsonFromString(mergefields));
         } catch (IOException e) {
             throw new RuntimeException("Kunne ikke lage Markdown, templateName={} " + templateName, e);
@@ -204,6 +234,16 @@ public class TemplateService {
     }
 
     public void saveTemplate(String templateName, String payload) {
+        Path malPath = FileStructureUtil.getTemplatePath(contentRoot, templateName);
+        saveTemplate(templateName, payload, malPath);
+    }
+
+    public void saveTemplate(String templateName, String payload, String variation) {
+        Path malPath = FileStructureUtil.getTemplatePath(contentRoot, templateName, variation);
+        saveTemplate(templateName, payload, malPath);
+    }
+
+    private void saveTemplate(String templateName, String payload, Path malPath) {
         try {
             JsonNode jsonContent = jsonService.getJsonFromString(payload);
             Document.OutputSettings settings = new Document.OutputSettings();
@@ -218,7 +258,6 @@ public class TemplateService {
                         settings
                 );
 
-                Path malPath = FileStructureUtil.getTemplatePath(contentRoot, templateName);
                 Files.createDirectories(malPath.getParent());
 
                 Files.write(malPath, strippedHtmlSyntax.getBytes(StandardCharsets.UTF_8));
