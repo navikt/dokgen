@@ -1,16 +1,7 @@
 package no.nav.dokgen.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.github.jknack.handlebars.Template;
-import com.jayway.jsonpath.internal.filter.ValueNode;
-import no.nav.dokgen.resources.TemplateResource;
-import no.nav.dokgen.util.FileStructureUtil;
-import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Java6Assertions.catchThrowable;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,8 +11,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Java6Assertions.catchThrowable;
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.github.jknack.handlebars.Template;
+
+import no.nav.dokgen.resources.TemplateResource;
+import no.nav.dokgen.util.FileStructureUtil;
 
 public class TemplateServiceTests {
     private static final String MALNAVN = "lagretMal";
@@ -170,6 +171,24 @@ public class TemplateServiceTests {
         // expect
         malService.saveTemplate(malNavn, GYLDIG_PAYLOAD);
         byte[] pdf = malService.createPdf(malNavn, GYLDIG_PAYLOAD);
+        assertThat(pdf[1]).isEqualTo((byte) 0x50);//P
+        assertThat(pdf[2]).isEqualTo((byte) 0x44);//D
+        assertThat(pdf[3]).isEqualTo((byte) 0x46);//F
+    }
+
+    @Test
+    public void skalHentePdfFraVariation() throws IOException {
+        String malNavn = "pdf";
+        String templateVariation = "template_NN";
+
+        FileUtils.writeStringToFile(FileStructureUtil.getTemplateSchemaPath(contentRoot, malNavn).toFile(),
+                TOM_JSON,
+                StandardCharsets.UTF_8
+        );
+
+        // expect
+        malService.saveTemplate(malNavn, GYLDIG_PAYLOAD, templateVariation);
+        byte[] pdf = malService.createPdf(malNavn, GYLDIG_PAYLOAD, templateVariation);
         assertThat(pdf[1]).isEqualTo((byte) 0x50);//P
         assertThat(pdf[2]).isEqualTo((byte) 0x44);//D
         assertThat(pdf[3]).isEqualTo((byte) 0x46);//F

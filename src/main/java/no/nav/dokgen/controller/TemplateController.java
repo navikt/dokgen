@@ -1,23 +1,32 @@
 package no.nav.dokgen.controller;
 
 
-import io.swagger.annotations.ApiOperation;
-import no.nav.dokgen.controller.api.CreateDocumentRequest;
-import no.nav.dokgen.resources.TemplateResource;
-import no.nav.dokgen.resources.TestDataResource;
-import no.nav.dokgen.services.*;
-import no.nav.dokgen.util.DocFormat;
-import no.nav.dokgen.util.HttpUtil;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.swagger.annotations.ApiOperation;
+import no.nav.dokgen.controller.api.CreateDocumentRequest;
+import no.nav.dokgen.resources.TemplateResource;
+import no.nav.dokgen.resources.TestDataResource;
+import no.nav.dokgen.services.DocumentGeneratorService;
+import no.nav.dokgen.services.HateoasService;
+import no.nav.dokgen.services.JsonService;
+import no.nav.dokgen.services.TemplateService;
+import no.nav.dokgen.services.TestDataService;
+import no.nav.dokgen.util.DocFormat;
+import no.nav.dokgen.util.HttpUtil;
 
 @RestController
 public class TemplateController {
@@ -73,6 +82,13 @@ public class TemplateController {
         return new ResponseEntity<>(pdf, HttpUtil.genHeaders(DocFormat.PDF, templateName, false), HttpStatus.OK);
     }
 
+    @PostMapping(value = "/template/{templateName}/{variation}/create-pdf-variation", consumes = "application/json")
+    @ApiOperation(value = "Lager en PDF av flettefeltene og malen med angitt variation.", notes = "PDF er av versjonen PDF/A")
+    public ResponseEntity createPdfVariation(@PathVariable String templateName, @PathVariable String variation, @RequestBody String mergeFields) {
+        byte[] pdf = templateService.createPdf(templateName, mergeFields, variation);
+        return new ResponseEntity<>(pdf, HttpUtil.genHeaders(DocFormat.PDF, templateName, false), HttpStatus.OK);
+    }
+
     @PostMapping(value = "/template/{templateName}/create-html", consumes = "application/json")
     @ApiOperation(value = "Lager en HTML av flettefeltene og malen.", notes = "")
     public ResponseEntity createHtml(@PathVariable String templateName, @RequestBody String mergeFields) {
@@ -80,10 +96,24 @@ public class TemplateController {
         return new ResponseEntity<>(html, HttpUtil.genHeaders(DocFormat.HTML, templateName, false), HttpStatus.OK);
     }
 
+    @PostMapping(value = "/template/{templateName}/{variation}/create-html-variation", consumes = "application/json")
+    @ApiOperation(value = "Lager en HTML av flettefeltene og malen med angitt variation.", notes = "")
+    public ResponseEntity createHtmlVariation(@PathVariable String templateName, @PathVariable String variation, @RequestBody String mergeFields) {
+        String html = templateService.createHtml(templateName, mergeFields, variation);
+        return new ResponseEntity<>(html, HttpUtil.genHeaders(DocFormat.HTML, templateName, false), HttpStatus.OK);
+    }
+
     @PostMapping(value = "/template/{templateName}/create-markdown", consumes = "application/json", produces = "text/plain")
     @ApiOperation(value = "Lager Markdown av flettefeltene og malen.", notes = "")
     public ResponseEntity createMarkdown(@PathVariable String templateName, @RequestBody String mergefields) {
         String markdown = templateService.createMarkdown(templateName, mergefields);
+        return new ResponseEntity<>(markdown, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/template/{templateName}/{variation}/create-markdown-variation", consumes = "application/json", produces = "text/plain")
+    @ApiOperation(value = "Lager Markdown av flettefeltene og malen med angitt variation.", notes = "")
+    public ResponseEntity createMarkdownVariation(@PathVariable String templateName, @PathVariable String variation, @RequestBody String mergefields) {
+        String markdown = templateService.createMarkdown(templateName, mergefields, variation);
         return new ResponseEntity<>(markdown, HttpStatus.OK);
     }
 

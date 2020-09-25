@@ -4,12 +4,18 @@ import java.nio.file.Path;
 
 public class FileStructureUtil {
 
+    private static final String DEFAULT_VARIATION = "template";
+
     public static Path getTemplateSchemaPath(Path contentRoot, String templateName) {
         return contentRoot.resolve("templates/" + templateName + "/schema.json");
     }
 
     public static Path getTemplatePath(Path contentRoot, String templateName) {
-        return contentRoot.resolve("templates/" + templateName + "/template.hbs");
+        return getTemplatePath(contentRoot, templateName, DEFAULT_VARIATION);
+    }
+
+    public static Path getTemplatePath(Path contentRoot, String templateName, String variation) {
+        return contentRoot.resolve("templates/" + templateName + "/" + variation + ".hbs");
     }
 
     public static Path getTestDataPath(Path contentRoot, String templateName, String testDataName) {

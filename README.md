@@ -49,9 +49,11 @@ we have added some extra by default.
 In future releases hopefully all helpers could conditionally be turned on at runtime.
 
 ### Variation (language for instance)
-Not yet implemented. By adding a `?var=my-variation`-parameter to the urls which would map to 
-`templates/{templateName}/{varName}.hbs` which would open up for reusing schemas and testdata for several lanuages or
-other variations on the same data. This is all about how you want to structure your `dokgen`-instance.
+By adding a `variation`-parameter to the urls you can have different variations of the same hbs-files.
+Example URL: `template/{templateName}/{variation}/create-pdf-variation`.
+The variation-parameter is then mapped to file `templates/{templateName}/{variation}.hbs`. 
+This opens up for reusing schemas and testdata for several languages or other variations on the same data.
+This is all about how you want to structure your `dokgen`-instance.
 
 ### Swagger 
 This application uses the standard Swagger setup which can be found at `http://localhost:8080/swagger-ui.html` when
