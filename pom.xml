@@ -16,7 +16,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <felles.version>1.20201002051158_dbaf243</felles.version>
+        <felles.version>1.20201008051000_833414d</felles.version>
         <handlebar.version>4.1.2</handlebar.version>
     </properties>
 
