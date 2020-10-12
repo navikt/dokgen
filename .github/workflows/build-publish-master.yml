@@ -1,13 +1,14 @@
 name: Build-Publish
 on:
-  pull_request:
-  workflow_dispatch:
+  push:
+    branches:
+      - 'master'
 
 env:
   IMAGE: docker.pkg.github.com/${{ github.repository }}/dokgen:${{ github.sha }}
   IMAGE_LATEST: docker.pkg.github.com/${{ github.repository }}/dokgen:latest
 jobs:
-  build-publish:
+  build-publish-master:
     name: Bygg app/image, push til github
     runs-on: ubuntu-latest
     steps:
