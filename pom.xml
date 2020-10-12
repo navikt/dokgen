@@ -10,12 +10,12 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <artifactId>dokgen-kotlin</artifactId>
+    <artifactId>dokgen</artifactId>
     <groupId>no.nav.familie.dokgen</groupId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>dokgen-kotlin</name>
+    <name>dokgen</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
