@@ -1,0 +1,44 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/root.json",
+  "type": "object",
+  "title": "The Root Schema",
+  "required": [
+    "fodselsnummer",
+    "navn",
+    "dokumentDato"
+  ],
+  "properties": {
+    "fodselsnummer": {
+      "$id": "#/properties/fodselsnummer",
+      "type": "string",
+      "title": "The Fodselsnummer Schema",
+      "default": "",
+      "examples": [
+        "12345678910"
+      ],
+      "pattern": "^\\d{11}$"
+    },
+    "navn": {
+      "$id": "#/properties/navn",
+      "type": "string",
+      "title": "The Navn Schema",
+      "default": "",
+      "examples": [
+        ""
+      ],
+      "pattern": "^(.*)$"
+    },
+    "dokumentDato": {
+      "$id": "#/properties/dokumentDato",
+      "type": "string",
+      "title": "The DokumentDato Schema",
+      "default": "",
+      "examples": [
+        "3. september 2019"
+      ],
+      "pattern": "^(.*)$"
+    }
+  }
+}
