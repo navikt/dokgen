@@ -4,7 +4,9 @@
 
     <!-- Logger for sensitive data -->
     <appender name="secureLog" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+        <encoder>
+            <pattern>%d %-5level [%thread] %logger{0}: %msg%n</pattern>
+        </encoder>
     </appender>
 
     <logger name="secureLogger" level="INFO" additivity="false">
@@ -13,7 +15,9 @@
 
     <!-- Spesiell håndtering av loggeren no.nav.log.LogFilter for å forhindre logging av isAlive-sjekker o.l. -->
     <appender name="stdout_json" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+        <encoder>
+            <pattern>%d %-5level [%thread] %logger{0}: %msg%n</pattern>
+        </encoder>
     </appender>
 
     <root level="${ROOT_LOG_LEVEL:-INFO}">
