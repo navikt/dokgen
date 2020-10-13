@@ -17,9 +17,9 @@ class HateoasServiceTests {
     @Test
     fun skal_returnere_template_links() {
         val links = templateLinks("test")
-        Assertions.assertThat(links.links.size).isGreaterThan(0)
+        Assertions.assertThat(links.links).isNotEmpty
         for (link in links.links) {
-            Assertions.assertThat(link.rel).isNotEmpty
+            Assertions.assertThat(link.rel).isNotNull
             Assertions.assertThat(link.href).isNotEmpty
         }
     }
@@ -27,9 +27,9 @@ class HateoasServiceTests {
     @Test
     fun skal_returnere_testdata_links() {
         val links = testDataLinks("test", "test")
-        Assertions.assertThat(links.links.size).isGreaterThan(0)
+        Assertions.assertThat(links.links).isNotEmpty
         for (link in links.links) {
-            Assertions.assertThat(link.rel).isNotEmpty
+            Assertions.assertThat(link.rel).isNotNull
             Assertions.assertThat(link.href).isNotEmpty
         }
     }

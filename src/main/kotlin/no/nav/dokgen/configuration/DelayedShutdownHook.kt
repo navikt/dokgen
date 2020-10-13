@@ -1,6 +1,5 @@
 package no.nav.dokgen.configuration
 
-import no.nav.dokgen.services.TemplateService
 import org.slf4j.LoggerFactory
 import org.springframework.context.ConfigurableApplicationContext
 

@@ -8,6 +8,8 @@ import no.nav.dokgen.util.FileStructureUtil.getTemplateSchemaPath
 import org.everit.json.schema.Schema
 import org.everit.json.schema.ValidationException
 import org.everit.json.schema.loader.SchemaLoader
+import org.json.JSONObject
+import org.json.JSONTokener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -20,8 +22,6 @@ import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.util.*
 import java.util.stream.Collectors
-import org.json.JSONObject
-import org.json.JSONTokener
 
 @Service
 class JsonService @Autowired constructor(

@@ -14,11 +14,10 @@ import no.nav.dokgen.util.DocFormat
 import no.nav.dokgen.util.HttpUtil.genHeaders
 import no.nav.dokgen.util.HttpUtil.genHtmlHeaders
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.hateoas.Resource
+import org.springframework.hateoas.EntityModel
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.util.*
 
 @RestController
 class TemplateController(
@@ -35,7 +34,7 @@ class TemplateController(
     @ResponseStatus(
         HttpStatus.OK
     )
-    fun listTemplates(): List<Resource<TemplateResource>> {
+    fun listTemplates(): List<EntityModel<TemplateResource>> {
         return templateService.listTemplates().map{
             templateLinks(it)
         }
@@ -43,7 +42,7 @@ class TemplateController(
 
     @GetMapping(value = ["/template/{templateName}/testdata"])
     @ApiOperation(value = "Hent de forskjellige testdataene for spesifikk mal")
-    fun listTestData(@PathVariable templateName: String): List<Resource<TestDataResource>> {
+    fun listTestData(@PathVariable templateName: String): List<EntityModel<TestDataResource>> {
         return testdataService.listTestData(templateName).map {
             testDataLinks(templateName, it)
         }

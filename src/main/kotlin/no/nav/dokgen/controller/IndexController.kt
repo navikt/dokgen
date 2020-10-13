@@ -1,10 +1,10 @@
 package no.nav.dokgen.controller
 
 import no.nav.dokgen.resources.IndexResource
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.hateoas.EntityModel
 import org.springframework.hateoas.Link
-import org.springframework.hateoas.Resource
-import org.springframework.hateoas.mvc.ControllerLinkBuilder
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.RequestMapping
@@ -19,16 +19,16 @@ class IndexController(
 ) {
     @ResponseStatus(HttpStatus.OK)
     @RequestMapping(value = ["/"], produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun listTemplates(): Resource<IndexResource> {
-        val link = Link(servletRequest.requestURL.toString() + "swagger-ui.html")
+    fun listTemplates(): EntityModel<IndexResource> {
+        val link = Link.of(servletRequest.requestURL.toString() + "swagger-ui.html")
             .withRel("swagger-ui")
-        return Resource(
+        return EntityModel.of(
             IndexResource("dokgen"),
-            ControllerLinkBuilder.linkTo(ControllerLinkBuilder.methodOn(TemplateController::class.java).listTemplates())
+            linkTo(methodOn(TemplateController::class.java).listTemplates())
                 .withRel("templates"),
             link,
-            ControllerLinkBuilder.linkTo(
-                ControllerLinkBuilder.methodOn(Swagger2Controller::class.java)
+            linkTo(
+                methodOn(Swagger2Controller::class.java)
                     .getDocumentation("default", servletRequest)
             ).withRel("swagger-doc")
         )
