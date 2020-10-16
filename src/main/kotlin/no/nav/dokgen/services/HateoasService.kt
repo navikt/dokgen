@@ -3,15 +3,13 @@ package no.nav.dokgen.services
 import no.nav.dokgen.controller.TemplateController
 import no.nav.dokgen.resources.TemplateResource
 import no.nav.dokgen.resources.TestDataResource
-import org.springframework.hateoas.Resource
-import org.springframework.hateoas.mvc.ControllerLinkBuilder
-import org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo
-import org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn
+import org.springframework.hateoas.EntityModel
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
 
 object HateoasService {
-    fun templateLinks(templateName: String): Resource<TemplateResource> {
-        return Resource(
-            TemplateResource(templateName),
+    fun templateLinks(templateName: String): EntityModel<TemplateResource> {
+        return EntityModel.of(TemplateResource(templateName),
             linkTo(
                 methodOn(TemplateController::class.java).getTemplateAsMarkdown(templateName)
             ).withSelfRel(),
@@ -30,8 +28,8 @@ object HateoasService {
         )
     }
 
-    fun testDataLinks(templateName: String, testDataName: String): Resource<TestDataResource> {
-        return Resource(
+    fun testDataLinks(templateName: String, testDataName: String): EntityModel<TestDataResource> {
+        return EntityModel.of(
             TestDataResource(templateName, testDataName),
             linkTo(
                 methodOn(TemplateController::class.java).previewHtml(templateName, testDataName)
