@@ -1,5 +1,18 @@
 path.content.root: ./content/
 write.access: false
 
+management:
+  endpoint.health.show-details: always
+  endpoints.web:
+    exposure.include: info, health, metrics, prometheus
+    base-path: "/internal"
+  metrics.export.prometheus.enabled: true
+  metrics:
+    web:
+      server:
+        request:
+          autotime:
+            enabled: true
+
 logging:
   config: "classpath:logback-spring.xml"
