@@ -5,7 +5,7 @@ management:
   endpoint.health.show-details: always
   endpoints.web:
     exposure.include: info, health, metrics, prometheus
-    base-path: "/internal"
+    base-path: "/actuator"
   metrics.export.prometheus.enabled: true
   metrics:
     web:
