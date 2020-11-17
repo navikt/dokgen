@@ -33,6 +33,6 @@ class IndexController(
     @GetMapping("/swagger-ui.html")
     fun swaggerRedirect(response: HttpServletResponse) {
         response.setHeader("Location", "/swagger-ui/")
-        response.status = 302
+        response.status = HttpStatus.FOUND.value()
     }
 }
