@@ -14,6 +14,7 @@ import com.github.jknack.handlebars.helper.StringHelpers
 import com.github.jknack.handlebars.io.FileTemplateLoader
 import no.nav.dokgen.controller.api.CreateDocumentRequest
 import no.nav.dokgen.exceptions.DokgenNotFoundException
+import no.nav.dokgen.handlebars.CustomHelpers
 import no.nav.dokgen.resources.TemplateResource
 import no.nav.dokgen.util.DocFormat
 import no.nav.dokgen.util.FileStructureUtil.getFormatSchema
@@ -134,7 +135,7 @@ class TemplateService @Autowired internal constructor(
     }
 
     fun createPdf(templateName: String, payload: String?, variation: String): ByteArray {
-        val templateResource = getTemplate(templateName, variation)
+         val templateResource = getTemplate(templateName, variation)
         return createPdf(templateResource, payload)
     }
 
@@ -322,6 +323,8 @@ class TemplateService @Autowired internal constructor(
         ) else Handlebars()
         handlebars.registerHelper("eq", ConditionalHelpers.eq)
         handlebars.registerHelper("neq", ConditionalHelpers.neq)
+        handlebars.registerHelper("switch", CustomHelpers.SwitchHelper() )
+        handlebars.registerHelper( "case", CustomHelpers.CaseHelper())
         handlebars.registerHelpers(StringHelpers::class.java)
         this.documentGeneratorService = documentGeneratorService
         this.jsonService = jsonService
