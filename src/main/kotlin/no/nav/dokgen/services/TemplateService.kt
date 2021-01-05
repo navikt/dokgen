@@ -323,8 +323,15 @@ class TemplateService @Autowired internal constructor(
         ) else Handlebars()
         handlebars.registerHelper("eq", ConditionalHelpers.eq)
         handlebars.registerHelper("neq", ConditionalHelpers.neq)
+        handlebars.registerHelper("gt", ConditionalHelpers.gt)
+        handlebars.registerHelper("gte", ConditionalHelpers.gte)
+        handlebars.registerHelper("lt", ConditionalHelpers.lt)
+        handlebars.registerHelper("lte", ConditionalHelpers.lte)
+        handlebars.registerHelper("and", ConditionalHelpers.and)
+        handlebars.registerHelper("or", ConditionalHelpers.or)
+        handlebars.registerHelper("not", ConditionalHelpers.not)
         handlebars.registerHelper("switch", CustomHelpers.SwitchHelper() )
-        handlebars.registerHelper( "case", CustomHelpers.CaseHelper())
+        handlebars.registerHelper("case", CustomHelpers.CaseHelper())
         handlebars.registerHelpers(StringHelpers::class.java)
         this.documentGeneratorService = documentGeneratorService
         this.jsonService = jsonService
