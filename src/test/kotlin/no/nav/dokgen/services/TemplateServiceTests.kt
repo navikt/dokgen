@@ -2,9 +2,8 @@ package no.nav.dokgen.services
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import no.nav.dokgen.services.DocumentGeneratorServiceTests
-import no.nav.dokgen.util.FileStructureUtil.getTemplatePath
 import no.nav.dokgen.util.FileStructureUtil.getTemplateRootPath
+import no.nav.dokgen.util.FileStructureUtil.getTemplatePath
 import no.nav.dokgen.util.FileStructureUtil.getTemplateSchemaPath
 import org.apache.commons.io.FileUtils
 import org.assertj.core.api.Assertions
@@ -70,7 +69,6 @@ class TemplateServiceTests {
     }
 
     @Test
-    @Throws(IOException::class)
     fun skalReturnereMal() {
         val malPath = templateRoot.resolve("MAL")
         Files.createDirectories(malPath)
@@ -80,6 +78,22 @@ class TemplateServiceTests {
 
         // expect
         val (_, content) = malService.getTemplate("MAL")
+
+        // when
+        Assertions.assertThat(content).isEqualTo("maldata")
+    }
+
+    @Test
+    fun skalReturnereMalDerMalnavnErEnPath() {
+        val malpathString = "EN/MAL/SOM/LIGGER/HER"
+        val malPath = templateRoot.resolve(malpathString)
+        Files.createDirectories(malPath)
+        val templatePath = getTemplatePath(contentRoot, malpathString)
+        Files.write(templatePath, "maldata".toByteArray())
+
+
+        // expect
+        val (_, content) = malService.getTemplate(malpathString)
 
         // when
         Assertions.assertThat(content).isEqualTo("maldata")
