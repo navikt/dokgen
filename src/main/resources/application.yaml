@@ -1,5 +1,6 @@
 path.content.root: ./content/
 write.access: false
+allow-encoded-slash: ${ALLOW_ENCODED_SLASH:false}
 
 management:
   endpoint.health.show-details: always
