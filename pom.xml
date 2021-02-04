@@ -23,7 +23,7 @@
         <java.version>11</java.version>
         <felles.version>1.20210121113106_ca34836</felles.version>
         <handlebar.version>4.2.0</handlebar.version>
-        <kotlin.version>1.4.21-2</kotlin.version>
+        <kotlin.version>1.4.30</kotlin.version>
     </properties>
 
     <dependencies>
