@@ -21,7 +21,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.code.style>official</kotlin.code.style>
         <java.version>11</java.version>
-        <felles.version>1.20210121113106_ca34836</felles.version>
+        <felles.version>1.20210208115050_88991d1</felles.version>
         <handlebar.version>4.2.0</handlebar.version>
         <kotlin.version>1.4.21-2</kotlin.version>
     </properties>
