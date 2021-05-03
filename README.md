@@ -46,6 +46,24 @@ with a simple `{{> footer }}`.
 we have added some extra by default.
 * `dateFormat`
 
+#### Custom Nav helpers
+* `add` which lets you add two numbers inline with `{{add 1 2}}` or more usefully inside a #each loop `{{add @index 3}}`
+* `table` which lets you generate tables with a set number of columns from an arbitrary amount of `<td>` elements
+  ```handlebars
+  {{#table columns=2}}
+    <td>Some cell</td>
+    <td>More data</td>
+    <td>Third cell</td>
+    <td>You get the gist</td>
+  {{/table}}
+  ```
+  Which would render two rows with two cells each.
+  
+  | Some cell  |    More data     |
+  |------------|------------------|
+  | Third cell | You get the gist |
+  (Note that github will render the first row bold, this is not how the helper is implemented)
+
 In future releases hopefully all helpers could conditionally be turned on at runtime.
 
 ### Variation (language for instance)
