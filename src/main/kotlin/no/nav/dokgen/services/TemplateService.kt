@@ -332,6 +332,8 @@ class TemplateService @Autowired internal constructor(
         handlebars.registerHelper("not", ConditionalHelpers.not)
         handlebars.registerHelper("switch", CustomHelpers.SwitchHelper() )
         handlebars.registerHelper("case", CustomHelpers.CaseHelper())
+        handlebars.registerHelper("table", CustomHelpers.TableHelper())
+        handlebars.registerHelper("add", CustomHelpers.AdditionHelper())
         handlebars.registerHelpers(StringHelpers::class.java)
         this.documentGeneratorService = documentGeneratorService
         this.jsonService = jsonService
