@@ -99,7 +99,15 @@ interface CustomHelpers {
     }
 
     /**
-     * Allows simple addition inside
+     * Allows simple addition inside a template
+     *
+     * {{add 3 4}} prints 7 for example. Mostly useful when printing index
+     * in loops. For example:
+     * {{#each context.questions as | question |}}
+     *     {{add @index 1}}. {{question.prompt}}
+     * {{/each}}
+     *
+     * Will print every question prompt in an array of unknown size along with its index incremented by 1
      */
     class AdditionHelper(): Helper<Int> {
         override fun apply(leftOperand: Int, options: Options): Any {
