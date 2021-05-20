@@ -90,6 +90,11 @@ interface CustomHelpers {
                     wrappedInRows += cell
                 }
             }
+
+            // If there are fewer cells than columns, the cells will stretch unless we do this
+            val missingCellsInLastRow = cells.count() % columnCount
+            wrappedInRows += "<td></td>".repeat(missingCellsInLastRow)
+
             wrappedInRows += "</tr>"
 
             val classParam = options.hash<String>("class", "")
@@ -112,6 +117,17 @@ interface CustomHelpers {
     class AdditionHelper(): Helper<Int> {
         override fun apply(leftOperand: Int, options: Options): Any {
             return leftOperand + options.param<Int>(0)
+        }
+    }
+
+    /**
+     * Allows converting ISO8601 to be formatted as a norwegian dd.mm.yyyy string
+     *
+     * {{norwegian-date 2020-02-01}} prints 01.02.2020
+     */
+    class NorwegianDateHelper(): Helper<String> {
+        override fun apply(isoFormattedDate: String, options: Options): Any {
+            return isoFormattedDate.split('-').reversed().joinToString(separator = ".")
         }
     }
 }
