@@ -64,6 +64,8 @@ we have added some extra by default.
   | Third cell | You get the gist |
   (Note that github will render the first row bold, this is not how the helper is implemented)
 
+* `norwegian-date` which lets you turn an ISO8601 (`YYYY-MM-dd`) into the more Norwegian `dd.mm.ÅÅÅÅ`
+
 In future releases hopefully all helpers could conditionally be turned on at runtime.
 
 ### Variation (language for instance)
