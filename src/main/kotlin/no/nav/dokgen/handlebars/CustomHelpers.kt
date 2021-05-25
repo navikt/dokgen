@@ -10,7 +10,7 @@ interface CustomHelpers {
     class SwitchHelper() : Helper<Any> {
 
         @Throws(IOException::class)
-        override fun apply(variable: Any, options: Options): Any {
+        override fun apply(variable: Any, options: Options): Any? {
             val variabelNavn: MutableList<String> = ArrayList()
             val variabelVerdier: MutableList<Any> = ArrayList()
             variabelNavn.add("__condition_fulfilled")
@@ -24,7 +24,7 @@ interface CustomHelpers {
             if (Integer.valueOf(1) == antall) {
                 return resultat
             }
-            throw IllegalArgumentException("Switch-case må treffe i 1 case, men traff i " + antall + " med verdien " + ctx["__condition_variable"])
+            return null
         }
     }
 
