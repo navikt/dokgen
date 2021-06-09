@@ -335,6 +335,8 @@ class TemplateService @Autowired internal constructor(
         handlebars.registerHelper("table", CustomHelpers.TableHelper())
         handlebars.registerHelper("add", CustomHelpers.AdditionHelper())
         handlebars.registerHelper("norwegian-date", CustomHelpers.NorwegianDateHelper())
+        handlebars.registerHelper("divide", CustomHelpers.DivideHelper())
+        handlebars.registerHelper("formaterKroner", CustomHelpers.FormaterKronerHelper())
         handlebars.registerHelpers(StringHelpers::class.java)
         this.documentGeneratorService = documentGeneratorService
         this.jsonService = jsonService

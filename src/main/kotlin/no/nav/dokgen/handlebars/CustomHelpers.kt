@@ -4,6 +4,10 @@ import com.github.jknack.handlebars.Context
 import com.github.jknack.handlebars.Helper
 import com.github.jknack.handlebars.Options
 import java.io.IOException
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.text.DecimalFormat
+import java.text.NumberFormat
 import java.util.*
 
 interface CustomHelpers {
@@ -128,6 +132,32 @@ interface CustomHelpers {
     class NorwegianDateHelper(): Helper<String> {
         override fun apply(isoFormattedDate: String, options: Options): Any {
             return isoFormattedDate.split('-').reversed().joinToString(separator = ".")
+        }
+    }
+
+    /**
+     * Allows to divide a template parameter with a given number and round the resultvalue to the nearest krone
+     */
+    class DivideHelper() : Helper<Int> {
+        override fun apply(antall: Int, options: Options): Any {
+            val beløp = options.param<Int>(0)
+
+            val value = BigDecimal.valueOf(beløp.toLong()).divide(BigDecimal.valueOf(antall.toLong()), 0, RoundingMode.HALF_UP)
+
+            return value.toInt();
+        }
+    }
+
+    /**
+     * Format an int with thousand seperator, ex: 10000 will be 10 000
+     */
+    class FormaterKronerHelper : Helper<Int> {
+        override fun apply(kroner: Int, options: Options?): Any {
+            val formatter = NumberFormat.getInstance(Locale.US) as DecimalFormat
+            val symbols = formatter.decimalFormatSymbols
+            symbols.groupingSeparator = ' '
+            formatter.decimalFormatSymbols = symbols
+            return formatter.format(kroner)
         }
     }
 }
