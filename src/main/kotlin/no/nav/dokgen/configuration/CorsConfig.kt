@@ -16,7 +16,7 @@ class CorsConfig {
         val source = UrlBasedCorsConfigurationSource()
         val bean = FilterRegistrationBean<Filter>()
         val config = CorsConfiguration()
-        config.addAllowedOrigin("*")
+        config.addAllowedOriginPattern("*")
         config.addAllowedMethod("*")
         config.allowCredentials = true
         config.maxAge = 3600L
