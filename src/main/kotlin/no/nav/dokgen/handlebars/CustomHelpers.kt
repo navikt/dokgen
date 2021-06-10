@@ -151,13 +151,22 @@ interface CustomHelpers {
     /**
      * Format an int with thousand seperator, ex: 10000 will be 10 000
      */
-    class FormaterKronerHelper : Helper<Int> {
+    class FormatKronerHelper : Helper<Int> {
         override fun apply(kroner: Int, options: Options?): Any {
             val formatter = NumberFormat.getInstance(Locale.US) as DecimalFormat
             val symbols = formatter.decimalFormatSymbols
             symbols.groupingSeparator = ' '
             formatter.decimalFormatSymbols = symbols
             return formatter.format(kroner)
+        }
+    }
+
+    /**
+     * Removes trailing zeroes from decimals, ex: 10.0 becomes 10 and 90.20 becomes 90.2, while 100.3 remains the same
+     */
+    class TrimDecimalHelper : Helper<Double> {
+        override fun apply(decimal: Double, options: Options?): Any {
+            return BigDecimal.valueOf(decimal).stripTrailingZeros().toPlainString()
         }
     }
 }
