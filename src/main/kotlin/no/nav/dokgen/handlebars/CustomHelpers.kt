@@ -169,4 +169,61 @@ interface CustomHelpers {
             return BigDecimal.valueOf(decimal).stripTrailingZeros().toPlainString()
         }
     }
+
+    /*
+     * Block helper that gives a possibility to define a
+     * array in a handlebars template. It can be used as
+     * an input parameter to in-array function.
+     *
+     * ```handlebars
+     * <!-- array: ['a', 'b', 'c'] -->
+     * {{#in-array (array 'a', 'b', 'c') 'd'}}
+     *   foo
+     * {{else}}
+     *   bar
+     * {{/in-array}}
+     * <!-- results in: 'bar' -->
+     * ```
+     */
+    class ArrayHelper : Helper<Any> {
+        @Throws(IOException::class)
+        override fun apply(verdi: Any, options: Options): Any {
+            val verdier: MutableList<Any> = ArrayList()
+            if (options.hash.isEmpty()) {
+                verdier.add(verdi)
+                verdier.addAll(Arrays.asList(*options.params))
+            } else {
+                verdier.add(options.hash)
+            }
+            return verdier
+        }
+    }
+
+    /*
+     * Block helper that renders the block if an caseArray has the
+     * given `value`. Optionally specify an inverse block to render
+     * when the caseArray does not have the given value.
+     *
+     * ```handlebars
+     * <!-- caseArray: ['a', 'b', 'c'] -->
+     * {{#in-array caseArray "d"}}
+     *   foo
+     * {{else}}
+     *   bar
+     * {{/in-array}}
+     * <!-- results in: 'bar' -->
+     * ```
+     */
+    class InArrayHelper : Helper<Any?> {
+        @Throws(IOException::class)
+        override fun apply(caseArray: Any?, options: Options): Any {
+            if (caseArray is Iterable<*>) {
+                val param = options.params[0]
+                if ((caseArray as List<*>).contains(param)) {
+                    return options.fn()
+                }
+            }
+            return options.inverse()
+        }
+    }
 }
