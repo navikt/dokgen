@@ -173,15 +173,15 @@ interface CustomHelpers {
     /*
      * Block helper that gives a possibility to define a
      * array in a handlebars template. It can be used as
-     * an input parameter to inArray function.
+     * an input parameter to in-array function.
      *
      * ```handlebars
      * <!-- array: ['a', 'b', 'c'] -->
-     * {{#inArray (array 'a', 'b', 'c') 'd'}}
+     * {{#in-array (array 'a', 'b', 'c') 'd'}}
      *   foo
      * {{else}}
      *   bar
-     * {{/inArray}}
+     * {{/in-array}}
      * <!-- results in: 'bar' -->
      * ```
      */
@@ -206,11 +206,11 @@ interface CustomHelpers {
      *
      * ```handlebars
      * <!-- caseArray: ['a', 'b', 'c'] -->
-     * {{#inArray caseArray "d"}}
+     * {{#in-array caseArray "d"}}
      *   foo
      * {{else}}
      *   bar
-     * {{/inArray}}
+     * {{/in-array}}
      * <!-- results in: 'bar' -->
      * ```
      */
