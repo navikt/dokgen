@@ -33,21 +33,29 @@ interface CustomHelpers {
     }
 
     class CaseHelper() : Helper<Any> {
+        private val CONDITION_VARIABLE = "__condition_variable"
+        private val CONDITION_FULFILLED = "__condition_fulfilled"
 
         @Throws(IOException::class)
-        override fun apply(caseKonstant: Any, options: Options): Any {
-            val konstant: Any = if (options.hash.isEmpty()) caseKonstant else options.hash
+        override fun apply(caseKonstant: Any, options: Options): Any? {
+            val konstant = if (options.hash.isEmpty()) caseKonstant else options.hash
             val model = options.context.model() as MutableMap<String, Any>
-            val condition_variable = model["__condition_variable"]
-            if (konstant == condition_variable) {
-                val antall = model["__condition_fulfilled"] as Int?
-                if (antall != null) {
-                    val nyAntall = antall.inc()
-                    model.put("__condition_fulfilled", nyAntall)
+            val condition_variable = model[CONDITION_VARIABLE]
+            if (caseKonstant is Iterable<*>) {
+                if ((caseKonstant as List<*>).contains(condition_variable)) {
+                    incrementConditionFulfilledCounter(model)
+                    return options.fn()
                 }
+            } else if (konstant == condition_variable) {
+                incrementConditionFulfilledCounter(model)
                 return options.fn()
             }
             return options.inverse()
+        }
+
+        private fun incrementConditionFulfilledCounter(model: MutableMap<String, Any>) {
+            var antall = model[CONDITION_FULFILLED] as Int
+            model[CONDITION_FULFILLED] = ++antall
         }
     }
 
