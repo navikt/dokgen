@@ -40,7 +40,7 @@ class DocumentGeneratorService @Autowired constructor(
             val header = Files.readString(getFormatHeader(contentRoot, format), UTF_8)
             val footer = Files.readString(getFormatFooter(contentRoot, format), UTF_8)
             val body = document.body()
-            body.prepend(headerFunction.apply(header))
+            headerFunction.apply(header)?.let { body.prepend(it) }
             body.append(footer)
         } catch (e: IOException) {
             throw RuntimeException("Kunne ikke legge til header/footer på dokumentet", e)
@@ -56,7 +56,7 @@ class DocumentGeneratorService @Autowired constructor(
         return document
     }
 
-    fun genererPDF(html: Document?, outputStream: ByteArrayOutputStream?) {
+    fun genererPDF(html: Document, outputStream: ByteArrayOutputStream?) {
         val doc = W3CDom().fromJsoup(html)
         val builder = PdfRendererBuilder()
         try {

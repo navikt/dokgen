@@ -265,7 +265,7 @@ class TemplateService @Autowired internal constructor(
         return generatePdf(styledHtml)
     }
 
-    fun generatePdf(document: Document?): ByteArray {
+    fun generatePdf(document: Document): ByteArray {
         val outputStream = ByteArrayOutputStream()
         documentGeneratorService.genererPDF(document, outputStream)
         return outputStream.toByteArray()
