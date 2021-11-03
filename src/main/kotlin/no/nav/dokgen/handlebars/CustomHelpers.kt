@@ -121,9 +121,11 @@ interface CustomHelpers {
                 }
             }
 
-            // If there are fewer cells than columns, the cells will stretch unless we do this
-            val missingCellsInLastRow = columnCount - (cells.count() % columnCount)
-            wrappedInRows += "<td></td>".repeat(missingCellsInLastRow)
+            if (cells.count() % columnCount > 0) {
+                // If there are fewer cells than columns, the cells will stretch unless we do this
+                val missingCellsInLastRow = columnCount - (cells.count() % columnCount)
+                wrappedInRows += "<td></td>".repeat(missingCellsInLastRow)
+            }
 
             wrappedInRows += "</tr>"
 
