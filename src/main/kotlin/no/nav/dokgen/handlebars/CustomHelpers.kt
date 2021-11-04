@@ -11,6 +11,20 @@ import java.text.NumberFormat
 import java.util.*
 
 interface CustomHelpers {
+
+    /**
+     * Allows using switch/case in hbs templates
+     *
+     * Syntax:
+     *  {{#switch variable}}
+     *      {{#case "SOME_VALUE"}}
+     *          <p>Content that should display if variable=="SOME_VALUE"</p>
+     *      {{/case}}
+     *      {{#case "SOME_OTHER_VALUE"}}
+     *          <p>Content that should display if variable=="SOME_OTHER_VALUE"</p>
+     *      {{/case}}
+     *  {{/switch}}
+     */
     class SwitchHelper() : Helper<Any> {
 
         @Throws(IOException::class)
@@ -32,6 +46,9 @@ interface CustomHelpers {
         }
     }
 
+    /**
+     * @see SwitchHelper
+     */
     class CaseHelper() : Helper<Any> {
         private val CONDITION_VARIABLE = "__condition_variable"
         private val CONDITION_FULFILLED = "__condition_fulfilled"
@@ -103,9 +120,11 @@ interface CustomHelpers {
                 }
             }
 
-            // If there are fewer cells than columns, the cells will stretch unless we do this
-            val missingCellsInLastRow = cells.count() % columnCount
-            wrappedInRows += "<td></td>".repeat(missingCellsInLastRow)
+            if (cells.count() % columnCount > 0) {
+                // If there are fewer cells than columns, the cells will stretch unless we do this
+                val missingCellsInLastRow = columnCount - (cells.count() % columnCount)
+                wrappedInRows += "<td></td>".repeat(missingCellsInLastRow)
+            }
 
             wrappedInRows += "</tr>"
 
