@@ -1,5 +1,6 @@
 package no.nav.dokgen.handlebars
 
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.github.jknack.handlebars.Context
 import com.github.jknack.handlebars.Helper
 import com.github.jknack.handlebars.Options
@@ -197,7 +198,7 @@ interface CustomHelpers {
         }
     }
 
-    /*
+    /**
      * Block helper that gives a possibility to define a
      * array in a handlebars template. It can be used as
      * an input parameter to in-array function.
@@ -226,7 +227,7 @@ interface CustomHelpers {
         }
     }
 
-    /*
+    /**
      * Block helper that renders the block if an caseArray has the
      * given `value`. Optionally specify an inverse block to render
      * when the caseArray does not have the given value.
@@ -251,6 +252,17 @@ interface CustomHelpers {
                 }
             }
             return options.inverse()
+        }
+    }
+
+    /**
+     * Returns the size of an array
+     */
+    class SizeHelper : Helper<Any> {
+        override fun apply(o: Any?, options: Options?): Any {
+            return if (o is ArrayNode) {
+                o.size()
+            } else 0
         }
     }
 }
