@@ -330,7 +330,7 @@ class TemplateService @Autowired internal constructor(
         handlebars.registerHelper("and", ConditionalHelpers.and)
         handlebars.registerHelper("or", ConditionalHelpers.or)
         handlebars.registerHelper("not", ConditionalHelpers.not)
-        handlebars.registerHelper("switch", CustomHelpers.SwitchHelper() )
+        handlebars.registerHelper("switch", CustomHelpers.SwitchHelper())
         handlebars.registerHelper("case", CustomHelpers.CaseHelper())
         handlebars.registerHelper("table", CustomHelpers.TableHelper())
         handlebars.registerHelper("add", CustomHelpers.AdditionHelper())
@@ -340,6 +340,7 @@ class TemplateService @Autowired internal constructor(
         handlebars.registerHelper("trim-decimal", CustomHelpers.TrimDecimalHelper())
         handlebars.registerHelper("array", CustomHelpers.ArrayHelper())
         handlebars.registerHelper("in-array", CustomHelpers.InArrayHelper())
+        handlebars.registerHelper("size", CustomHelpers.SizeHelper())
         handlebars.registerHelpers(StringHelpers::class.java)
         this.documentGeneratorService = documentGeneratorService
         this.jsonService = jsonService
