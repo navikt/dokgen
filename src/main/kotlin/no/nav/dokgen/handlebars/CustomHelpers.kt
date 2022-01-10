@@ -172,13 +172,14 @@ interface CustomHelpers {
 
             val value = BigDecimal.valueOf(beløp.toLong()).divide(BigDecimal.valueOf(antall.toLong()), 0, RoundingMode.HALF_UP)
 
-            return value.toInt();
+            return value.toInt()
         }
     }
 
     /**
      * Format an int with thousand seperator, ex: 10000 will be 10 000
      */
+    @Deprecated("Do not use, use ThousandSeperatorHelper.class instead")
     class FormatKronerHelper : Helper<Int> {
         override fun apply(kroner: Int, options: Options?): Any {
             val formatter = NumberFormat.getInstance(Locale.US) as DecimalFormat
@@ -186,6 +187,17 @@ interface CustomHelpers {
             symbols.groupingSeparator = ' '
             formatter.decimalFormatSymbols = symbols
             return formatter.format(kroner)
+        }
+    }
+
+    /**
+     * Format an int with thousand seperator and make the space not breakable to prevent line breaks within an amount,
+     * ex: 10000 will be 10 000
+     * The function does not handle decimals
+     */
+    class ThousandSeperatorHelper : Helper<Int> {
+        override fun apply(kroner: Int, options: Options?): Any {
+            return String.format("%,d", kroner)
         }
     }
 
