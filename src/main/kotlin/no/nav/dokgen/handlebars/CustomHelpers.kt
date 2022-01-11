@@ -197,7 +197,7 @@ interface CustomHelpers {
      */
     class ThousandSeperatorHelper : Helper<Int> {
         override fun apply(kroner: Int, options: Options?): Any {
-            return String.format("%,d", kroner)
+            return String.format(Locale.forLanguageTag("NO"), "%,d", kroner)
         }
     }
 
