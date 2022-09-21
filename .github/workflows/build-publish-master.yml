@@ -5,8 +5,8 @@ on:
       - 'master'
 
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/dokgen:${{ github.sha }}
-  IMAGE_LATEST: docker.pkg.github.com/${{ github.repository }}/dokgen:latest
+  IMAGE: ghcr.io/${{ github.repository }}/dokgen:${{ github.sha }}
+  IMAGE_LATEST: ghcr.io/${{ github.repository }}/dokgen:latest
 jobs:
   build-publish-master:
     name: Bygg app/image, push til github
