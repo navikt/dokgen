@@ -5,8 +5,8 @@ on:
       - 'master'
 
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/dokgen:${{ github.sha }}
-  IMAGE_LATEST: docker.pkg.github.com/${{ github.repository }}/dokgen:latest
+  IMAGE: ghcr.io/${{ github.repository }}/dokgen:${{ github.sha }}
+  IMAGE_LATEST: ghcr.io/${{ github.repository }}/dokgen:latest
 jobs:
   build-publish-master:
     name: Bygg app/image, push til github
@@ -30,12 +30,12 @@ jobs:
       - name: Bygg Docker image
         run: |
           docker build -t ${IMAGE} -t ${IMAGE_LATEST} .
-      - name: Login to Github Package Registry
-        env:
-          DOCKER_USERNAME: x-access-token
-          DOCKER_PASSWORD: ${{ secrets.PUSH_TOKEN }}
-        run: |
-          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push Docker image med versjonstag
         run: docker push ${IMAGE}
       - name: Push Docker image med 'latest' tag
