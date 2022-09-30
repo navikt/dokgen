@@ -32,12 +32,14 @@ import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.lang.reflect.AccessibleObject
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.util.function.Function
 import java.util.stream.Collectors
+
 
 @Service
 class TemplateService @Autowired internal constructor(
@@ -66,7 +68,7 @@ class TemplateService @Autowired internal constructor(
         }.fold(
             onSuccess = {it},
             onFailure = {
-                LOG.warn("Kompilering av malinnhold feilet: $templateContent")
+                LOG.warn("Kompilering av malinnhold feilet : $templateContent")
                 templateContent
             }
         )
@@ -80,12 +82,26 @@ class TemplateService @Autowired internal constructor(
     }
 
     private fun with(model: JsonNode?): Context {
+        val MY_FIELD_VALUE_RESOLVER: FieldValueResolver = object : FieldValueResolver() {
+            override fun members(clazz: Class<*>?): Set<FieldWrapper> {
+                val members = super.members(clazz)
+                return members.stream()
+                    .filter { fw: FieldWrapper? -> isValidField(fw) }
+                    .collect(Collectors.toSet())
+            }
+
+            fun isValidField(fw: FieldWrapper?): Boolean {
+                return if (fw is AccessibleObject) {
+                    isUseSetAccessible(fw)
+                } else true
+            }
+        }
         return Context
             .newBuilder(model)
             .resolver(
                 JsonNodeValueResolver.INSTANCE,
                 JavaBeanValueResolver.INSTANCE,
-                FieldValueResolver.INSTANCE,
+                MY_FIELD_VALUE_RESOLVER,
                 MapValueResolver.INSTANCE,
                 MethodValueResolver.INSTANCE
             ).build()
