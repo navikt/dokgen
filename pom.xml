@@ -21,6 +21,8 @@
         <felles.version>1.20220926080252_c76c5fa</felles.version>
         <handlebar.version>4.3.0</handlebar.version>
         <kotlin.version>1.7.10</kotlin.version>
+        <openhtml.version>1.0.10</openhtml.version>
+        <commonmark.version>0.17.0</commonmark.version>
     </properties>
     <dependencies>
         <!-- Spring -->
@@ -102,12 +104,12 @@
         <dependency>
             <groupId>com.atlassian.commonmark</groupId>
             <artifactId>commonmark</artifactId>
-            <version>0.17.0</version>
+            <version>${commonmark.version}</version>
         </dependency>
         <dependency>
             <groupId>com.atlassian.commonmark</groupId>
             <artifactId>commonmark-ext-gfm-tables</artifactId>
-            <version>0.17.0</version>
+            <version>${commonmark.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.everit-org.json-schema</groupId>
@@ -124,12 +126,12 @@
         <dependency>
             <groupId>com.openhtmltopdf</groupId>
             <artifactId>openhtmltopdf-core</artifactId>
-            <version>1.0.10</version>
+            <version>${openhtml.version}</version>
         </dependency>
         <dependency>
             <groupId>com.openhtmltopdf</groupId>
             <artifactId>openhtmltopdf-pdfbox</artifactId>
-            <version>1.0.10</version>
+            <version>${openhtml.version}</version>
         </dependency>
         <dependency>
             <groupId>no.nav.familie.felles</groupId>
@@ -139,7 +141,7 @@
         <dependency>
             <groupId>com.openhtmltopdf</groupId>
             <artifactId>openhtmltopdf-svg-support</artifactId>
-            <version>1.0.6</version>
+            <version>${openhtml.version}</version>
         </dependency>
         <!-- PDFgen -->
         <dependency>
