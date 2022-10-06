@@ -1,6 +1,5 @@
 package no.nav.dokgen.controller
-
-import io.swagger.annotations.ApiOperation
+import io.swagger.v3.oas.annotations.Operation
 import no.nav.dokgen.controller.api.CreateDocumentRequest
 import no.nav.dokgen.resources.TemplateResource
 import no.nav.dokgen.resources.TestDataResource
@@ -30,7 +29,7 @@ class TemplateController(
 ) {
 
     @GetMapping("/templates")
-    @ApiOperation(value = "Get a list over all templates availiable")
+    @Operation(summary = "Get a list over all templates availiable")
     @ResponseStatus(
         HttpStatus.OK
     )
@@ -41,7 +40,7 @@ class TemplateController(
     }
 
     @GetMapping(value = ["/template/{templateName}/testdata"])
-    @ApiOperation(value = "Hent de forskjellige testdataene for spesifikk mal")
+    @Operation(summary = "Hent de forskjellige testdataene for spesifikk mal")
     fun listTestData(@PathVariable templateName: String): List<EntityModel<TestDataResource>> {
         return testdataService.listTestData(templateName).map {
             testDataLinks(templateName, it)
@@ -49,23 +48,23 @@ class TemplateController(
     }
 
     @GetMapping(value = ["/template/{templateName}/markdown"], produces = ["text/plain"])
-    @ApiOperation(value = "Hent malen i markdown")
+    @Operation(summary = "Hent malen i markdown")
     fun getTemplateAsMarkdown(@PathVariable templateName: String): ResponseEntity<String> {
         val responseBody = templateService.getTemplate(templateName)
         return ResponseEntity(responseBody.content, HttpStatus.OK)
     }
 
     @PostMapping(value = ["/template/{templateName}/create-pdf"], consumes = ["application/json"])
-    @ApiOperation(value = "Lager en PDF av flettefeltene og malen.", notes = "PDF er av versjonen PDF/A")
+    @Operation(summary = "Lager en PDF av flettefeltene og malen.", description = "PDF er av versjonen PDF/A")
     fun createPdf(@PathVariable templateName: String, @RequestBody mergeFields: String?): ResponseEntity<*> {
         val pdf = templateService.createPdf(templateName, mergeFields)
         return ResponseEntity(pdf, genHeaders(DocFormat.PDF, templateName, false), HttpStatus.OK)
     }
 
     @PostMapping(value = ["/template/{templateName}/{variation}/create-pdf-variation"], consumes = ["application/json"])
-    @ApiOperation(
-        value = "Lager en PDF av flettefeltene og malen med angitt variation.",
-        notes = "PDF er av versjonen PDF/A"
+    @Operation(
+        summary = "Lager en PDF av flettefeltene og malen med angitt variation.",
+        description = "PDF er av versjonen PDF/A"
     )
     fun createPdfVariation(
         @PathVariable templateName: String,
@@ -77,7 +76,7 @@ class TemplateController(
     }
 
     @PostMapping(value = ["/template/{templateName}/create-html"], consumes = ["application/json"])
-    @ApiOperation(value = "Lager en HTML av flettefeltene og malen.", notes = "")
+    @Operation(summary = "Lager en HTML av flettefeltene og malen.", description = "")
     fun createHtml(@PathVariable templateName: String, @RequestBody mergeFields: String): ResponseEntity<*> {
         val html = templateService.createHtml(templateName, mergeFields)
         return ResponseEntity(html, genHeaders(DocFormat.HTML, templateName, false), HttpStatus.OK)
@@ -87,7 +86,7 @@ class TemplateController(
         value = ["/template/{templateName}/{variation}/create-html-variation"],
         consumes = ["application/json"]
     )
-    @ApiOperation(value = "Lager en HTML av flettefeltene og malen med angitt variation.", notes = "")
+    @Operation(summary = "Lager en HTML av flettefeltene og malen med angitt variation.", description = "")
     fun createHtmlVariation(
         @PathVariable templateName: String,
         @PathVariable variation: String,
@@ -102,7 +101,7 @@ class TemplateController(
         consumes = ["application/json"],
         produces = ["text/plain"]
     )
-    @ApiOperation(value = "Lager Markdown av flettefeltene og malen.", notes = "")
+    @Operation(summary = "Lager Markdown av flettefeltene og malen.", description = "")
     fun createMarkdown(@PathVariable templateName: String, @RequestBody mergefields: String): ResponseEntity<*> {
         val markdown = templateService.createMarkdown(templateName, mergefields)
         return ResponseEntity(markdown, HttpStatus.OK)
@@ -113,7 +112,7 @@ class TemplateController(
         consumes = ["application/json"],
         produces = ["text/plain"]
     )
-    @ApiOperation(value = "Lager Markdown av flettefeltene og malen med angitt variation.", notes = "")
+    @Operation(summary = "Lager Markdown av flettefeltene og malen med angitt variation.", description = "")
     fun createMarkdownVariation(
         @PathVariable templateName: String,
         @PathVariable variation: String,
@@ -125,14 +124,14 @@ class TemplateController(
 
     @Deprecated("")
     @PostMapping(value = ["/template/markdown/to-html"], consumes = ["text/markdown"])
-    @ApiOperation(value = "Konverterer markdown til HTML.", notes = "")
+    @Operation(summary = "Konverterer markdown til HTML.", description = "")
     fun createHtmlCustom(@RequestBody markdownContent: String): ResponseEntity<*> {
         val content = documentGeneratorService.appendHtmlMetadata(markdownContent, DocFormat.HTML)
         return ResponseEntity(content.html(), genHtmlHeaders(), HttpStatus.OK)
     }
 
     @PostMapping(value = ["/template/{templateName}/create-doc"], consumes = ["application/json"])
-    @ApiOperation(value = "Lager dokument ut ifra request-objekt", notes = "")
+    @Operation(summary = "Lager dokument ut ifra request-objekt", description = "")
     fun createDocument(
         @PathVariable templateName: String,
         @RequestBody documentRequest: CreateDocumentRequest
@@ -154,21 +153,21 @@ class TemplateController(
     }
 
     @GetMapping(value = ["/template/{templateName}/preview-pdf/{testDataName}"])
-    @ApiOperation(value = "Generer malen som PDF med test data")
+    @Operation(summary = "Generer malen som PDF med test data")
     fun previewPdf(@PathVariable templateName: String, @PathVariable testDataName: String): ResponseEntity<*> {
         val mergeFields = testdataService.getTestData(templateName, testDataName)
         return createPdf(templateName, mergeFields)
     }
 
     @GetMapping(value = ["/template/{templateName}/preview-html/{testDataName}"])
-    @ApiOperation(value = "Generer malen som HTML med test data")
+    @Operation(summary = "Generer malen som HTML med test data")
     fun previewHtml(@PathVariable templateName: String, @PathVariable testDataName: String): ResponseEntity<*> {
         val mergeFields = testdataService.getTestData(templateName, testDataName)
         return createHtml(templateName, mergeFields)
     }
 
     @PostMapping(value = ["/template/{templateName}/preview-pdf/{testDataName}"])
-    @ApiOperation(value = "Generer malen som PDF med test data")
+    @Operation(summary = "Generer malen som PDF med test data")
     fun previewPdfCustom(
         @PathVariable templateName: String,
         @PathVariable testDataName: String,
@@ -181,7 +180,7 @@ class TemplateController(
     }
 
     @PostMapping(value = ["/template/{templateName}/preview-html/{testDataName}"])
-    @ApiOperation(value = "Generer malen som HTML med test data")
+    @Operation(summary = "Generer malen som HTML med test data")
     fun previewHtmlCustom(
         @PathVariable templateName: String,
         @PathVariable testDataName: String,
@@ -203,7 +202,7 @@ class TemplateController(
     }
 
     @GetMapping(value = ["/template/{templateName}/schema"], produces = ["application/json"])
-    @ApiOperation(value = "Returnerer json schema for malen.")
+    @Operation(summary = "Returnerer json schema for malen.")
     fun getSchema(@PathVariable templateName: String): ResponseEntity<String> {
         return ResponseEntity(jsonService.getSchemaAsString(templateName), HttpStatus.OK)
     }
@@ -213,9 +212,9 @@ class TemplateController(
         consumes = ["application/json"],
         produces = ["application/json"]
     )
-    @ApiOperation(
-        value = "Oppdaterer eller lager et nytt testsett for en mal",
-        notes = "For å generere et nytt testsett poster du testdataene på endepunktet."
+    @Operation(
+        summary = "Oppdaterer eller lager et nytt testsett for en mal",
+        description = "For å generere et nytt testsett poster du testdataene på endepunktet."
     )
     fun upsertTestData(
         @PathVariable templateName: String,
@@ -231,7 +230,7 @@ class TemplateController(
     }
 
     @PostMapping(value = ["/template/{templateName}/download-pdf"], consumes = ["application/json"])
-    @ApiOperation(value = "Last ned et brev i PDF/A-format", notes = "")
+    @Operation(summary = "Last ned et brev i PDF/A-format", description = "")
     fun downloadPdf(@PathVariable templateName: String, @RequestBody payload: String): ResponseEntity<*> {
         val pdf = templateService.createPdf(templateName, payload)
         return ResponseEntity(pdf, genHeaders(DocFormat.PDF, templateName, true), HttpStatus.OK)
