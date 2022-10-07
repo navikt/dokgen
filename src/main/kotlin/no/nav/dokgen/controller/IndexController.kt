@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 @RestController
 class IndexController(
@@ -28,11 +27,5 @@ class IndexController(
                 .withRel("templates"),
             link
         )
-    }
-
-    @GetMapping("/swagger-ui.html")
-    fun swaggerRedirect(response: HttpServletResponse) {
-        response.setHeader("Location", "/swagger-ui/")
-        response.status = HttpStatus.FOUND.value()
     }
 }

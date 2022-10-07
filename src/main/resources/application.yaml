@@ -17,3 +17,6 @@ management:
 
 logging:
   config: "classpath:logback-spring.xml"
+springdoc:
+  swagger-ui:
+    path: /swagger
