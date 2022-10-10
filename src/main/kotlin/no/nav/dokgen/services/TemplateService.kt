@@ -24,7 +24,7 @@ import no.nav.dokgen.util.FileStructureUtil.getTemplateSchemaPath
 import org.everit.json.schema.ValidationException
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.jsoup.safety.Whitelist
+import org.jsoup.safety.Safelist
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -254,7 +254,7 @@ class TemplateService @Autowired internal constructor(
                 val strippedHtmlSyntax = Jsoup.clean(
                     markdownContent,
                     "",
-                    Whitelist.none(),
+                    Safelist.none(),
                     settings
                 )
                 Files.createDirectories(malPath.parent)

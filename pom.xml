@@ -18,9 +18,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.code.style>official</kotlin.code.style>
         <java.version>17</java.version>
-        <felles.version>1.20220926080252_c76c5fa</felles.version>
+        <felles.version>1.20221006150009_46021ed</felles.version>
         <handlebar.version>4.3.0</handlebar.version>
-        <kotlin.version>1.7.10</kotlin.version>
+        <kotlin.version>1.7.20</kotlin.version>
         <openhtml.version>1.0.10</openhtml.version>
         <commonmark.version>0.17.0</commonmark.version>
         <springframework.version>2.7.4</springframework.version>
@@ -121,7 +121,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.14.2</version>
+            <version>1.15.3</version>
         </dependency>
         <!-- PDFgen -->
         <dependency>
