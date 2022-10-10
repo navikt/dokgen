@@ -1,26 +1,28 @@
 package no.nav.dokgen.configuration
 
+import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.info.Info
+import io.swagger.v3.oas.models.info.License
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.hateoas.client.LinkDiscoverers
 import org.springframework.hateoas.mediatype.collectionjson.CollectionJsonLinkDiscoverer
 import org.springframework.plugin.core.SimplePluginRegistry
-import springfox.documentation.builders.PathSelectors
-import springfox.documentation.builders.RequestHandlerSelectors
-import springfox.documentation.spi.DocumentationType
-import springfox.documentation.spring.web.plugins.Docket
 
 
 @Configuration
 class SwaggerConfig {
     @Bean
-    fun api(): Docket {
-        return Docket(DocumentationType.SWAGGER_2)
-            .select()
-            .apis(RequestHandlerSelectors.any())
-            .paths(PathSelectors.any())
-            .build()
+    open fun swaggerOpenAPI(): OpenAPI? {
+        return OpenAPI()
+
+            .info(
+                Info().title("Dokgen swagger")
+                    .description("Genererer pdf eller html dokumenter basert på markdown og handlebars")
+                    .version("v0.0.1")
+                    .license(License().name("MIT").url("http://nav.no"))
+            )
     }
 
     @Primary
