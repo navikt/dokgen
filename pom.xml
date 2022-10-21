@@ -23,7 +23,7 @@
         <kotlin.version>1.7.20</kotlin.version>
         <openhtml.version>1.0.10</openhtml.version>
         <commonmark.version>0.17.0</commonmark.version>
-        <springframework.version>2.7.4</springframework.version>
+        <springframework.version>2.7.5</springframework.version>
     </properties>
     <dependencies>
         <!-- Spring -->
