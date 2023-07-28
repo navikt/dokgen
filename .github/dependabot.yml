@@ -4,14 +4,14 @@ registries:
     type: maven-repository
     url: https://maven.pkg.github.com/navikt/familie-felles
     username: x-access-token
-    password: ${{secrets.NAV_READ_PACKAGES}}
+    password: ${{secrets.READER_TOKEN}}
 
 updates:
   - package-ecosystem: maven
     directory: "/"
     schedule:
       interval: daily
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 20
     registries:
       - familie-felles
   - package-ecosystem: github-actions
