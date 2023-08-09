@@ -2,6 +2,8 @@ package no.nav.dokgen.services
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import com.github.jknack.handlebars.Context
+import com.github.jknack.handlebars.JsonNodeValueResolver
 import no.nav.dokgen.util.FileStructureUtil.getTemplateRootPath
 import no.nav.dokgen.util.FileStructureUtil.getTemplatePath
 import no.nav.dokgen.util.FileStructureUtil.getTemplateSchemaPath
@@ -187,6 +189,15 @@ class TemplateServiceTests {
         Assertions.assertThat(pdf[1]).isEqualTo(0x50.toByte()) //P
         Assertions.assertThat(pdf[2]).isEqualTo(0x44.toByte()) //D
         Assertions.assertThat(pdf[3]).isEqualTo(0x46.toByte()) //F
+    }
+
+    @Test
+    fun skalCompileNorwegianDatetimeHelper() {
+        val jsonNode: JsonNode = JsonNodeFactory.instance.objectNode().apply { put("timestamp", "2023-08-10T15:54:35") }
+        val context = Context.newBuilder(jsonNode).resolver(JsonNodeValueResolver.INSTANCE).build()
+        val tmpl = malService.compileInLineTemplate("{{norwegian-datetime timestamp}}")
+        val compiledStr = tmpl!!.apply(context)
+        Assertions.assertThat(compiledStr).isEqualTo("10.08.2023 15:54")
     }
 
     companion object {
