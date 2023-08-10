@@ -351,6 +351,7 @@ class TemplateService @Autowired internal constructor(
         handlebars.registerHelper("table", CustomHelpers.TableHelper())
         handlebars.registerHelper("add", CustomHelpers.AdditionHelper())
         handlebars.registerHelper("norwegian-date", CustomHelpers.NorwegianDateHelper())
+        handlebars.registerHelper("norwegian-datetime", CustomHelpers.NorwegianDateTimeHelper())
         handlebars.registerHelper("divide", CustomHelpers.DivideHelper())
         handlebars.registerHelper("format-kroner", CustomHelpers.FormatKronerHelper())
         handlebars.registerHelper("thousand-seperator", CustomHelpers.ThousandSeperatorHelper())

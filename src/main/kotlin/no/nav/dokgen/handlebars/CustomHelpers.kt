@@ -9,6 +9,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 interface CustomHelpers {
@@ -160,6 +161,20 @@ interface CustomHelpers {
     class NorwegianDateHelper(): Helper<String> {
         override fun apply(isoFormattedDate: String, options: Options): Any {
             return isoFormattedDate.split('-').reversed().joinToString(separator = ".")
+        }
+    }
+
+    /**
+     * Parses ISO-8601 extended local or offset date-time format, and returns a string in dd.mm.yyyy HH:mm format
+     *
+     * {{norwegian-datetime 2019-08-19T15:54:01}} prints 19.08.2019 15:54
+     */
+    class NorwegianDateTimeHelper(): Helper<String> {
+        companion object {
+            val datetimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+        }
+        override fun apply(isoFormattedDateTime: String, options: Options): Any {
+            return datetimeFormat.format(DateTimeFormatter.ISO_DATE_TIME.parse(isoFormattedDateTime))
         }
     }
 
