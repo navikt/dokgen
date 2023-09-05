@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.code.style>official</kotlin.code.style>
         <java.version>17</java.version>
-        <felles.version>1.20221006150009_46021ed</felles.version>
+        <felles.version>2.20230905101454_06fa3d7</felles.version>
         <handlebar.version>4.3.0</handlebar.version>
         <kotlin.version>1.7.20</kotlin.version>
         <openhtml.version>1.0.10</openhtml.version>
