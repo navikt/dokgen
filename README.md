@@ -15,7 +15,7 @@ your own repository where you just extend this docker-image. The latest solution
 use-cases.
 
 ```Dockerfile
-FROM docker.pkg.github.com/navikt/dokgen/dokgen:latest
+FROM ghcr.io/navikt/dokgen/dokgen:latest
 COPY content content
 ```
 
