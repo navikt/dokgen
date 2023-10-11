@@ -14,8 +14,24 @@ updates:
     open-pull-requests-limit: 20
     registries:
       - familie-felles
+    groups:
+      spring:
+        patterns:
+          - "spring*"
+          - "org.spring*"
+      maven:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "spring*"
+          - "org.spring*"
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: daily
     open-pull-requests-limit: 10
+    groups:
+      github:
+        patterns: 
+          - "*"
