@@ -14,9 +14,8 @@ import org.springframework.plugin.core.SimplePluginRegistry
 @Configuration
 class SwaggerConfig {
     @Bean
-    open fun swaggerOpenAPI(): OpenAPI? {
+    fun swaggerOpenAPI(): OpenAPI? {
         return OpenAPI()
-
             .info(
                 Info().title("Dokgen swagger")
                     .description("Genererer pdf eller html dokumenter basert på markdown og handlebars")
@@ -29,6 +28,6 @@ class SwaggerConfig {
     @Bean
     fun discoverers(): LinkDiscoverers? {
         val plugins = listOf(CollectionJsonLinkDiscoverer())
-        return LinkDiscoverers(SimplePluginRegistry.create(plugins))
+        return LinkDiscoverers(SimplePluginRegistry.of(plugins))
     }
 }

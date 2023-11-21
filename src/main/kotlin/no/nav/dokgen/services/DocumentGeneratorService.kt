@@ -1,12 +1,12 @@
 package no.nav.dokgen.services
 
+import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import com.openhtmltopdf.svgsupport.BatikSVGDrawer
 import com.openhtmltopdf.util.XRLog
 import no.nav.dokgen.util.DocFormat
 import no.nav.dokgen.util.FileStructureUtil.getCss
-import no.nav.dokgen.util.FileStructureUtil.getFont
 import no.nav.dokgen.util.FileStructureUtil.getFormatFooter
 import no.nav.dokgen.util.FileStructureUtil.getFormatHeader
 import org.commonmark.Extension
@@ -24,12 +24,16 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
 import org.springframework.util.FileCopyUtils
 import java.io.ByteArrayOutputStream
+import java.io.FileInputStream
 import java.io.IOException
+import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 import java.util.function.Function
+
 
 @Service
 class DocumentGeneratorService @Autowired constructor(
@@ -56,40 +60,45 @@ class DocumentGeneratorService @Autowired constructor(
         return document
     }
 
+    fun fontSuppliers(builder: PdfRendererBuilder) {
+        val sourceSansProFamily = "Source Sans Pro"
+        builder.useFont(
+            TTFontSupplier("SourceSansPro-Regular.ttf"),
+            sourceSansProFamily,
+            400,
+            BaseRendererBuilder.FontStyle.NORMAL,
+            true
+        )
+        builder.useFont(
+            TTFontSupplier("SourceSansPro-Bold.ttf"),
+            sourceSansProFamily,
+            700,
+            BaseRendererBuilder.FontStyle.OBLIQUE,
+            true
+        )
+        builder.useFont(
+            TTFontSupplier("SourceSansPro-It.ttf"),
+            sourceSansProFamily,
+            400,
+            BaseRendererBuilder.FontStyle.ITALIC,
+            true
+        )
+    }
+
     fun genererPDF(html: Document, outputStream: ByteArrayOutputStream?) {
-        val doc = W3CDom().fromJsoup(html)
-        val builder = PdfRendererBuilder()
         try {
-            builder
-                .useFont(
-                    getFont(contentRoot, "SourceSansPro-Regular.ttf").toFile(),
-                    "Source Sans Pro",
-                    400,
-                    BaseRendererBuilder.FontStyle.NORMAL,
-                    true
-                )
-                .useFont(
-                    getFont(contentRoot, "SourceSansPro-Bold.ttf").toFile(),
-                    "Source Sans Pro",
-                    700,
-                    BaseRendererBuilder.FontStyle.OBLIQUE,
-                    true
-                )
-                .useFont(
-                    getFont(contentRoot, "SourceSansPro-It.ttf").toFile(),
-                    "Source Sans Pro",
-                    400,
-                    BaseRendererBuilder.FontStyle.ITALIC,
-                    true
-                )
-                .useColorProfile(colorProfile)
-                .useSVGDrawer(BatikSVGDrawer())
-                .usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_2_U)
-                .withW3cDocument(doc, "")
-                .toStream(outputStream)
-                .buildPdfRenderer()
-                .createPDF()
-        } catch (e: IOException) {
+            val doc = W3CDom().fromJsoup(html)
+            outputStream?.let { os ->
+                PdfRendererBuilder()
+                    .apply { fontSuppliers(this) }
+                    .withW3cDocument(doc, "")
+                    .useSVGDrawer(BatikSVGDrawer())
+                    .useColorProfile(colorProfile)
+                    .usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_2_U)
+                    .toStream(os)
+                    .run()
+            }
+        } catch (e: Exception) {
             throw RuntimeException("Feil ved generering av pdf", e)
         }
     }
@@ -98,6 +107,7 @@ class DocumentGeneratorService @Autowired constructor(
         val document = parseDocument(content)
         return renderToHTML(document)
     }
+
 
     private fun parseDocument(content: String): Node {
         return markdownToHtmlParser.parse(content)
@@ -117,7 +127,8 @@ class DocumentGeneratorService @Autowired constructor(
     }
 
     private val markdownExtensions: List<Extension>
-        get() = Arrays.asList(TablesExtension.create())
+        get() = listOf(TablesExtension.create())
+
     private val markdownToHtmlParser: Parser
         get() = Parser.builder()
             .extensions(markdownExtensions)
@@ -126,20 +137,30 @@ class DocumentGeneratorService @Autowired constructor(
         get() = HtmlRenderer.builder()
             .extensions(markdownExtensions)
             .build()
-
     companion object {
         private val LOG = LoggerFactory.getLogger(DocumentGeneratorService::class.java)
         private val UTF_8 = StandardCharsets.UTF_8
-
         @get:Throws(IOException::class)
         val colorProfile: ByteArray
             get() {
                 val cpr = ClassPathResource("sRGB2014.icc")
                 return FileCopyUtils.copyToByteArray(cpr.inputStream)
             }
+
     }
 
     init {
         XRLog.setLoggingEnabled(false)
+    }
+
+    inner class TTFontSupplier(fontName: String) : FSSupplier<InputStream> {
+        private val fontPath = "$contentRoot/fonts/$fontName"
+        override fun supply(): InputStream {
+            return try {
+                FileInputStream(Paths.get(fontPath).toFile())
+            } catch (e: Exception) {
+                throw RuntimeException("Error loading font: $fontPath", e)
+            }
+        }
     }
 }

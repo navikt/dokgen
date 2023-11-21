@@ -1,28 +1,29 @@
 package no.nav.dokgen.configuration
 
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 @Component
-class LoggerInterceptor : HandlerInterceptorAdapter() {
+class LoggerInterceptor : HandlerInterceptor {
+    private val log = LoggerFactory.getLogger(LoggerInterceptor::class.java)
+
     @Throws(Exception::class)
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        LOG.info("[pre-handle]- " + request.method + " " + request.requestURI)
-        return super.preHandle(request, response, handler)
+        log.info("[pre-handle] - {} {}", request.method, request.requestURI)
+        return true
     }
 
     @Throws(Exception::class)
     override fun postHandle(
-        request: HttpServletRequest, response: HttpServletResponse, handler: Any,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        handler: Any,
         modelAndView: ModelAndView?
     ) {
-        LOG.info("[post-handle] - " + request.method + " " + request.requestURI + " " + response.status)
-        super.postHandle(request, response, handler, modelAndView)
+        log.info("[post-handle] - {} {} {}", request.method, request.requestURI, response.status)
     }
-
-    private val LOG = LoggerFactory.getLogger(LoggerInterceptor::class.java)
 }

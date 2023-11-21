@@ -4,28 +4,27 @@ import no.nav.dokgen.util.FileStructureUtil.getTemplateSchemaPath
 import no.nav.dokgen.util.FileStructureUtil.getTestDataRootPath
 import org.apache.commons.io.FileUtils
 import org.assertj.core.api.Assertions
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+import org.junit.jupiter.api.io.TempDir
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 
 class TestDataServiceTest {
-    @get:Rule
-    var temporaryFolder = TemporaryFolder()
+
+    @TempDir
+    lateinit var temporaryFolder: Path
 
     private lateinit var testdataService: TestDataService
-    private lateinit var contentRoot: Path
     private lateinit var testDataPath: Path
-    @Before
+    @BeforeEach
     @Throws(IOException::class)
     fun setUp() {
-        contentRoot = temporaryFolder.root.toPath()
-        testdataService = TestDataService(contentRoot, JsonService(contentRoot))
-        testDataPath = getTestDataRootPath(contentRoot, TEMPLATE_NAME)
+        testdataService = TestDataService(temporaryFolder, JsonService(temporaryFolder))
+        testDataPath = getTestDataRootPath(temporaryFolder, TEMPLATE_NAME)
         Files.createDirectories(testDataPath)
     }
 
@@ -33,7 +32,7 @@ class TestDataServiceTest {
     @Throws(IOException::class)
     fun skalLagreNyttTestsett() {
         FileUtils.writeStringToFile(
-            getTemplateSchemaPath(contentRoot, TEMPLATE_NAME).toFile(),
+            getTemplateSchemaPath(temporaryFolder, TEMPLATE_NAME).toFile(),
             "{}",
             StandardCharsets.UTF_8
         )

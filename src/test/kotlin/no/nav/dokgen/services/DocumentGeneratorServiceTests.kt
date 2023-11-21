@@ -4,12 +4,12 @@ import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester.PdfCompareResult
 import no.nav.dokgen.util.DocFormat
 import org.apache.commons.io.IOUtils
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.springframework.core.io.ClassPathResource
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
-import java.net.URISyntaxException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -27,16 +27,16 @@ class DocumentGeneratorServiceTests {
 
         // Load expected PDF document from resources, change class below.
         var expectedPdfBytes: ByteArray
-        DocumentGeneratorServiceTests::class.java.getResourceAsStream(EXPECTED_RES_PATH + resource + ".pdf")
+        DocumentGeneratorServiceTests::class.java.getResourceAsStream("$EXPECTED_RES_PATH$resource.pdf")
             .use { expectedIs -> expectedPdfBytes = IOUtils.toByteArray(expectedIs) }
 
         // Get a list of results.
         val problems = PdfVisualTester.comparePdfDocuments(expectedPdfBytes, actualPdfBytes, resource, false)
-        if (!problems.isEmpty()) {
+        if (problems.isNotEmpty()) {
             System.err.println("Found problems with test case ($resource):")
             System.err.println(problems.stream().map { p: PdfCompareResult -> p.logMessage }
                 .collect(Collectors.joining("\n    ", "[\n    ", "\n]")))
-            System.err.println("For test case (" + resource + ") writing failure artifacts to '" + TEST_OUTPUT_PATH + "'")
+            System.err.println("For test case ($resource) writing failure artifacts to '$TEST_OUTPUT_PATH'")
             val outPdf = File(TEST_OUTPUT_PATH, "$resource---actual.pdf")
             Files.write(outPdf.toPath(), actualPdfBytes)
         }
@@ -55,10 +55,7 @@ class DocumentGeneratorServiceTests {
 
     @Throws(IOException::class)
     private fun getDocumentFromHtmlFixture(fixtureName: String): String {
-        return IOUtils.toString(
-            this.javaClass.getResourceAsStream("/test-fixtures/expected-html/$fixtureName.html"),
-            StandardCharsets.UTF_8
-        )
+        return ClassPathResource("/test-fixtures/expected-html/$fixtureName.html").getContentAsString(StandardCharsets.UTF_8)
     }
 
     @Test
@@ -69,8 +66,8 @@ class DocumentGeneratorServiceTests {
         val outputStream = ByteArrayOutputStream()
         documentGeneratorService.genererPDF(doc, outputStream)
         val actualBytes = outputStream.toByteArray()
-        Assert.assertTrue(isPdf(actualBytes))
-        Assert.assertTrue(runTest("minimal1", actualBytes))
+        assertTrue(isPdf(actualBytes))
+        assertTrue(runTest("minimal1", actualBytes))
     }
 
     @Test
@@ -82,8 +79,8 @@ class DocumentGeneratorServiceTests {
         val outputStream = ByteArrayOutputStream()
         documentGeneratorService.genererPDF(doc, outputStream)
         val actualBytes = outputStream.toByteArray()
-        Assert.assertTrue(isPdf(actualBytes))
-        Assert.assertTrue(runTest("svg1", actualBytes))
+        assertTrue(isPdf(actualBytes))
+        assertTrue(runTest("svg1", actualBytes))
     }
 
     @Test
@@ -95,23 +92,16 @@ class DocumentGeneratorServiceTests {
         val outputStream = ByteArrayOutputStream()
         documentGeneratorService.genererPDF(doc, outputStream)
         val actualBytes = outputStream.toByteArray()
-        Assert.assertTrue(isPdf(actualBytes))
-        Assert.assertTrue(runTest("list1", actualBytes))
+        assertTrue(isPdf(actualBytes))
+        // save the actualBytes-file or show it to me
+        Files.write(Paths.get("target/list1_som_avviker.pdf"), actualBytes)
+        assertTrue(runTest("list1", actualBytes))
     }
 
     companion object {
         private const val TEST_OUTPUT_PATH = "target/regression-tests/"
         private const val EXPECTED_RES_PATH = "/test-fixtures/expected-pdf/"
-        val testContentPath: Path?
-            get() = try {
-                Paths.get(
-                    DocumentGeneratorServiceTests::class.java.protectionDomain.codeSource.location.toURI()
-                ).resolve(
-                    Paths.get("test-content")
-                ).toAbsolutePath()
-            } catch (e: URISyntaxException) {
-                null
-            }
+        val testContentPath: Path = ClassPathResource("/test-content").file.toPath().toAbsolutePath()
 
         /**
          * Test if the data in the given byte array represents a PDF file.

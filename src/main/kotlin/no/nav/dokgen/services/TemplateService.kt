@@ -47,9 +47,9 @@ class TemplateService @Autowired internal constructor(
     documentGeneratorService: DocumentGeneratorService,
     jsonService: JsonService
 ) {
-    private val handlebars: Handlebars
-    private val documentGeneratorService: DocumentGeneratorService
-    private val jsonService: JsonService
+    private lateinit var handlebars: Handlebars
+    private lateinit var documentGeneratorService: DocumentGeneratorService
+    private lateinit var jsonService: JsonService
     fun compileInLineTemplate(templateContent: String?): Template? {
         return Result.runCatching {
             handlebars.compileInline(templateContent)
