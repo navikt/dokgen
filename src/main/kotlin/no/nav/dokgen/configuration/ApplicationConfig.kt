@@ -22,6 +22,5 @@ class ApplicationConfig {
 
     companion object {
         private val log = LoggerFactory.getLogger(ApplicationConfig::class.java)
-        const val pakkenavn = "no.nav.familie.ba.sak"
     }
 }
