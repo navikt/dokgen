@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.4</version>
+        <version>3.1.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <artifactId>dokgen</artifactId>
@@ -23,7 +23,7 @@
         <kotlin.version>1.7.20</kotlin.version>
         <openhtml.version>1.0.10</openhtml.version>
         <commonmark.version>0.17.0</commonmark.version>
-        <springframework.version>2.7.4</springframework.version>
+        <springframework.version>3.1.5</springframework.version>
     </properties>
     <dependencies>
         <!-- Spring -->
@@ -159,7 +159,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.6.11</version>
+            <version>1.7.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
