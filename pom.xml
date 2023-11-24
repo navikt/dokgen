@@ -63,11 +63,6 @@
             <artifactId>handlebars-jackson2</artifactId>
             <version>${handlebar.version}</version>
         </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.15.0</version>
-        </dependency>
 
         <dependency>
             <groupId>org.commonmark</groupId>
