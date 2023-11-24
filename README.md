@@ -5,7 +5,7 @@ that often these letters, receipts or confirmation messages is generated at the 
 to test and develop.
 
 ## Requirements
-- OpenJDK 17 and [Maven](https://maven.apache.org/)
+- OpenJDK 21 and [Maven](https://maven.apache.org/)
 - ...or Docker
 
 ## Getting started
