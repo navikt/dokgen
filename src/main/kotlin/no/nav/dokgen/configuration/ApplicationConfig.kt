@@ -1,11 +1,16 @@
 package no.nav.dokgen.configuration
 
 import no.nav.familie.log.filter.LogFilter
+import no.nav.familie.log.filter.RequestTimeFilter
 import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringBootConfiguration
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import org.springframework.web.util.UrlPathHelper
 
 @SpringBootConfiguration
 @ComponentScan("no.nav.dokgen")
@@ -18,6 +23,27 @@ class ApplicationConfig {
         filterRegistration.filter = LogFilter()
         filterRegistration.order = 1
         return filterRegistration
+    }
+
+    @Bean
+    fun requestTimeFilter(): FilterRegistrationBean<RequestTimeFilter> {
+        log.info("Registering RequestTimeFilter")
+        val filterRegistration = FilterRegistrationBean<RequestTimeFilter>()
+        filterRegistration.filter = RequestTimeFilter()
+        filterRegistration.order = 2
+        return filterRegistration
+    }
+
+    @Bean
+    @ConditionalOnProperty("allow-encoded-slash")
+    fun enableSlashInURLPath(): WebMvcConfigurer {
+        return object : WebMvcConfigurer {
+            override fun configurePathMatch(configurer: PathMatchConfigurer) {
+                val urlPathHelper = UrlPathHelper()
+                urlPathHelper.isUrlDecode = false
+                configurer.setUrlPathHelper(urlPathHelper)
+            }
+        }
     }
 
     companion object {
