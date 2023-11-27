@@ -1,3 +1,3 @@
-FROM ghcr.io/navikt/fp-baseimages/java:21
+FROM ghcr.io/navikt/baseimages/temurin:21
 COPY target/*.jar app.jar
 COPY content content

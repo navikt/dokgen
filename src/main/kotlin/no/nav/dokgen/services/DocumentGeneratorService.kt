@@ -17,7 +17,6 @@ import org.commonmark.renderer.html.HtmlRenderer
 import org.jsoup.Jsoup
 import org.jsoup.helper.W3CDom
 import org.jsoup.nodes.Document
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.ClassPathResource
@@ -37,7 +36,7 @@ import java.util.function.Function
 
 @Service
 class DocumentGeneratorService @Autowired constructor(
-    @param:Value("\${path.content.root:./content/}") private val contentRoot: Path
+    @Value("\${path.content.root:./content/}") private val contentRoot: Path
 ) {
     fun wrapDocument(document: Document, format: DocFormat, headerFunction: Function<String?, String?>) {
         try {
@@ -138,7 +137,6 @@ class DocumentGeneratorService @Autowired constructor(
             .extensions(markdownExtensions)
             .build()
     companion object {
-        private val LOG = LoggerFactory.getLogger(DocumentGeneratorService::class.java)
         private val UTF_8 = StandardCharsets.UTF_8
         @get:Throws(IOException::class)
         val colorProfile: ByteArray

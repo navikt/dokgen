@@ -18,7 +18,7 @@ import java.util.stream.Collectors
 
 @Service
 class TestDataService @Autowired internal constructor(
-    @param:Value("\${path.content.root:./content/}") private val contentRoot: Path,
+    @Value("\${path.content.root:./content/}") private val contentRoot: Path,
     private val jsonService: JsonService
 ) {
     fun listTestData(templateName: String): List<String> {

@@ -43,7 +43,7 @@ import java.util.stream.Collectors
 
 @Service
 class TemplateService @Autowired internal constructor(
-    @param:Value("\${path.content.root:./content/}") private val contentRoot: Path,
+    @Value("\${path.content.root:./content/}") private val contentRoot: Path,
     documentGeneratorService: DocumentGeneratorService,
     jsonService: JsonService
 ) {

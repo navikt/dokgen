@@ -19,7 +19,7 @@ class IndexController(
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = ["/"], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun listTemplates(): EntityModel<IndexResource> {
-        val link = Link.of(servletRequest.requestURL.toString() + "swagger-ui/")
+        val link = Link.of(servletRequest.requestURL.toString() + "swagger-ui/index.html")
             .withRel("swagger-ui")
         return EntityModel.of(
             IndexResource("dokgen"),

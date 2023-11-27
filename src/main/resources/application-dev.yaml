@@ -1,5 +1,4 @@
-write:
-  access: true
+write.access: true
 
 logging:
   config: "classpath:logback-dev.xml"

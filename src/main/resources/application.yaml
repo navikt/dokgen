@@ -1,11 +1,6 @@
+path.content.root: ./content/
+write.access: false
 allow-encoded-slash: ${ALLOW_ENCODED_SLASH:false}
-
-path:
-  content:
-    root: ./content/
-
-write:
-  access: false
 
 management:
   endpoint.health.show-details: always
@@ -21,6 +16,10 @@ management:
     metrics:
       export:
         enabled: true
+
+spring:
+  main:
+    banner-mode: 'off'
 
 logging:
   config: "classpath:logback-spring.xml"
