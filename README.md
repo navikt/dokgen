@@ -5,7 +5,7 @@ that often these letters, receipts or confirmation messages is generated at the 
 to test and develop.
 
 ## Requirements
-- OpenJDK 17 and [Maven](https://maven.apache.org/)
+- OpenJDK 21 and [Maven](https://maven.apache.org/)
 - ...or Docker
 
 ## Getting started
@@ -76,7 +76,7 @@ This opens up for reusing schemas and testdata for several languages or other va
 This is all about how you want to structure your `dokgen`-instance.
 
 ### Swagger 
-This application uses the standard Swagger setup which can be found at `http://localhost:8080/swagger-ui.html` when
+This application uses the standard Swagger setup which can be found at `http://localhost:8080/swagger-ui/index.html` when
 running in test.
 
 ### Endpoints

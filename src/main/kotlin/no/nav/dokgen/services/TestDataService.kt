@@ -4,7 +4,6 @@ import no.nav.dokgen.exceptions.DokgenNotFoundException
 import no.nav.dokgen.util.FileStructureUtil.getTemplateSchemaPath
 import no.nav.dokgen.util.FileStructureUtil.getTestDataPath
 import no.nav.dokgen.util.FileStructureUtil.getTestDataRootPath
-import org.apache.commons.io.FilenameUtils
 import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -19,15 +18,16 @@ import java.util.stream.Collectors
 
 @Service
 class TestDataService @Autowired internal constructor(
-    @param:Value("\${path.content.root:./content/}") private val contentRoot: Path,
+    @Value("\${path.content.root:./content/}") private val contentRoot: Path,
     private val jsonService: JsonService
 ) {
     fun listTestData(templateName: String): List<String> {
         return Result.runCatching {
             Files.list(getTestDataRootPath(contentRoot, templateName)).use { paths ->
                 paths
-                    .filter { path: Path? -> Files.isRegularFile(path) }
-                    .map { x: Path -> FilenameUtils.getBaseName(x.fileName.toString()) }
+                    .filter(Files::isRegularFile)
+                    .map { path -> path.fileName.toString() }
+                    .map { filename -> filename.substringBeforeLast(".") }
                     .collect(Collectors.toList())
             }
         }.fold(

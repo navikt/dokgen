@@ -1,6 +1,4 @@
-path.content.root: ./content/
 write.access: true
-allow-encoded-slash: ${ALLOW_ENCODED_SLASH:false}
 
 logging:
   config: "classpath:logback-dev.xml"

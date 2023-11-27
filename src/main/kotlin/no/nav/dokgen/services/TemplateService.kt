@@ -43,13 +43,13 @@ import java.util.stream.Collectors
 
 @Service
 class TemplateService @Autowired internal constructor(
-    @param:Value("\${path.content.root:./content/}") private val contentRoot: Path,
+    @Value("\${path.content.root:./content/}") private val contentRoot: Path,
     documentGeneratorService: DocumentGeneratorService,
     jsonService: JsonService
 ) {
-    private val handlebars: Handlebars
-    private val documentGeneratorService: DocumentGeneratorService
-    private val jsonService: JsonService
+    private lateinit var handlebars: Handlebars
+    private lateinit var documentGeneratorService: DocumentGeneratorService
+    private lateinit var jsonService: JsonService
     fun compileInLineTemplate(templateContent: String?): Template? {
         return Result.runCatching {
             handlebars.compileInline(templateContent)

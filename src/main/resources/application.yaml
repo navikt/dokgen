@@ -7,13 +7,19 @@ management:
   endpoints.web:
     exposure.include: info, health, metrics, prometheus
     base-path: "/actuator"
-  metrics.export.prometheus.enabled: true
-  metrics:
-    web:
-      server:
-        request:
-          autotime:
-            enabled: true
+  observations:
+    http:
+      client:
+        requests:
+          name: http_client_requests, http_client_requests_seconds, http_client_requests_seconds_max, http_client_requests_seconds_sum
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+spring:
+  main:
+    banner-mode: 'off'
 
 logging:
   config: "classpath:logback-spring.xml"

@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.FileInputStream
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
@@ -25,25 +24,8 @@ import java.util.stream.Collectors
 
 @Service
 class JsonService @Autowired constructor(
-    @param:Value("\${path.content.root:./content/}") private val contentRoot: Path
+    @Value("\${path.content.root:./content/}") private val contentRoot: Path
 ) {
-    private fun readJsonFile(path: Path?): JsonNode? {
-        return if (path != null) {
-            Result.runCatching {
-                val mapper = ObjectMapper()
-                mapper.readTree(path.toFile())
-            }.fold(
-                onSuccess = { it },
-                onFailure = { e ->
-                    when (e) {
-                        is FileNotFoundException -> throw DokgenNotFoundException("Kan ikke finne $path")
-                        is IOException -> throw RuntimeException("Feil ved lesing av JSON")
-                        else -> throw e
-                    }
-                }
-            )
-        } else null
-    }
 
     @Throws(IOException::class)
     fun getJsonFromString(json: String?): JsonNode {
