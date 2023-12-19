@@ -57,6 +57,7 @@ class CustomRequestTimeFilter : Filter {
                  || uri == "/api/ping"
                  || uri.contains("/swagger")
                  || uri.contains("/actuator")
+                 || uri.contains("/favicon.ico")
      }
 
     companion object {
