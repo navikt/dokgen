@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <felles.version>2.20231201131108_ea25dd3</felles.version>
         <handlebar.version>4.3.1</handlebar.version>
-        <kotlin.version>1.9.21</kotlin.version>
+        <kotlin.version>1.9.22</kotlin.version>
         <openhtml.version>1.0.10</openhtml.version>
         <commonmark.version>0.21.0</commonmark.version>
     </properties>
@@ -107,7 +107,7 @@
         <dependency>
             <groupId>com.github.everit-org.json-schema</groupId>
             <artifactId>org.everit.json.schema</artifactId>
-            <version>1.14.3</version>
+            <version>1.14.4</version>
         </dependency>
 
         <dependency>
