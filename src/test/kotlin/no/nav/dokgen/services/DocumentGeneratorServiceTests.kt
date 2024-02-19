@@ -19,7 +19,7 @@ import javax.imageio.ImageIO
 
 class DocumentGeneratorServiceTests {
 
-    private val documentGeneratorService = DocumentGeneratorService(testContentPath!!)
+    private val documentGeneratorService = DocumentGeneratorService(testContentPath)
 
     @Throws(IOException::class)
     private fun runTest(resource: String, actualPdfBytes: ByteArray): Boolean {
@@ -107,33 +107,33 @@ class DocumentGeneratorServiceTests {
          * Test if the data in the given byte array represents a PDF file.
          */
         fun isPdf(data: ByteArray): Boolean {
-            if (data.size > 4 && data[0] == 0x25.toByte() && // %
+            if (data[0] == 0x25.toByte() && // %
                 data[1] == 0x50.toByte() && // P
                 data[2] == 0x44.toByte() && // D
                 data[3] == 0x46.toByte() && // F
-                data[4] == 0x2D.toByte()
-            ) { // -
+                data[4] == 0x2D.toByte()    // -
+            ) {
 
                 // version 1.3 file terminator
-                if (data[5] == 0x31.toByte() && data[6] == 0x2E.toByte() && data[7] == 0x33.toByte() && data[data.size - 7] == 0x25.toByte() && // %
+                if (data[data.size - 7] == 0x25.toByte() && // %
                     data[data.size - 6] == 0x25.toByte() && // %
                     data[data.size - 5] == 0x45.toByte() && // E
                     data[data.size - 4] == 0x4F.toByte() && // O
                     data[data.size - 3] == 0x46.toByte() && // F
                     data[data.size - 2] == 0x20.toByte() && // SPACE
-                    data[data.size - 1] == 0x0A.toByte()
-                ) { // EOL
+                    data[data.size - 1] == 0x0A.toByte()    // EOL
+                ) {
                     return true
                 }
 
                 // version 1.3 file terminator
-                if (data[5] == 0x31.toByte() && data[6] == 0x2E.toByte() && data[7] == 0x34.toByte() && data[data.size - 6] == 0x25.toByte() && // %
+                if (data[data.size - 6] == 0x25.toByte() && // %
                     data[data.size - 5] == 0x25.toByte() && // %
                     data[data.size - 4] == 0x45.toByte() && // E
                     data[data.size - 3] == 0x4F.toByte() && // O
                     data[data.size - 2] == 0x46.toByte() && // F
-                    data[data.size - 1] == 0x0A.toByte()
-                ) { // EOL
+                    data[data.size - 1] == 0x0A.toByte()    // EOL
+                ) {
                     return true
                 }
             }
