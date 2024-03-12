@@ -33,5 +33,7 @@
     <logger name="no.nav" level="WARN"/>
     <logger name="no.nav.dokgen" level="INFO"/>
     <logger name="org.apache" level="INFO"/>
+    <logger name="org.apache.pdfbox.pdmodel.font.PDType1Font" level="ERROR"/>
+    <logger name="org.apache.pdfbox.pdmodel.font.FileSystemFontProvider" level="ERROR"/>
 
 </configuration>
