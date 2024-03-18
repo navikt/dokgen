@@ -3,7 +3,7 @@ package no.nav.dokgen.services
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.github.jknack.handlebars.Context
-import com.github.jknack.handlebars.JsonNodeValueResolver
+import com.github.jknack.handlebars.jackson.JsonNodeValueResolver
 import no.nav.dokgen.util.FileStructureUtil.getTemplateRootPath
 import no.nav.dokgen.util.FileStructureUtil.getTemplatePath
 import no.nav.dokgen.util.FileStructureUtil.getTemplateSchemaPath

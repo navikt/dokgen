@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.3</version>
         <relativePath/>
     </parent>
     <artifactId>dokgen</artifactId>
@@ -17,10 +17,10 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <felles.version>2.20231201131108_ea25dd3</felles.version>
-        <handlebar.version>4.3.1</handlebar.version>
-        <kotlin.version>1.9.21</kotlin.version>
-        <openhtml.version>1.1.4</openhtml.version>
-        <commonmark.version>0.21.0</commonmark.version>
+        <handlebar.version>4.4.0</handlebar.version>
+        <kotlin.version>1.9.23</kotlin.version>
+        <openhtml.version>pdfbox2-65c2c5010f84b2daa5821971c9c68cd330463830</openhtml.version>
+        <commonmark.version>0.22.0</commonmark.version>
     </properties>
     <dependencies>
         <dependency>
@@ -43,7 +43,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.3.0</version>
+            <version>2.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -65,13 +65,8 @@
         </dependency>
         <dependency>
             <groupId>com.github.jknack</groupId>
-            <artifactId>handlebars-jackson2</artifactId>
+            <artifactId>handlebars-jackson</artifactId>
             <version>${handlebar.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>1.17.1</version>
         </dependency>
         <dependency>
             <groupId>at.datenwort.openhtmltopdf</groupId>
@@ -89,15 +84,19 @@
             <version>${openhtml.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-            <version>3.0.1</version>
-        </dependency>
-
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.15.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.17.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.everit-org.json-schema</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>1.14.4</version>
         </dependency>
         <dependency>
             <groupId>org.commonmark</groupId>
@@ -108,11 +107,6 @@
             <groupId>org.commonmark</groupId>
             <artifactId>commonmark-ext-gfm-tables</artifactId>
             <version>${commonmark.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.everit-org.json-schema</groupId>
-            <artifactId>org.everit.json.schema</artifactId>
-            <version>1.14.3</version>
         </dependency>
 
         <dependency>
@@ -134,16 +128,20 @@
     </dependencies>
     <repositories>
         <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/navikt/familie-felles</url>
+        </repository>
+        <repository>
+            <id>at.datenwort.openhtmltopdf</id>
+            <url>https://maven.pkg.github.com/openhtmltopdf/openhtmltopdf</url>
+        </repository>
+        <repository>
             <id>mavenCentral</id>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
-        </repository>
-        <repository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/navikt/familie-felles</url>
         </repository>
     </repositories>
     <build>
