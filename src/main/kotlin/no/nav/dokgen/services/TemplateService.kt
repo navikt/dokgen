@@ -3,7 +3,6 @@ package no.nav.dokgen.services
 import com.fasterxml.jackson.databind.JsonNode
 import com.github.jknack.handlebars.Context
 import com.github.jknack.handlebars.Handlebars
-import com.github.jknack.handlebars.JsonNodeValueResolver
 import com.github.jknack.handlebars.Template
 import com.github.jknack.handlebars.context.FieldValueResolver
 import com.github.jknack.handlebars.context.JavaBeanValueResolver
@@ -12,6 +11,7 @@ import com.github.jknack.handlebars.context.MethodValueResolver
 import com.github.jknack.handlebars.helper.ConditionalHelpers
 import com.github.jknack.handlebars.helper.StringHelpers
 import com.github.jknack.handlebars.io.FileTemplateLoader
+import com.github.jknack.handlebars.jackson.JsonNodeValueResolver
 import no.nav.dokgen.controller.api.CreateDocumentRequest
 import no.nav.dokgen.exceptions.DokgenNotFoundException
 import no.nav.dokgen.handlebars.CustomHelpers
