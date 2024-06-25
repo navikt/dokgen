@@ -16,10 +16,10 @@
     <name>dokgen</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <felles.version>2.20231201131108_ea25dd3</felles.version>
+        <felles.version>3.20240624143824_64bf8f2</felles.version>
         <handlebar.version>4.4.0</handlebar.version>
-        <kotlin.version>1.9.23</kotlin.version>
-        <openhtml.version>pdfbox2-65c2c5010f84b2daa5821971c9c68cd330463830</openhtml.version>
+        <kotlin.version>2.0.0</kotlin.version>
+        <openhtml.version>1.1.4</openhtml.version>
         <commonmark.version>0.22.0</commonmark.version>
     </properties>
     <dependencies>
@@ -86,7 +86,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.15.1</version>
+            <version>2.16.1</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
