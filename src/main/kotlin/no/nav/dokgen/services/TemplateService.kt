@@ -155,6 +155,11 @@ class TemplateService @Autowired internal constructor(
         return createPdf(templateResource, payload)
     }
 
+    fun createPdf(templateName: String, payload: String?, formatVariation: DocFormat): ByteArray {
+        val templateResource = getTemplate(templateName)
+        return createPdf(templateResource, payload, formatVariation)
+    }
+
     fun createHtml(templateName: String, payload: String?): String {
         val templateResource = getTemplate(templateName)
         return createHtml(templateResource, payload)
@@ -186,6 +191,14 @@ class TemplateService @Autowired internal constructor(
     fun createPdf(templateResource: TemplateResource, payload: String?): ByteArray {
         return try {
             convertToPdf(templateResource, jsonService.getJsonFromString(payload))
+        } catch (e: IOException) {
+            throw RuntimeException("Kunne ikke lage pdf, templateName={} " + templateResource.name, e)
+        }
+    }
+
+    fun createPdf(templateResource: TemplateResource, payload: String?, formatVariation: DocFormat): ByteArray {
+        return try {
+            convertToPdf(templateResource, jsonService.getJsonFromString(payload), formatVariation)
         } catch (e: IOException) {
             throw RuntimeException("Kunne ikke lage pdf, templateName={} " + templateResource.name, e)
         }
@@ -278,6 +291,13 @@ class TemplateService @Autowired internal constructor(
     private fun convertToPdf(template: TemplateResource, mergeFields: JsonNode): ByteArray {
         template.compiledContent = getCompiledTemplate(template, mergeFields)
         val styledHtml = convertToDocument(DocFormat.PDF, template, true, mergeFields)
+        return generatePdf(styledHtml)
+    }
+
+    @Throws(IOException::class)
+    private fun convertToPdf(template: TemplateResource, mergeFields: JsonNode, formatVariation: DocFormat): ByteArray {
+        template.compiledContent = getCompiledTemplate(template, mergeFields)
+        val styledHtml = convertToDocument(formatVariation, template, true, mergeFields)
         return generatePdf(styledHtml)
     }
 

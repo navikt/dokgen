@@ -75,6 +75,20 @@ class TemplateController(
         return ResponseEntity(pdf, genHeaders(DocFormat.PDF, templateName, false), HttpStatus.OK)
     }
 
+    @PostMapping(value = ["/template/{templateName}/{formatVariation}/create-pdf-format-variation"], consumes = ["application/json"])
+    @Operation(
+        summary = "Lager en PDF av flettefeltene og malen med angitt variation.",
+        description = "PDF er av versjonen PDF/A"
+    )
+    fun createPdfFormatVariation(
+        @PathVariable templateName: String,
+        @PathVariable formatVariation: DocFormat,
+        @RequestBody mergeFields: String
+    ): ResponseEntity<*> {
+        val pdf = templateService.createPdf(templateName, mergeFields, formatVariation)
+        return ResponseEntity(pdf, genHeaders(DocFormat.pdfinntektsmelding, templateName, false), HttpStatus.OK)
+    }
+
     @PostMapping(value = ["/template/{templateName}/create-html"], consumes = ["application/json"])
     @Operation(summary = "Lager en HTML av flettefeltene og malen.", description = "")
     fun createHtml(@PathVariable templateName: String, @RequestBody mergeFields: String): ResponseEntity<*> {
