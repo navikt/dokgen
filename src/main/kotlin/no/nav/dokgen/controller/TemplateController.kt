@@ -86,7 +86,7 @@ class TemplateController(
         @RequestBody mergeFields: String
     ): ResponseEntity<*> {
         val pdf = templateService.createPdf(templateName, mergeFields, formatVariation)
-        return ResponseEntity(pdf, genHeaders(DocFormat.pdfinntektsmelding, templateName, false), HttpStatus.OK)
+        return ResponseEntity(pdf, genHeaders(DocFormat.PDFINNTEKTSMELDING, templateName, false), HttpStatus.OK)
     }
 
     @PostMapping(value = ["/template/{templateName}/create-html"], consumes = ["application/json"])
