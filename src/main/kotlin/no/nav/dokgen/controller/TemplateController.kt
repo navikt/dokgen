@@ -77,7 +77,7 @@ class TemplateController(
 
     @PostMapping(value = ["/template/{templateName}/{formatVariation}/create-pdf-format-variation"], consumes = ["application/json"])
     @Operation(
-        summary = "Lager en PDF av flettefeltene og malen med angitt variation.",
+        summary = "Lager en PDF av flettefeltene og malen med angitt format variant.",
         description = "PDF er av versjonen PDF/A"
     )
     fun createPdfFormatVariation(
