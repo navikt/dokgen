@@ -11,7 +11,7 @@ object HttpUtil {
     fun genHeaders(format: DocFormat, malNavn: String, download: Boolean): HttpHeaders? {
         return when(format){
             DocFormat.HTML -> genHtmlHeaders()
-            DocFormat.PDF -> genPdfHeaders(malNavn, download)
+            DocFormat.PDF, DocFormat.PDFINNTEKTSMELDING -> genPdfHeaders(malNavn, download)
             else -> null
         }
     }
