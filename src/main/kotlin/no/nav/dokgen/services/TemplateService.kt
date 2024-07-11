@@ -151,7 +151,7 @@ class TemplateService @Autowired internal constructor(
     }
 
     fun createPdf(templateName: String, payload: String?, variation: String): ByteArray {
-         val templateResource = getTemplate(templateName, variation)
+        val templateResource = getTemplate(templateName, variation)
         return createPdf(templateResource, payload)
     }
 
@@ -375,6 +375,7 @@ class TemplateService @Autowired internal constructor(
         handlebars.registerHelper("divide", CustomHelpers.DivideHelper())
         handlebars.registerHelper("format-kroner", CustomHelpers.FormatKronerHelper())
         handlebars.registerHelper("thousand-seperator", CustomHelpers.ThousandSeperatorHelper())
+        handlebars.registerHelper("thousand-seperator-double", CustomHelpers.ThousandSeperatorHelperDouble())
         handlebars.registerHelper("trim-decimal", CustomHelpers.TrimDecimalHelper())
         handlebars.registerHelper("array", CustomHelpers.ArrayHelper())
         handlebars.registerHelper("in-array", CustomHelpers.InArrayHelper())

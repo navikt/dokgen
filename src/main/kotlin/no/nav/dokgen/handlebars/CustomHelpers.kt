@@ -8,6 +8,7 @@ import java.io.IOException
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -213,6 +214,12 @@ interface CustomHelpers {
     class ThousandSeperatorHelper : Helper<Int> {
         override fun apply(kroner: Int, options: Options?): Any {
             return String.format(Locale.forLanguageTag("NO"), "%,d", kroner)
+        }
+    }
+
+    class ThousandSeperatorHelperDouble : Helper<Double> {
+        override fun apply(kroner: Double, options: Options?): Any {
+            return DecimalFormat(",###.##", DecimalFormatSymbols(Locale.of("NO"))).format(kroner)
         }
     }
 
