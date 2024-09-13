@@ -61,6 +61,14 @@ class TemplateController(
         return ResponseEntity(pdf, genHeaders(DocFormat.PDF, templateName, false), HttpStatus.OK)
     }
 
+    @PostMapping(value = ["/template/create-pdf"], consumes = ["application/json"])
+    @Operation(summary = "Lager en PDF av flettefeltene og malen. Støtter mal i undermapper", description = "PDF er av versjonen PDF/A")
+    fun createPdfFromPath(@RequestParam("templatePath") templatePath: String, @RequestBody mergeFields: String?): ResponseEntity<*> {
+        val pdf = templateService.createPdf(templatePath, mergeFields)
+        return ResponseEntity(pdf, genHeaders(DocFormat.PDF, templatePath, false), HttpStatus.OK)
+    }
+
+
     @PostMapping(value = ["/template/{templateName}/{variation}/create-pdf-variation"], consumes = ["application/json"])
     @Operation(
         summary = "Lager en PDF av flettefeltene og malen med angitt variation.",
@@ -171,6 +179,13 @@ class TemplateController(
     fun previewPdf(@PathVariable templateName: String, @PathVariable testDataName: String): ResponseEntity<*> {
         val mergeFields = testdataService.getTestData(templateName, testDataName)
         return createPdf(templateName, mergeFields)
+    }
+
+    @GetMapping(value = ["/template/preview-pdf"])
+    @Operation(summary = "Generer malen som PDF med test data fra template som path")
+    fun previewPdfFromPath(@RequestParam templatePath: String, @RequestParam testDataName: String): ResponseEntity<*> {
+        val mergeFields = testdataService.getTestData(templatePath, testDataName)
+        return createPdf(templatePath, mergeFields)
     }
 
     @GetMapping(value = ["/template/{templateName}/preview-html/{testDataName}"])

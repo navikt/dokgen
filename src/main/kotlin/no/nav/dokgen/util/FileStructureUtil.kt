@@ -8,16 +8,16 @@ object FileStructureUtil {
         return contentRoot.resolve("templates/$templateName/schema.json")
     }
 
-    fun getTemplatePath(contentRoot: Path, templateName: String): Path {
-        return getTemplatePath(contentRoot, templateName, DEFAULT_VARIATION)
+    fun getTemplatePath(contentRoot: Path, templatePath: String): Path {
+        return getTemplatePath(contentRoot, templatePath, DEFAULT_VARIATION)
     }
 
-    fun getTemplatePath(contentRoot: Path, templateName: String, variation: String): Path {
-        return contentRoot.resolve("templates/$templateName/$variation.hbs")
+    fun getTemplatePath(contentRoot: Path, templatePath: String, variation: String): Path {
+        return contentRoot.resolve("templates/$templatePath/$variation.hbs")
     }
 
-    fun getTestDataPath(contentRoot: Path, templateName: String, testDataName: String): Path {
-        return contentRoot.resolve("templates/$templateName/testdata/$testDataName.json")
+    fun getTestDataPath(contentRoot: Path, templatePath: String, testDataName: String): Path {
+        return contentRoot.resolve("templates/$templatePath/testdata/$testDataName.json")
     }
 
     fun getTestDataRootPath(contentRoot: Path, templateName: String?): Path {

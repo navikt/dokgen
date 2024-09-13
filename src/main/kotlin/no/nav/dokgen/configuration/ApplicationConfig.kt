@@ -34,17 +34,6 @@ class ApplicationConfig {
         return filterRegistration
     }
 
-    @Bean
-    @ConditionalOnProperty("allow-encoded-slash")
-    fun enableSlashInURLPath(): WebMvcConfigurer {
-        return object : WebMvcConfigurer {
-            override fun configurePathMatch(configurer: PathMatchConfigurer) {
-                val urlPathHelper = UrlPathHelper()
-                urlPathHelper.isUrlDecode = false
-                configurer.setUrlPathHelper(urlPathHelper)
-            }
-        }
-    }
     companion object {
         private val log = LoggerFactory.getLogger(ApplicationConfig::class.java)
     }
