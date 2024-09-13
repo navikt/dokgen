@@ -63,7 +63,7 @@ class TemplateController(
 
     @PostMapping(value = ["/template/create-pdf"], consumes = ["application/json"])
     @Operation(summary = "Lager en PDF av flettefeltene og malen. Støtter mal i undermapper", description = "PDF er av versjonen PDF/A")
-    fun createPdfFromPath(@RequestParam("templatePath") templatePath: String, @RequestBody mergeFields: String?): ResponseEntity<*> {
+    fun createPdfFromPath(@RequestParam templatePath: String, @RequestBody mergeFields: String?): ResponseEntity<*> {
         val pdf = templateService.createPdf(templatePath, mergeFields)
         return ResponseEntity(pdf, genHeaders(DocFormat.PDF, templatePath, false), HttpStatus.OK)
     }
