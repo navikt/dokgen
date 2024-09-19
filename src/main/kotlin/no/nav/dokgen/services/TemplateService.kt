@@ -125,12 +125,12 @@ class TemplateService @Autowired internal constructor(
         )
     }
 
-    fun getTemplate(templateName: String): TemplateResource {
-        return getTemplate(templateName, getTemplatePath(contentRoot, templateName))
+    fun getTemplate(templatePath: String): TemplateResource {
+        return getTemplate(templatePath, getTemplatePath(contentRoot, templatePath))
     }
 
-    fun getTemplate(templateName: String, variation: String): TemplateResource {
-        return getTemplate(templateName, getTemplatePath(contentRoot, templateName, variation))
+    fun getTemplate(templatePath: String, variation: String): TemplateResource {
+        return getTemplate(templatePath, getTemplatePath(contentRoot, templatePath, variation))
     }
 
     private fun getTemplate(templateName: String, templatePath: Path): TemplateResource {
@@ -175,9 +175,9 @@ class TemplateService @Autowired internal constructor(
         return createMarkdown(templateName, mergefields, templateResource)
     }
 
-    fun createMarkdown(templateName: String, mergefields: String, variation: String): String? {
-        val templateResource = getTemplate(templateName, variation)
-        return createMarkdown(templateName, mergefields, templateResource)
+    fun createMarkdown(templatePath: String, mergefields: String, variation: String): String? {
+        val templateResource = getTemplate(templatePath, variation)
+        return createMarkdown(templatePath, mergefields, templateResource)
     }
 
     private fun createMarkdown(templateName: String, mergefields: String, templateResource: TemplateResource): String? {
