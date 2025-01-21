@@ -1,9 +1,4 @@
-FROM gcr.io/distroless/java21-debian12:nonroot
-# Healtcheck lokalt/test
-COPY --from=busybox:stable-musl /bin/wget /usr/bin/wget
-
-# Working dir for RUN, CMD, ENTRYPOINT, COPY and ADD (required because of nonroot user cannot run commands in root)
-WORKDIR /app
+FROM ghcr.io/navikt/fp-baseimages/distroless:21
 
 COPY target/*.jar app.jar
 COPY content content
