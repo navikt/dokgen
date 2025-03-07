@@ -307,13 +307,6 @@ class TemplateService @Autowired internal constructor(
         return outputStream.toByteArray()
     }
 
-    fun convertToDocument(templateName: String, variation: String, mergefields: String?, formatVariation: DocFormat): Document {
-        val templateResource = getTemplate(templateName, variation)
-        val payload = jsonService.getJsonFromString(mergefields);
-        templateResource.compiledContent = getCompiledTemplate(templateResource, payload)
-        return convertToDocument(formatVariation, templateResource, true, payload)
-    }
-
     private fun convertToDocument(
         format: DocFormat,
         template: TemplateResource,

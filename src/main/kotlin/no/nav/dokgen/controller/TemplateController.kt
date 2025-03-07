@@ -14,9 +14,7 @@ import no.nav.dokgen.util.HttpUtil.genHeaders
 import no.nav.dokgen.util.HttpUtil.genHtmlHeaders
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.hateoas.EntityModel
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -79,19 +77,10 @@ class TemplateController(
     fun createPdfVariation(
         @PathVariable templateName: String,
         @PathVariable variation: String,
-        @RequestHeader(value = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_PDF_VALUE) acceptHeader: String,
         @RequestBody mergeFields: String
     ): ResponseEntity<*> {
-        val document = templateService.convertToDocument(templateName, variation, mergeFields, DocFormat.PDF)
-        if (acceptHeader.contains(MediaType.TEXT_HTML_VALUE)) {
-            return ResponseEntity(document.outerHtml(), genHeaders(DocFormat.HTML, templateName, false), HttpStatus.OK)
-        }
-
-        return ResponseEntity(
-            templateService.generatePdf(document),
-            genHeaders(DocFormat.PDF, templateName, false),
-            HttpStatus.OK
-        )
+        val pdf = templateService.createPdf(templateName, mergeFields, variation)
+        return ResponseEntity(pdf, genHeaders(DocFormat.PDF, templateName, false), HttpStatus.OK)
     }
 
     @PostMapping(value = ["/template/{templateName}/{formatVariation}/create-pdf-format-variation"], consumes = ["application/json"])
