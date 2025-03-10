@@ -79,12 +79,8 @@ class TemplateController(
         @PathVariable variation: String,
         @RequestBody mergeFields: String
     ): ResponseEntity<*> {
-        val document = templateService.convertToDocument(templateName, variation, mergeFields, DocFormat.PDF)
-        return ResponseEntity(
-            templateService.generatePdf(document),
-            genHeaders(DocFormat.PDF, templateName, false),
-            HttpStatus.OK
-        )
+        val pdf = templateService.createPdf(templateName, mergeFields, variation)
+        return ResponseEntity(pdf, genHeaders(DocFormat.PDF, templateName, false), HttpStatus.OK)
     }
 
     @PostMapping(value = ["/template/{templateName}/{formatVariation}/create-pdf-format-variation"], consumes = ["application/json"])
