@@ -10,7 +10,7 @@
             <password>${GITHUB_TOKEN}</password>
         </server>
         <server>
-            <id>at.datenwort.openhtmltopdf</id>
+            <id>io.github.openhtmltopdf</id>
             <username>${GITHUB_USERNAME}</username>
             <password>${GITHUB_TOKEN}</password>
         </server>
