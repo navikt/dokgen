@@ -1,7 +1,7 @@
 package no.nav.dokgen.services
 
-import com.openhtmltopdf.extend.FSSupplier
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder
+import com.openhtmltopdf.pdfboxout.PDFontSupplier
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import com.openhtmltopdf.svgsupport.BatikSVGDrawer
 import com.openhtmltopdf.util.XRLog
@@ -9,6 +9,11 @@ import no.nav.dokgen.util.DocFormat
 import no.nav.dokgen.util.FileStructureUtil.getCss
 import no.nav.dokgen.util.FileStructureUtil.getFormatFooter
 import no.nav.dokgen.util.FileStructureUtil.getFormatHeader
+import org.apache.fontbox.ttf.TTFParser
+import org.apache.fontbox.ttf.TrueTypeFont
+import org.apache.pdfbox.io.RandomAccessReadBuffer
+import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.pdmodel.font.PDType0Font
 import org.commonmark.Extension
 import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.node.Node
@@ -25,7 +30,6 @@ import org.springframework.util.FileCopyUtils
 import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.io.IOException
-import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -62,21 +66,21 @@ class DocumentGeneratorService @Autowired constructor(
     fun fontSuppliers(builder: PdfRendererBuilder) {
         val sourceSansProFamily = "Source Sans Pro"
         builder.useFont(
-            TTFontSupplier("SourceSansPro-Regular.ttf"),
+            fontSupplier("SourceSansPro-Regular.ttf"),
             sourceSansProFamily,
             400,
             BaseRendererBuilder.FontStyle.NORMAL,
             true
         )
         builder.useFont(
-            TTFontSupplier("SourceSansPro-Bold.ttf"),
+            fontSupplier("SourceSansPro-Bold.ttf"),
             sourceSansProFamily,
             700,
             BaseRendererBuilder.FontStyle.OBLIQUE,
             true
         )
         builder.useFont(
-            TTFontSupplier("SourceSansPro-It.ttf"),
+            fontSupplier("SourceSansPro-It.ttf"),
             sourceSansProFamily,
             400,
             BaseRendererBuilder.FontStyle.ITALIC,
@@ -137,7 +141,9 @@ class DocumentGeneratorService @Autowired constructor(
         get() = HtmlRenderer.builder()
             .extensions(markdownExtensions)
             .build()
+
     companion object {
+        private val FONT_CACHE: MutableMap<String, TrueTypeFont> = HashMap()
         private val UTF_8 = StandardCharsets.UTF_8
         @get:Throws(IOException::class)
         val colorProfile: ByteArray
@@ -152,14 +158,23 @@ class DocumentGeneratorService @Autowired constructor(
         XRLog.setLoggingEnabled(false)
     }
 
-    inner class TTFontSupplier(fontName: String) : FSSupplier<InputStream> {
-        private val fontPath = "$contentRoot/fonts/$fontName"
-        override fun supply(): InputStream {
-            return try {
-                FileInputStream(Paths.get(fontPath).toFile())
-            } catch (e: Exception) {
-                throw RuntimeException("Error loading font: $fontPath", e)
-            }
+    private fun fontSupplier(fontName: String): PDFontSupplier {
+        if (FONT_CACHE.containsKey(fontName)) {
+            val font = FONT_CACHE[fontName] ?: error("Kunne ikke finne font i cache")
+            return pdfontSupplier(font)
         }
+        val fontPath = "$contentRoot/fonts/$fontName"
+        val font = TTFParser().parse(RandomAccessReadBuffer(FileInputStream(Paths.get(fontPath).toFile()))).also { it.isEnableGsub = false }
+        FONT_CACHE[fontName] = font
+        return pdfontSupplier(font)
     }
+
+    private fun pdfontSupplier(font: TrueTypeFont): PDFontSupplier =
+        PDFontSupplier(
+            PDType0Font.load(
+                PDDocument(),
+                font,
+                true,
+            ),
+        )
 }
