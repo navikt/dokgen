@@ -16,10 +16,10 @@
     <name>dokgen</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <felles.version>2.20231201131108_ea25dd3</felles.version>
+        <felles.version>3.20250320122046_7ca9dae</felles.version>
         <handlebar.version>4.4.0</handlebar.version>
-        <kotlin.version>2.1.10</kotlin.version>
-        <openhtml.version>1.1.24</openhtml.version>
+        <kotlin.version>2.1.20</kotlin.version>
+        <openhtml.version>1.1.26</openhtml.version>
         <commonmark.version>0.24.0</commonmark.version>
     </properties>
     <dependencies>
