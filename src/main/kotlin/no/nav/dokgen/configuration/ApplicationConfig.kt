@@ -1,5 +1,6 @@
 package no.nav.dokgen.configuration
 
+import no.nav.familie.log.NavSystemtype
 import no.nav.familie.log.filter.LogFilter
 import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringBootConfiguration
@@ -20,7 +21,7 @@ class ApplicationConfig {
     fun logFilter(): FilterRegistrationBean<LogFilter> {
         log.info("Registering LogFilter filter")
         val filterRegistration = FilterRegistrationBean<LogFilter>()
-        filterRegistration.filter = LogFilter()
+        filterRegistration.filter = LogFilter(NavSystemtype.NAV_SAKSBEHANDLINGSSYSTEM)
         filterRegistration.order = 1
         return filterRegistration
     }

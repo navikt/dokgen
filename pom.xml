@@ -16,7 +16,7 @@
     <name>dokgen</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <felles.version>2.20231201131108_ea25dd3</felles.version>
+        <felles.version>3.20250505101905_835431d</felles.version>
         <handlebar.version>4.4.0</handlebar.version>
         <kotlin.version>2.1.21</kotlin.version>
         <openhtml.version>1.1.28</openhtml.version>
