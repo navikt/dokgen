@@ -98,7 +98,7 @@ class DocumentGeneratorService @Autowired constructor(
                     .useSVGDrawer(BatikSVGDrawer())
                     .useColorProfile(colorProfile)
                     .usePdfAConformance(PdfRendererBuilder.PdfAConformance.PDFA_2_U)
-                    .usePdfUaAccessbility(true)
+                    .usePdfUaAccessibility(true)
                     .toStream(os)
                     .run()
             }
