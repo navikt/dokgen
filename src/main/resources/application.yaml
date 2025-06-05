@@ -19,9 +19,12 @@ management:
 spring:
   main:
     banner-mode: 'off'
+  hateoas:
+    use-hal-as-default-json-media-type: false
 
 logging:
   config: "classpath:logback-spring.xml"
 springdoc:
   swagger-ui:
     path: /swagger
+  enable-hateoas: false
