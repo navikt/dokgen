@@ -16,11 +16,11 @@
     <name>dokgen</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <felles.version>3.20250505101905_835431d</felles.version>
-        <handlebar.version>4.4.0</handlebar.version>
-        <kotlin.version>2.1.21</kotlin.version>
-        <openhtml.version>1.1.28</openhtml.version>
-        <commonmark.version>0.24.0</commonmark.version>
+        <felles.version>3.20250804101327_a0f5fad</felles.version>
+        <handlebar.version>4.5.0</handlebar.version>
+        <kotlin.version>2.2.10</kotlin.version>
+        <openhtml.version>1.1.30</openhtml.version>
+        <commonmark.version>0.25.1</commonmark.version>
         <springdoc.version>2.8.8</springdoc.version>
     </properties>
     <dependencies>
@@ -93,12 +93,12 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.19.0</version>
+            <version>2.20.0</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.19.1</version>
+            <version>1.21.2</version>
         </dependency>
         <dependency>
             <groupId>com.github.everit-org.json-schema</groupId>
