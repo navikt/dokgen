@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/java21-debian12:nonroot
+FROM europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/jdk:openjdk-21
 # Healtcheck lokalt/test
 COPY --from=busybox:stable-musl /bin/wget /usr/bin/wget
 
@@ -8,4 +8,4 @@ WORKDIR /app
 COPY target/*.jar app.jar
 COPY content content
 
-CMD ["app.jar"]
+CMD ["java", "-jar", "app.jar"]
