@@ -1,9 +1,11 @@
 package no.nav.dokgen.handlebars
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.github.jknack.handlebars.Context
 import com.github.jknack.handlebars.Helper
 import com.github.jknack.handlebars.Options
+import com.neovisionaries.i18n.CountryCode
 import java.io.IOException
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -297,6 +299,41 @@ interface CustomHelpers {
             return if (o is ArrayNode) {
                 o.size()
             } else 0
+        }
+    }
+
+    /**
+     * Kan ta inn land på bå deformat alpha2 og alpha3
+     * F.eks NO og NOR gir Norge
+     */
+    class CountryCodeHelper : Helper<Any?> {
+        override fun apply(landKode: Any?, options: Options): Any {
+            val code = landKode as? String
+            if (code.isNullOrBlank()) {
+                return "";
+            }
+            return Locale.Builder()
+                .setLanguage("no")
+                .setRegion(CountryCode.getByCode(code).alpha2)
+                .build()
+                .getDisplayCountry(Locale.forLanguageTag("no"))
+        }
+    }
+
+    /**
+     * Lookup helper to find an arbeidsforhold in a list by orgnummer
+     * Usage:
+     * {{#arbeidsforholdLookup arbeidsforholdListe orgnummer}}
+     *   {{navn}} - {{stillingsprosent}} {{orgnummer}}
+     * {{/arbeidsforholdLookup}}
+     */
+    class ArbeidsforholdLookupHelper : Helper<Any?> {
+        override fun apply(context: Any?, options: Options): Any {
+            val orgnummer = context as? String ?: return ""
+            return (options.params.getOrNull(0) as? JsonNode)
+                ?.firstOrNull { it["orgnummer"]?.asText() == orgnummer }
+                ?.let { options.fn(it) }
+                ?: "($orgnummer)"
         }
     }
 }
