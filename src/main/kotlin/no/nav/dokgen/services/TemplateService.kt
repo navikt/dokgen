@@ -387,6 +387,8 @@ class TemplateService @Autowired internal constructor(
         handlebars.registerHelper("array", CustomHelpers.ArrayHelper())
         handlebars.registerHelper("in-array", CustomHelpers.InArrayHelper())
         handlebars.registerHelper("size", CustomHelpers.SizeHelper())
+        handlebars.registerHelper("land-norsk", CustomHelpers.CountryCodeHelper())
+        handlebars.registerHelper("arbeidsforhold-fra-orgnummer", CustomHelpers.ArbeidsforholdLookupHelper())
         handlebars.registerHelpers(StringHelpers::class.java)
         this.documentGeneratorService = documentGeneratorService
         this.jsonService = jsonService
