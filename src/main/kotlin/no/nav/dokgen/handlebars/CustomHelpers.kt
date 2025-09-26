@@ -12,6 +12,8 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -334,6 +336,31 @@ interface CustomHelpers {
                 ?.firstOrNull { it["orgnummer"]?.asText() == orgnummer }
                 ?.let { options.fn(it) }
                 ?: "($orgnummer)"
+        }
+    }
+
+    /**
+     * Counts the number of weekdays (Monday to Friday) between two dates, inclusive.
+     * Example use: {{antallVirkedagerMellomToDatoer startDato sluttDato}}
+     * DateTimeFormatter.ISO_LOCAL_DATE => "yyyy-MM-dd"
+     */
+    class AntallVirkedagerMellomToDatoer : Helper<String> {
+        override fun apply(dato1: String, options: Options): Any {
+            val start = LocalDate.parse(dato1)
+            val end = LocalDate.parse(options.params.getOrNull(0) as String)
+
+            val (from, to) = if (start.isBefore(end)) start to end else end to start
+
+            var count = 0
+            var date = from
+            while (!date.isAfter(to)) {
+                if (date.dayOfWeek != DayOfWeek.SATURDAY && date.dayOfWeek != DayOfWeek.SUNDAY) {
+                    count++
+                }
+                date = date.plusDays(1)
+            }
+
+            return count
         }
     }
 }
