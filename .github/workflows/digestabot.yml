@@ -14,7 +14,7 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v5
-      - uses: navikt/digestabot@3233d68167c867ef8227c5dfde7a30f2a0e10af0
+      - uses: navikt/digestabot@07cb8ac331b0b06bc0b30a7415587fb63b919608
         with:
           working-dir: ./server
           token: ${{ secrets.GITHUB_TOKEN }}
