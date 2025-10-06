@@ -173,13 +173,21 @@ interface CustomHelpers {
      * Parses ISO-8601 extended local or offset date-time format, and returns a string in dd.mm.yyyy HH:mm format
      *
      * {{norwegian-datetime 2019-08-19T15:54:01}} prints 19.08.2019 15:54
+     * {{norwegian-datetime "2019-08-19T15:54:01" includeSeconds=true}} → 19.08.2019 15:54:01
      */
     class NorwegianDateTimeHelper(): Helper<String> {
         companion object {
             val datetimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+            val datetimesecondFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
         }
         override fun apply(isoFormattedDateTime: String, options: Options): Any {
-            return datetimeFormat.format(DateTimeFormatter.ISO_DATE_TIME.parse(isoFormattedDateTime))
+            val dateTime = DateTimeFormatter.ISO_DATE_TIME.parse(isoFormattedDateTime)
+            val includeSeconds = options.hash("includeSeconds") as? Boolean ?: false
+            return if (includeSeconds) {
+                datetimesecondFormat.format(dateTime)
+            } else {
+                datetimeFormat.format(dateTime)
+            }
         }
     }
 
