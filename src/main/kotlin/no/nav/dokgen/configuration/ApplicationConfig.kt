@@ -4,13 +4,11 @@ import no.nav.familie.log.NavSystemtype
 import no.nav.familie.log.filter.LogFilter
 import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringBootConfiguration
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import org.springframework.web.util.UrlPathHelper
+import org.springframework.context.event.ContextClosedEvent
+import org.springframework.context.event.EventListener
 
 
 @SpringBootConfiguration
@@ -33,6 +31,13 @@ class ApplicationConfig {
         filterRegistration.filter = CustomRequestTimeFilter()
         filterRegistration.order = 2
         return filterRegistration
+    }
+
+    @EventListener
+    fun onApplicationEvent(event: ContextClosedEvent) {
+        // https://docs.nais.io/workloads/explanations/good-practices/?h=sigterm#handles-termination-gracefully
+        log.info("Mottok SIGTERM, venter 5 sekunder på at app tas ut av lastbalanserer")
+        Thread.sleep(5000L)
     }
 
     companion object {
