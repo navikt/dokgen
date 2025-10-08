@@ -11,7 +11,7 @@ import no.nav.dokgen.util.FileStructureUtil.getFormatFooter
 import no.nav.dokgen.util.FileStructureUtil.getFormatHeader
 import org.apache.fontbox.ttf.TTFParser
 import org.apache.fontbox.ttf.TrueTypeFont
-import org.apache.pdfbox.io.RandomAccessReadBuffer
+import org.apache.pdfbox.io.RandomAccessReadBufferedFile
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.font.PDType0Font
 import org.commonmark.Extension
@@ -28,14 +28,13 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
 import org.springframework.util.FileCopyUtils
 import java.io.ByteArrayOutputStream
-import java.io.FileInputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Function
+import kotlin.io.path.readText
 
 
 @Service
@@ -112,7 +111,6 @@ class DocumentGeneratorService @Autowired constructor(
         return renderToHTML(document)
     }
 
-
     private fun parseDocument(content: String): Node {
         return markdownToHtmlParser.parse(content)
     }
@@ -121,60 +119,42 @@ class DocumentGeneratorService @Autowired constructor(
         return htmlRenderer.render(document)
     }
 
-    private fun hentCss(format: DocFormat): String {
-        return try {
-            val cssPath = getCss(contentRoot, format)
-            Files.readString(cssPath, UTF_8)
+    private fun hentCss(format: DocFormat): String =
+        try {
+            getCss(contentRoot, format).readText(UTF_8)
         } catch (e: IOException) {
-            throw RuntimeException("Kan ikke hente $format.css", e)
+            throw RuntimeException("Kan ikke hente ${format}.css", e)
         }
+
+    private val markdownExtensions: List<Extension> =
+        listOf(TablesExtension.create())
+
+    private val markdownToHtmlParser: Parser =
+        Parser.builder().extensions(markdownExtensions).build()
+
+    private val htmlRenderer: HtmlRenderer =
+        HtmlRenderer.builder().extensions(markdownExtensions).build()
+
+    private fun fontSupplier(fontName: String): PDFontSupplier {
+        val font = FONT_CACHE.computeIfAbsent(fontName) {
+            TTFParser().parse(
+                RandomAccessReadBufferedFile(contentRoot.resolve("fonts").resolve(it).toString())
+            ).also { ttf -> ttf.isEnableGsub = false }
+        }
+        return pdfontSupplier(font);
     }
 
-    private val markdownExtensions: List<Extension>
-        get() = listOf(TablesExtension.create())
-
-    private val markdownToHtmlParser: Parser
-        get() = Parser.builder()
-            .extensions(markdownExtensions)
-            .build()
-    private val htmlRenderer: HtmlRenderer
-        get() = HtmlRenderer.builder()
-            .extensions(markdownExtensions)
-            .build()
+    private fun pdfontSupplier(font: TrueTypeFont): PDFontSupplier =
+        PDFontSupplier(PDType0Font.load(PDDocument(), font, true))
 
     companion object {
-        private val FONT_CACHE: MutableMap<String, TrueTypeFont> = HashMap()
+        private val FONT_CACHE = ConcurrentHashMap<String, TrueTypeFont>()
         private val UTF_8 = StandardCharsets.UTF_8
-        @get:Throws(IOException::class)
-        val colorProfile: ByteArray
-            get() {
-                val cpr = ClassPathResource("sRGB2014.icc")
-                return FileCopyUtils.copyToByteArray(cpr.inputStream)
-            }
-
+        val colorProfile: ByteArray =
+            ClassPathResource("sRGB2014.icc").inputStream.use { FileCopyUtils.copyToByteArray(it) }
     }
 
     init {
         XRLog.setLoggingEnabled(false)
     }
-
-    private fun fontSupplier(fontName: String): PDFontSupplier {
-        if (FONT_CACHE.containsKey(fontName)) {
-            val font = FONT_CACHE[fontName] ?: error("Kunne ikke finne font i cache")
-            return pdfontSupplier(font)
-        }
-        val fontPath = "$contentRoot/fonts/$fontName"
-        val font = TTFParser().parse(RandomAccessReadBuffer(FileInputStream(Paths.get(fontPath).toFile()))).also { it.isEnableGsub = false }
-        FONT_CACHE[fontName] = font
-        return pdfontSupplier(font)
-    }
-
-    private fun pdfontSupplier(font: TrueTypeFont): PDFontSupplier =
-        PDFontSupplier(
-            PDType0Font.load(
-                PDDocument(),
-                font,
-                true,
-            ),
-        )
 }
