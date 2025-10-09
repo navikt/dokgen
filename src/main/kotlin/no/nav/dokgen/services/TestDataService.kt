@@ -1,29 +1,27 @@
 package no.nav.dokgen.services
 
+import no.nav.dokgen.configuration.ContentProperties
 import no.nav.dokgen.exceptions.DokgenNotFoundException
 import no.nav.dokgen.util.FileStructureUtil.getTemplateSchemaPath
 import no.nav.dokgen.util.FileStructureUtil.getTestDataPath
 import no.nav.dokgen.util.FileStructureUtil.getTestDataRootPath
 import org.json.JSONObject
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.NoSuchFileException
-import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.stream.Collectors
 
 @Service
-class TestDataService @Autowired internal constructor(
-    @Value("\${path.content.root:./content/}") private val contentRoot: Path,
+class TestDataService(
+    private val contentProperties: ContentProperties,
     private val jsonService: JsonService
 ) {
     fun listTestData(templateName: String): List<String> {
         return Result.runCatching {
-            Files.list(getTestDataRootPath(contentRoot, templateName)).use { paths ->
+            Files.list(getTestDataRootPath(contentProperties.root, templateName)).use { paths ->
                 paths
                     .filter(Files::isRegularFile)
                     .map { path -> path.fileName.toString() }
@@ -43,7 +41,7 @@ class TestDataService @Autowired internal constructor(
     }
 
     fun getTestData(templateName: String, testDataName: String): String {
-        val testSetPath = getTestDataPath(contentRoot, templateName, testDataName)
+        val testSetPath = getTestDataPath(contentProperties.root, templateName, testDataName)
         return try {
             val content = Files.readAllBytes(testSetPath)
             String(content)
@@ -59,11 +57,11 @@ class TestDataService @Autowired internal constructor(
         val testDataContent = testDataObject.toString(2)
         try {
             jsonService.validereJson(
-                getTemplateSchemaPath(contentRoot, templateName),
+                getTemplateSchemaPath(contentProperties.root, templateName),
                 jsonService.getJsonFromString(testData)
             )
             Files.write(
-                getTestDataPath(contentRoot, templateName, testDataName), testDataContent.toByteArray(
+                getTestDataPath(contentProperties.root, templateName, testDataName), testDataContent.toByteArray(
                     StandardCharsets.UTF_8
                 ), StandardOpenOption.CREATE
             )

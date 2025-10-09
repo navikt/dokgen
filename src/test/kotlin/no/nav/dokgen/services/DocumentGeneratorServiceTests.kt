@@ -2,6 +2,7 @@ package no.nav.dokgen.services
 
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester
 import com.openhtmltopdf.pdfboxout.visualtester.PdfVisualTester.PdfCompareResult
+import no.nav.dokgen.configuration.ContentProperties
 import no.nav.dokgen.util.DocFormat
 import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -19,7 +20,7 @@ import javax.imageio.ImageIO
 
 class DocumentGeneratorServiceTests {
 
-    private val documentGeneratorService = DocumentGeneratorService(testContentPath)
+    private val documentGeneratorService = DocumentGeneratorService(contentPropertiesTestFixture)
 
     @Throws(IOException::class)
     private fun runTest(resource: String, actualPdfBytes: ByteArray): Boolean {
@@ -102,6 +103,9 @@ class DocumentGeneratorServiceTests {
         private const val TEST_OUTPUT_PATH = "target/regression-tests/"
         private const val EXPECTED_RES_PATH = "/test-fixtures/expected-pdf/"
         val testContentPath: Path = ClassPathResource("/test-content").file.toPath().toAbsolutePath()
+        val contentPropertiesTestFixture: ContentProperties = ContentProperties().apply {
+            root = testContentPath
+        }
 
         /**
          * Test if the data in the given byte array represents a PDF file.

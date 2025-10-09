@@ -5,6 +5,7 @@ import com.openhtmltopdf.pdfboxout.PDFontSupplier
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
 import com.openhtmltopdf.svgsupport.BatikSVGDrawer
 import com.openhtmltopdf.util.XRLog
+import no.nav.dokgen.configuration.ContentProperties
 import no.nav.dokgen.util.DocFormat
 import no.nav.dokgen.util.FileStructureUtil.getCss
 import no.nav.dokgen.util.FileStructureUtil.getFormatFooter
@@ -22,8 +23,6 @@ import org.commonmark.renderer.html.HtmlRenderer
 import org.jsoup.Jsoup
 import org.jsoup.helper.W3CDom
 import org.jsoup.nodes.Document
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
 import org.springframework.util.FileCopyUtils
@@ -31,20 +30,19 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Function
 import kotlin.io.path.readText
 
 
 @Service
-class DocumentGeneratorService @Autowired constructor(
-    @Value("\${path.content.root:./content/}") private val contentRoot: Path
+class DocumentGeneratorService (
+    private val contentProperties: ContentProperties
 ) {
     fun wrapDocument(document: Document, format: DocFormat, headerFunction: Function<String?, String?>) {
         try {
-            val header = Files.readString(getFormatHeader(contentRoot, format), UTF_8)
-            val footer = Files.readString(getFormatFooter(contentRoot, format), UTF_8)
+            val header = Files.readString(getFormatHeader(contentProperties.root, format), UTF_8)
+            val footer = Files.readString(getFormatFooter(contentProperties.root, format), UTF_8)
             val body = document.body()
             headerFunction.apply(header)?.let { body.prepend(it) }
             body.append(footer)
@@ -121,7 +119,7 @@ class DocumentGeneratorService @Autowired constructor(
 
     private fun hentCss(format: DocFormat): String =
         try {
-            getCss(contentRoot, format).readText(UTF_8)
+            getCss(contentProperties.root, format).readText(UTF_8)
         } catch (e: IOException) {
             throw RuntimeException("Kan ikke hente ${format}.css", e)
         }
@@ -138,7 +136,7 @@ class DocumentGeneratorService @Autowired constructor(
     private fun fontSupplier(fontName: String): PDFontSupplier {
         val font = FONT_CACHE.computeIfAbsent(fontName) {
             TTFParser().parse(
-                RandomAccessReadBufferedFile(contentRoot.resolve("fonts").resolve(it).toString())
+                RandomAccessReadBufferedFile(contentProperties.root.resolve("fonts").resolve(it).toString())
             ).also { ttf -> ttf.isEnableGsub = false }
         }
         return pdfontSupplier(font);

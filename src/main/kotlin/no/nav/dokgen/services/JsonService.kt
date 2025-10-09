@@ -2,6 +2,7 @@ package no.nav.dokgen.services
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import no.nav.dokgen.configuration.ContentProperties
 import no.nav.dokgen.exceptions.DokgenNotFoundException
 import no.nav.dokgen.exceptions.DokgenValidationException
 import no.nav.dokgen.util.FileStructureUtil.getTemplateSchemaPath
@@ -10,8 +11,6 @@ import org.everit.json.schema.ValidationException
 import org.everit.json.schema.loader.SchemaLoader
 import org.json.JSONObject
 import org.json.JSONTokener
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.FileInputStream
 import java.io.IOException
@@ -23,8 +22,8 @@ import java.util.*
 import java.util.stream.Collectors
 
 @Service
-class JsonService @Autowired constructor(
-    @Value("\${path.content.root:./content/}") private val contentRoot: Path
+class JsonService (
+    private val contentProperties: ContentProperties
 ) {
 
     @Throws(IOException::class)
@@ -60,7 +59,7 @@ class JsonService @Autowired constructor(
 
     fun getSchemaAsString(malNavn: String): String {
         return try {
-            val schemaPath = getTemplateSchemaPath(contentRoot, malNavn)
+            val schemaPath = getTemplateSchemaPath(contentProperties.root, malNavn)
             val schema: Schema = getSchema(schemaPath)
             schema.toString()
         } catch (e: NoSuchFileException) {

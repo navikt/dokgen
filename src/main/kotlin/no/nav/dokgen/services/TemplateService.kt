@@ -12,6 +12,7 @@ import com.github.jknack.handlebars.helper.ConditionalHelpers
 import com.github.jknack.handlebars.helper.StringHelpers
 import com.github.jknack.handlebars.io.FileTemplateLoader
 import com.github.jknack.handlebars.jackson.JsonNodeValueResolver
+import no.nav.dokgen.configuration.ContentProperties
 import no.nav.dokgen.controller.api.CreateDocumentRequest
 import no.nav.dokgen.exceptions.DokgenNotFoundException
 import no.nav.dokgen.handlebars.CustomHelpers
@@ -26,8 +27,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.safety.Safelist
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
@@ -42,8 +41,8 @@ import java.util.stream.Collectors
 
 
 @Service
-class TemplateService @Autowired internal constructor(
-    @Value("\${path.content.root:./content/}") private val contentRoot: Path,
+class TemplateService (
+    private val contentProperties: ContentProperties,
     documentGeneratorService: DocumentGeneratorService,
     jsonService: JsonService
 ) {
@@ -77,7 +76,7 @@ class TemplateService @Autowired internal constructor(
     @Throws(ValidationException::class, IOException::class)
     private fun getCompiledTemplate(templateResource: TemplateResource, mergeFields: JsonNode): String? {
         val template = compileInLineTemplate(templateResource.content)
-        jsonService.validereJson(getTemplateSchemaPath(contentRoot, templateResource.name), mergeFields)
+        jsonService.validereJson(getTemplateSchemaPath(contentProperties.root, templateResource.name), mergeFields)
         return template?.apply(with(mergeFields))
     }
 
@@ -109,7 +108,7 @@ class TemplateService @Autowired internal constructor(
 
     fun listTemplates(): List<String> {
         return Result.runCatching {
-            Files.list(getTemplateRootPath(contentRoot)).use { paths ->
+            Files.list(getTemplateRootPath(contentProperties.root)).use { paths ->
                 paths
                     .filter { path: Path? -> Files.isDirectory(path) }
                     .filter { p: Path -> !p.toFile().isHidden }
@@ -126,11 +125,11 @@ class TemplateService @Autowired internal constructor(
     }
 
     fun getTemplate(templatePath: String): TemplateResource {
-        return getTemplate(templatePath, getTemplatePath(contentRoot, templatePath))
+        return getTemplate(templatePath, getTemplatePath(contentProperties.root, templatePath))
     }
 
     fun getTemplate(templatePath: String, variation: String): TemplateResource {
-        return getTemplate(templatePath, getTemplatePath(contentRoot, templatePath, variation))
+        return getTemplate(templatePath, getTemplatePath(contentProperties.root, templatePath, variation))
     }
 
     private fun getTemplate(templateName: String, templatePath: Path): TemplateResource {
@@ -247,12 +246,12 @@ class TemplateService @Autowired internal constructor(
     }
 
     fun saveTemplate(templateName: String, payload: String) {
-        val malPath = getTemplatePath(contentRoot, templateName)
+        val malPath = getTemplatePath(contentProperties.root, templateName)
         saveTemplate(templateName, payload, malPath)
     }
 
     fun saveTemplate(templateName: String, payload: String, variation: String) {
-        val malPath = getTemplatePath(contentRoot, templateName, variation)
+        val malPath = getTemplatePath(contentProperties.root, templateName, variation)
         saveTemplate(templateName, payload, malPath)
     }
 
@@ -344,7 +343,7 @@ class TemplateService @Autowired internal constructor(
 
     private fun validateIfRequired(mergeFields: JsonNode?, format: DocFormat) {
         try {
-            jsonService.validereJson(getFormatSchema(contentRoot, format), mergeFields)
+            jsonService.validereJson(getFormatSchema(contentProperties.root, format), mergeFields)
         } catch (ignore: FileNotFoundException) {
             // This header does not require validation
         } catch (e: Exception) {
@@ -357,10 +356,10 @@ class TemplateService @Autowired internal constructor(
     }
 
     init {
-        handlebars = if (Files.exists(getTemplateRootPath(contentRoot))) Handlebars(
+        handlebars = if (Files.exists(getTemplateRootPath(contentProperties.root))) Handlebars(
             FileTemplateLoader(
                 getTemplateRootPath(
-                    contentRoot
+                    contentProperties.root
                 ).toFile()
             )
         ) else Handlebars()
