@@ -43,12 +43,10 @@ import java.util.stream.Collectors
 @Service
 class TemplateService (
     private val contentProperties: ContentProperties,
-    documentGeneratorService: DocumentGeneratorService,
-    jsonService: JsonService
+    private val documentGeneratorService: DocumentGeneratorService,
+    private val jsonService: JsonService
 ) {
-    private lateinit var handlebars: Handlebars
-    private lateinit var documentGeneratorService: DocumentGeneratorService
-    private lateinit var jsonService: JsonService
+    private val handlebars: Handlebars
     fun compileInLineTemplate(templateContent: String?): Template? {
         return Result.runCatching {
             handlebars.compileInline(templateContent)
@@ -390,7 +388,5 @@ class TemplateService (
         handlebars.registerHelper("arbeidsforhold-fra-orgnummer", CustomHelpers.ArbeidsforholdLookupHelper())
         handlebars.registerHelper("antall-virkedager", CustomHelpers.AntallVirkedagerMellomToDatoer())
         handlebars.registerHelpers(StringHelpers::class.java)
-        this.documentGeneratorService = documentGeneratorService
-        this.jsonService = jsonService
     }
 }
