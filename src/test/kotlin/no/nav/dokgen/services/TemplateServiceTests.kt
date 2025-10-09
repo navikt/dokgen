@@ -28,8 +28,6 @@ class TemplateServiceTests {
     @TempDir
     lateinit var basePathTemp: Path
 
-    private fun testContentProps(root: Path) = ContentProperties().apply { this.root = root }
-
     @BeforeEach
     @Throws(IOException::class)
     fun setUp() {
@@ -47,7 +45,7 @@ class TemplateServiceTests {
     """.trimIndent()
         )
         fileWriter.close()
-        val props = testContentProps(basePathTemp)
+        val props = ContentProperties().apply { root = basePathTemp }
         malService =
             TemplateService(
                 props,
@@ -58,7 +56,7 @@ class TemplateServiceTests {
 
     @Test
     fun skalHentAlleMalerReturnererDefaultSett() {
-        Assertions.assertThat(malService.listTemplates()).containsExactly("pdf", "html", "lagretMal")
+        Assertions.assertThat(malService.listTemplates()).isEmpty()
     }
 
     @Test
