@@ -30,7 +30,6 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Function
 import kotlin.io.path.readText
 
@@ -146,7 +145,7 @@ class DocumentGeneratorService (
         PDFontSupplier(PDType0Font.load(PDDocument(), font, true))
 
     companion object {
-        private val FONT_CACHE = ConcurrentHashMap<String, TrueTypeFont>()
+        private val FONT_CACHE = mutableMapOf<String, TrueTypeFont>()
         private val UTF_8 = StandardCharsets.UTF_8
         val colorProfile: ByteArray =
             ClassPathResource("sRGB2014.icc").inputStream.use { FileCopyUtils.copyToByteArray(it) }
