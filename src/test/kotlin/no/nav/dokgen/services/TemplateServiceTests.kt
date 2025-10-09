@@ -37,7 +37,7 @@ class TemplateServiceTests {
         Files.createDirectories(templateRootTemp)
 
         val staticContentForCopy: Path = ClassPathResource("/test-content").file.toPath().toAbsolutePath()
-        FileUtils.copyDirectory(staticContentForCopy.toFile(), basePathTemp.toFile());
+        FileUtils.copyDirectory(staticContentForCopy.toFile(), basePathTemp.toFile())
 
         val fileWriter = FileWriter(templateRootTemp.resolve("footer.hbs").toString())
         fileWriter.write(
