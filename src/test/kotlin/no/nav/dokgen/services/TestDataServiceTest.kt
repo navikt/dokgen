@@ -1,5 +1,6 @@
 package no.nav.dokgen.services
 
+import no.nav.dokgen.configuration.ContentProperties
 import no.nav.dokgen.util.FileStructureUtil.getTemplateSchemaPath
 import no.nav.dokgen.util.FileStructureUtil.getTestDataRootPath
 import org.apache.commons.io.FileUtils
@@ -23,7 +24,8 @@ class TestDataServiceTest {
     @BeforeEach
     @Throws(IOException::class)
     fun setUp() {
-        testdataService = TestDataService(temporaryFolder, JsonService(temporaryFolder))
+        val contentProperties = ContentProperties().apply { root = temporaryFolder }
+        testdataService = TestDataService(contentProperties, JsonService(contentProperties))
         testDataPath = getTestDataRootPath(temporaryFolder, TEMPLATE_NAME)
         Files.createDirectories(testDataPath)
     }

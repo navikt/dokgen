@@ -21,6 +21,8 @@ spring:
     banner-mode: 'off'
   hateoas:
     use-hal-as-default-json-media-type: false
+  lifecycle:
+    timeout-per-shutdown-phase: 5s
 
 logging:
   config: "classpath:logback-spring.xml"

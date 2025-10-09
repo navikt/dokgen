@@ -195,6 +195,18 @@ class TemplateController(
         return createPdf(templateName, mergeFields)
     }
 
+    @GetMapping(value = ["/template/{templateName}/{variation}/preview-pdf-variation/{testDataName}"])
+    @Operation(summary = "Generer malen som PDF med test data")
+    fun previewPdfVariant(
+        @PathVariable templateName: String,
+        @PathVariable variation: String,
+        @PathVariable testDataName: String
+    ): ResponseEntity<*> {
+        val mergeFields = testdataService.getTestData(templateName, testDataName)
+        val pdf = templateService.createPdf(templateName, mergeFields, variation)
+        return ResponseEntity(pdf, genHeaders(DocFormat.PDF, templateName, false), HttpStatus.OK)
+    }
+
     @GetMapping(value = ["/template/preview-pdf"])
     @Operation(summary = "Generer malen som PDF med test data fra template som path")
     fun previewPdfFromPath(@RequestParam templatePath: String, @RequestParam testDataName: String): ResponseEntity<*> {

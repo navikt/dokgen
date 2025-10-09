@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.github.jknack.handlebars.Context
 import com.github.jknack.handlebars.jackson.JsonNodeValueResolver
+import no.nav.dokgen.configuration.ContentProperties
 import no.nav.dokgen.util.FileStructureUtil.getTemplateRootPath
 import no.nav.dokgen.util.FileStructureUtil.getTemplatePath
 import no.nav.dokgen.util.FileStructureUtil.getTemplateSchemaPath
@@ -13,27 +14,30 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.springframework.core.io.ClassPathResource
 import java.io.FileWriter
 import java.io.IOException
-import java.net.URISyntaxException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 class TemplateServiceTests {
     private lateinit var malService: TemplateService
-    private lateinit var templateRoot: Path
+    private lateinit var templateRootTemp: Path
 
     @TempDir
-    lateinit var temporaryFolder: Path
+    lateinit var basePathTemp: Path
 
     @BeforeEach
     @Throws(IOException::class)
     fun setUp() {
-        templateRoot = getTemplateRootPath(temporaryFolder)
-        Files.createDirectories(templateRoot)
-        val fileWriter = FileWriter(templateRoot.resolve("footer.hbs").toString())
+        templateRootTemp = getTemplateRootPath(basePathTemp)
+        Files.createDirectories(templateRootTemp)
+
+        val staticContentForCopy: Path = ClassPathResource("/test-content").file.toPath().toAbsolutePath()
+        FileUtils.copyDirectory(staticContentForCopy.toFile(), basePathTemp.toFile())
+
+        val fileWriter = FileWriter(templateRootTemp.resolve("footer.hbs").toString())
         fileWriter.write(
             """
     
@@ -41,19 +45,25 @@ class TemplateServiceTests {
     """.trimIndent()
         )
         fileWriter.close()
-        malService = TemplateService(temporaryFolder, DocumentGeneratorService(testContentPath!!), JsonService(temporaryFolder))
+        val props = ContentProperties().apply { root = basePathTemp }
+        malService =
+            TemplateService(
+                props,
+                DocumentGeneratorService(props),
+                JsonService(props)
+            )
     }
 
     @Test
-    fun skalHentAlleMalerReturnererTomtSett() {
+    fun skalHentAlleMalerReturnererDefaultSett() {
         Assertions.assertThat(malService.listTemplates()).isEmpty()
     }
 
     @Test
     @Throws(IOException::class)
     fun skalHentAlleMaler() {
-        Files.createDirectory(templateRoot.resolve("MAL1"))
-        Assertions.assertThat(malService.listTemplates()).containsExactly("MAL1")
+        Files.createDirectory(templateRootTemp.resolve("MAL1"))
+        Assertions.assertThat(malService.listTemplates()).contains("MAL1")
     }
 
     @Test
@@ -65,9 +75,9 @@ class TemplateServiceTests {
 
     @Test
     fun skalReturnereMal() {
-        val malPath = templateRoot.resolve("MAL")
+        val malPath = templateRootTemp.resolve("MAL")
         Files.createDirectories(malPath)
-        val templatePath = getTemplatePath(temporaryFolder, "MAL")
+        val templatePath = getTemplatePath(basePathTemp, "MAL")
         Files.write(templatePath, "maldata".toByteArray())
 
 
@@ -81,9 +91,9 @@ class TemplateServiceTests {
     @Test
     fun skalReturnereMalDerMalnavnErEnPath() {
         val malpathString = "EN/MAL/SOM/LIGGER/HER"
-        val malPath = templateRoot.resolve(malpathString)
+        val malPath = templateRootTemp.resolve(malpathString)
         Files.createDirectories(malPath)
-        val templatePath = getTemplatePath(temporaryFolder, malpathString)
+        val templatePath = getTemplatePath(basePathTemp, malpathString)
         Files.write(templatePath, "maldata".toByteArray())
 
 
@@ -107,7 +117,7 @@ class TemplateServiceTests {
 
         // expect
         malService.saveTemplate(MALNAVN, GYLDIG_PAYLOAD)
-        val malData = Files.readString(getTemplatePath(temporaryFolder, MALNAVN))
+        val malData = Files.readString(getTemplatePath(basePathTemp, MALNAVN))
         Assertions.assertThat(malData).isEqualTo(MARKDOWN)
     }
 
@@ -125,7 +135,7 @@ class TemplateServiceTests {
     fun skal_overskrive_alt_ved_lagring_av_nytt_slankere_innhold() {
         skalLagreMal()
         malService.saveTemplate(MALNAVN, lagTestPayload("\"" + MARKDOWN.substring(3) + "\"", MERGE_FIELDS))
-        val malData = Files.readString(getTemplatePath(temporaryFolder, MALNAVN))
+        val malData = Files.readString(getTemplatePath(basePathTemp, MALNAVN))
         Assertions.assertThat(malData).isEqualTo(MARKDOWN.substring(3))
     }
 
@@ -134,7 +144,7 @@ class TemplateServiceTests {
     fun skalHenteHtml() {
         val malNavn = "html"
         FileUtils.writeStringToFile(
-            getTemplateSchemaPath(temporaryFolder, malNavn).toFile(),
+            getTemplateSchemaPath(basePathTemp, malNavn).toFile(),
             TOM_JSON,
             StandardCharsets.UTF_8
         )
@@ -150,7 +160,7 @@ class TemplateServiceTests {
     fun skalHentePdf() {
         val malNavn = "pdf"
         FileUtils.writeStringToFile(
-            getTemplateSchemaPath(temporaryFolder, malNavn).toFile(),
+            getTemplateSchemaPath(basePathTemp, malNavn).toFile(),
             TOM_JSON,
             StandardCharsets.UTF_8
         )
@@ -169,7 +179,7 @@ class TemplateServiceTests {
         val malNavn = "pdf"
         val templateVariation = "template_NN"
         FileUtils.writeStringToFile(
-            getTemplateSchemaPath(temporaryFolder, malNavn).toFile(),
+            getTemplateSchemaPath(basePathTemp, malNavn).toFile(),
             TOM_JSON,
             StandardCharsets.UTF_8
         )
@@ -203,17 +213,6 @@ class TemplateServiceTests {
                     ", \"interleavingFields\": " + interleavingFields +
                     ", \"useTestSet\": false}"
         }
-
-        val testContentPath: Path?
-            get() = try {
-                Paths.get(
-                    DocumentGeneratorServiceTests::class.java.protectionDomain.codeSource.location.toURI()
-                ).resolve(
-                    Paths.get("test-content")
-                ).toAbsolutePath()
-            } catch (e: URISyntaxException) {
-                null
-            }
         private const val TOM_JSON = "{}"
     }
 }
