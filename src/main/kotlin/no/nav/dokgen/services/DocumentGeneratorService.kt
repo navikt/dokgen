@@ -30,12 +30,13 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Function
 import kotlin.io.path.readText
 
 
 @Service
-class DocumentGeneratorService (
+class DocumentGeneratorService(
     private val contentProperties: ContentProperties
 ) {
     fun wrapDocument(document: Document, format: DocFormat, headerFunction: Function<String?, String?>) {
@@ -108,44 +109,35 @@ class DocumentGeneratorService (
         return renderToHTML(document)
     }
 
-    private fun parseDocument(content: String): Node {
-        return markdownToHtmlParser.parse(content)
+    private fun parseDocument(content: String): Node = markdownToHtmlParser.parse(content)
+    private fun renderToHTML(document: Node): String = htmlRenderer.render(document)
+
+    private fun hentCss(format: DocFormat): String = runCatching {
+        getCss(contentProperties.root, format).readText(UTF_8)
+    }.getOrElse { e ->
+        throw RuntimeException("Kan ikke hente ${format}.css", e)
     }
 
-    private fun renderToHTML(document: Node): String {
-        return htmlRenderer.render(document)
-    }
-
-    private fun hentCss(format: DocFormat): String =
-        try {
-            getCss(contentProperties.root, format).readText(UTF_8)
-        } catch (e: IOException) {
-            throw RuntimeException("Kan ikke hente ${format}.css", e)
-        }
-
-    private val markdownExtensions: List<Extension> =
-        listOf(TablesExtension.create())
-
-    private val markdownToHtmlParser: Parser =
-        Parser.builder().extensions(markdownExtensions).build()
-
-    private val htmlRenderer: HtmlRenderer =
-        HtmlRenderer.builder().extensions(markdownExtensions).build()
+    private val markdownExtensions: List<Extension> = listOf(TablesExtension.create())
+    private val markdownToHtmlParser: Parser = Parser.builder().extensions(markdownExtensions).build()
+    private val htmlRenderer: HtmlRenderer = HtmlRenderer.builder().extensions(markdownExtensions).build()
 
     private fun fontSupplier(fontName: String): PDFontSupplier {
         val font = FONT_CACHE.computeIfAbsent(fontName) {
             TTFParser().parse(
-                RandomAccessReadBufferedFile(contentProperties.root.resolve("fonts").resolve(it).toString())
+                RandomAccessReadBufferedFile(
+                    contentProperties.root.resolve("fonts").resolve(it).toString()
+                )
             ).also { ttf -> ttf.isEnableGsub = false }
         }
-        return pdfontSupplier(font);
+        return pdfontSupplier(font)
     }
 
     private fun pdfontSupplier(font: TrueTypeFont): PDFontSupplier =
         PDFontSupplier(PDType0Font.load(PDDocument(), font, true))
 
     companion object {
-        private val FONT_CACHE = mutableMapOf<String, TrueTypeFont>()
+        private val FONT_CACHE = ConcurrentHashMap<String, TrueTypeFont>()
         private val UTF_8 = StandardCharsets.UTF_8
         val colorProfile: ByteArray =
             ClassPathResource("sRGB2014.icc").inputStream.use { FileCopyUtils.copyToByteArray(it) }
