@@ -371,4 +371,39 @@ interface CustomHelpers {
             return count
         }
     }
+
+    /**
+     * Formats a given string according to the provided named parameters.
+     *
+     * Supported options:
+     * - toLower=true: Converts the string to lower case.
+     * - toUpper=true: Converts the string to upper case.
+     * - replaceUnderscore=true: Replaces underscores with spaces.
+     * - capitalizeFirst=true: Capitalizes only the first character of the resulting string.
+     *
+     * Example use:
+     *  {{format-text HELLO_WORLD toLower=true replaceUnderscore=true}} => "hello world"
+     *  {{format-text HELLO_WORLD toLower=true replaceUnderscore=true capitalizeFirst=true}} => "Hello world"
+     */
+    class FormatText : Helper<String> {
+        override fun apply(tekst: String?, options: Options): Any {
+            if (tekst == null) return ""
+
+            var result = tekst
+
+            val toLower = options.hash["toLower"]?.toString()?.toBoolean() ?: false
+            val toUpper = options.hash["toUpper"]?.toString()?.toBoolean() ?: false
+            val replaceUnderscore = options.hash["replaceUnderscore"]?.toString()?.toBoolean() ?: false
+            val capitalizeFirst = options.hash["capitalizeFirst"]?.toString()?.toBoolean() ?: false
+
+            if (replaceUnderscore) result = result.replace('_', ' ')
+            if (toLower) result = result.lowercase(Locale.getDefault())
+            if (toUpper) result = result.uppercase(Locale.getDefault())
+            if (capitalizeFirst && result.isNotEmpty()) {
+                result = result.replaceFirstChar { it.uppercaseChar() }
+            }
+
+            return result
+        }
+    }
 }
