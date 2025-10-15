@@ -384,6 +384,7 @@ class TemplateService (
         handlebars.registerHelper("array", CustomHelpers.ArrayHelper())
         handlebars.registerHelper("in-array", CustomHelpers.InArrayHelper())
         handlebars.registerHelper("size", CustomHelpers.SizeHelper())
+        handlebars.registerHelper("format-text", CustomHelpers.FormatText())
         handlebars.registerHelper("land-norsk", CustomHelpers.CountryCodeHelper())
         handlebars.registerHelper("arbeidsforhold-fra-orgnummer", CustomHelpers.ArbeidsforholdLookupHelper())
         handlebars.registerHelper("antall-virkedager", CustomHelpers.AntallVirkedagerMellomToDatoer())
