@@ -313,8 +313,11 @@ interface CustomHelpers {
     }
 
     /**
-     * Kan ta inn land på bå deformat alpha2 og alpha3
-     * F.eks NO og NOR gir Norge
+     * Accepts country codes in both alpha-2 and alpha-3 formats.
+     * For example, both "NO" and "NOR" will return "Norge".
+     *
+     * Optionally, you can specify a language using the `lang` parameter to get the country name in a different language.
+     * Example: {{countryCode "NO" lang="en"}} will return "Norway".
      */
     class CountryCodeHelper : Helper<Any?> {
         override fun apply(landKode: Any?, options: Options): Any {
@@ -322,11 +325,12 @@ interface CustomHelpers {
             if (code.isNullOrBlank()) {
                 return "";
             }
+            val lang = options.hash["lang"]?.toString() ?: "no"
             return Locale.Builder()
-                .setLanguage("no")
+                .setLanguage(lang)
                 .setRegion(CountryCode.getByCode(code).alpha2)
                 .build()
-                .getDisplayCountry(Locale.forLanguageTag("no"))
+                .getDisplayCountry(Locale.forLanguageTag(lang))
         }
     }
 
