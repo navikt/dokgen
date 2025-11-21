@@ -48,6 +48,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate timestamp tag
+        id: timestamp
+        run: echo "tag=$(date +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -55,6 +59,9 @@ jobs:
           platforms: linux/amd64,linux/arm64
           pull: true
           push: ${{ github.ref_name == 'master' }}
-          tags: ghcr.io/${{ github.repository }}/dokgen:${{ github.sha }}, ghcr.io/${{ github.repository }}/dokgen:latest
+          tags: |
+            ghcr.io/${{ github.repository }}/dokgen:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/dokgen:latest
+            ghcr.io/${{ github.repository }}/dokgen:${{ steps.timestamp.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
