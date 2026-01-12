@@ -250,10 +250,10 @@ class TemplateController(
     @PostMapping(value = ["/template/{templateName}/markdown"], consumes = ["application/json"])
     fun upsertTemplate(@PathVariable templateName: String, @RequestBody payload: String): ResponseEntity<*> {
         if (!writeAccess) {
-            return ResponseEntity<Any?>(HttpStatus.FORBIDDEN)
+            return ResponseEntity<String>(HttpStatus.FORBIDDEN)
         }
         templateService.saveTemplate(templateName, payload)
-        return ResponseEntity<Any>(HttpStatus.OK)
+        return ResponseEntity<String>(HttpStatus.OK)
     }
 
     @GetMapping(value = ["/template/{templateName}/schema"], produces = ["application/json"])
@@ -277,7 +277,7 @@ class TemplateController(
         @RequestBody payload: String
     ): ResponseEntity<*> {
         return if (!writeAccess) {
-            ResponseEntity<Any?>(HttpStatus.FORBIDDEN)
+            ResponseEntity<String>(HttpStatus.FORBIDDEN)
         }else{
             val testSetName = testdataService.saveTestData(templateName, testDataName, payload)
             ResponseEntity(testSetName, HttpStatus.CREATED)

@@ -2,15 +2,8 @@
 <configuration>
     <property name="ROOT_LOG_LEVEL" value="INFO"/>
 
-    <!-- Logger for sensitive data -->
-    <appender name="secureLog" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d %-5level [%thread] %logger{0}: %msg%n</pattern>
-        </encoder>
-    </appender>
-
     <logger name="secureLogger" level="INFO" additivity="false">
-        <appender-ref ref="secureLog"/>
+        <appender-ref ref="stdout_json"/>
     </logger>
 
     <!-- Spesiell håndtering av loggeren no.nav.log.LogFilter for å forhindre logging av isAlive-sjekker o.l. -->
