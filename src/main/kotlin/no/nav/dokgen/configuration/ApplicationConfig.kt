@@ -19,8 +19,8 @@ class ApplicationConfig {
     fun logFilter(): FilterRegistrationBean<LogFilter> {
         log.info("Registering LogFilter filter")
         val filterRegistration = FilterRegistrationBean<LogFilter>()
-        filterRegistration.filter = LogFilter(NavSystemtype.NAV_SAKSBEHANDLINGSSYSTEM)
-        filterRegistration.order = 1
+        filterRegistration.setFilter(LogFilter(NavSystemtype.NAV_SAKSBEHANDLINGSSYSTEM))
+        filterRegistration.setOrder(1)
         return filterRegistration
     }
 
@@ -28,8 +28,8 @@ class ApplicationConfig {
     fun requestTimeFilter(): FilterRegistrationBean<CustomRequestTimeFilter> {
         log.info("Registering RequestTimeFilter")
         val filterRegistration = FilterRegistrationBean<CustomRequestTimeFilter>()
-        filterRegistration.filter = CustomRequestTimeFilter()
-        filterRegistration.order = 2
+        filterRegistration.setFilter(CustomRequestTimeFilter())
+        filterRegistration.setOrder(2)
         return filterRegistration
     }
 
