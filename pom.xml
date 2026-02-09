@@ -18,9 +18,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <felles.version>3.20251105152539_b03ed80</felles.version>
         <handlebar.version>4.5.0</handlebar.version>
-        <kotlin.version>2.3.0</kotlin.version>
-        <openhtml.version>1.1.36</openhtml.version>
-        <commonmark.version>0.27.0</commonmark.version>
+        <kotlin.version>2.3.10</kotlin.version>
+        <openhtml.version>1.1.37</openhtml.version>
+        <commonmark.version>0.27.1</commonmark.version>
         <springdoc.version>3.0.1</springdoc.version>
     </properties>
     <dependencies>
