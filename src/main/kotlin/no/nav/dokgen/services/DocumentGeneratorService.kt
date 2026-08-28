@@ -83,6 +83,13 @@ class DocumentGeneratorService(
             BaseRendererBuilder.FontStyle.ITALIC,
             true
         )
+        builder.useFont(
+                fontSupplier("free3of9.ttf"),
+                "3of9Barcode",
+                400,
+                BaseRendererBuilder.FontStyle.NORMAL,
+                true
+        )
     }
 
     fun genererPDF(html: Document, outputStream: ByteArrayOutputStream?) {
