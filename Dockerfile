@@ -1,4 +1,4 @@
-FROM europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/jdk:openjdk-21@sha256:2e2fefeac999472a380143c816fbb441a0bb4413630fd810c9e82d57cb1eb76b
+FROM europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/jdk:openjdk-21@sha256:ae8c50b504e5c909b4a69396b48cf240efed7b63ad91f881d414558e8a7d70ad
 # Healtcheck lokalt/test
 COPY --from=busybox:stable-musl /bin/wget /usr/bin/wget
 
